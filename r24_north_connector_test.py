@@ -33,6 +33,38 @@ def assert_true(value: bool, label: str) -> None:
         raise AssertionError(label)
 
 
+def test_north_connector_spec_maps_room_local_opening_to_global_regions() -> None:
+    from connector_specs import NorthConnectorSpec
+    from presets import NORTH_OPENING_PRESETS
+
+    spec = NorthConnectorSpec(
+        name="r24_reference_compact",
+        room_x=ROOM2_X,
+        room_y=ROOM_Y,
+        room_chunks=8,
+        opening=NORTH_OPENING_PRESETS["compact_north_r24"],
+        upper_rows=tuple(R24NorthConnector().reference_upper_rows),
+    )
+    spec.validate()
+    assert_equal(spec.opening_start_x, ROOM2_X + 20, "compact R24 opening should start at chunk 6")
+    assert_equal(spec.opening_window, (ROOM2_X + 20, ROOM_Y, 5, 2), "opening window should cover the rendered north-wall carve")
+    assert_equal(spec.north_wall_region, (ROOM2_X, ROOM_Y, 34, 2), "north wall region should match the closed middle shell rows")
+    assert_equal(spec.upper_fragment_origin, (ROOM2_X + 8, ROOM_Y - 3), "upper fragment should start from the first room-local row offset")
+
+
+def test_north_connector_spec_builds_from_approved_opening_presets() -> None:
+    from connector_specs import NorthConnectorSpec
+    from presets import NORTH_OPENING_PRESETS
+
+    for name, opening in NORTH_OPENING_PRESETS.items():
+        spec = NorthConnectorSpec.from_opening_preset(name, room_x=ROOM2_X, room_y=ROOM_Y)
+        spec.validate()
+        expected_start_x = ROOM2_X + (opening.start_chunk - 1) * 4
+        expected_width = opening.width_chunks * 4 + 1
+        assert_equal(spec.opening, opening, f"{name} should use the named preset opening data")
+        assert_equal(spec.opening_window, (expected_start_x, ROOM_Y, expected_width, 2), f"{name} should map to the expected global opening window")
+
+
 def test_r24_tail_port_is_derived_from_locked_stamp() -> None:
     stamp = regular_vertical_pathway(6)
     port = r24_tail_port(stamp)
@@ -46,6 +78,16 @@ def test_connector_maps_opening_chunk_to_reference_corner() -> None:
     assert_equal(connector.opening_start_x, ROOM2_X + 20, "reference compact opening should start at chunk 6")
     assert_equal(connector.upper_fragment_x, ROOM2_X + 8, "upper fragment should begin 8 glyphs into the room")
     assert_equal(connector.stamp_y, ROOM_Y - 3, "upper fragment should occupy the three rows immediately north of the room edge")
+
+
+def test_r24_connector_exposes_reusable_north_connector_spec() -> None:
+    connector = R24NorthConnector(room_x=ROOM2_X, room_y=ROOM_Y, opening=Opening(6, 1))
+    spec = connector.spec
+    assert_equal(spec.name, "r24_reference_north", "R24 connector should name its reusable north-connector spec")
+    assert_equal(spec.opening, connector.opening, "R24 connector spec should carry the selected opening")
+    assert_equal(spec.upper_rows, tuple(connector.reference_upper_rows), "R24 connector spec should carry room-local upper fragment rows")
+    assert_equal(spec.opening_window, (connector.opening_start_x, ROOM_Y, 5, 2), "R24 spec opening window should match connector math")
+    assert_equal(spec.upper_fragment_origin, (connector.upper_fragment_x, connector.stamp_y), "R24 spec upper origin should match connector math")
 
 
 def test_generated_cases_keep_widths_and_visible_port_anchors() -> None:
@@ -66,8 +108,11 @@ def test_generated_cases_keep_widths_and_visible_port_anchors() -> None:
 
 
 def main() -> None:
+    test_north_connector_spec_maps_room_local_opening_to_global_regions()
+    test_north_connector_spec_builds_from_approved_opening_presets()
     test_r24_tail_port_is_derived_from_locked_stamp()
     test_connector_maps_opening_chunk_to_reference_corner()
+    test_r24_connector_exposes_reusable_north_connector_spec()
     test_generated_cases_keep_widths_and_visible_port_anchors()
 
     written = write_r24_connector_artifacts(OUT_DIR)

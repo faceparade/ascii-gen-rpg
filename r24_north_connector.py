@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from connector_specs import NorthConnectorSpec
 from curved_dungeon_grammar import (
     OUT_DIR,
     Rect,
@@ -115,8 +116,19 @@ class R24NorthConnector:
         ]
 
     @property
+    def spec(self) -> NorthConnectorSpec:
+        return NorthConnectorSpec(
+            name="r24_reference_north",
+            room_x=self.room_x,
+            room_y=self.room_y,
+            room_chunks=ROOM_CHUNKS,
+            opening=self.opening,
+            upper_rows=tuple(self.reference_upper_rows),
+        )
+
+    @property
     def upper_fragment_x(self) -> int:
-        return self.room_x + self.reference_upper_rows[0][0]
+        return self.spec.upper_fragment_origin[0]
 
     @property
     def port(self) -> R24TailPort:
@@ -124,7 +136,7 @@ class R24NorthConnector:
 
     @property
     def opening_start_x(self) -> int:
-        return self.room_x + (self.opening.start_chunk - 1) * CHUNK_GLYPH_W
+        return self.spec.opening_start_x
 
     @property
     def opening_fit_right_x(self) -> int:
@@ -136,7 +148,7 @@ class R24NorthConnector:
 
     @property
     def stamp_y(self) -> int:
-        return self.room_y - len(self.reference_upper_rows)
+        return self.spec.upper_fragment_y
 
     @property
     def tail_left_x(self) -> int:
@@ -147,8 +159,8 @@ class R24NorthConnector:
         return self.stamp_x + self.port.right
 
     def validate(self) -> None:
-        # Let NorthWall validate edge/full-wall cap rules and unsupported skins.
-        NorthWall(ROOM_CHUNKS, (self.opening,))
+        # Let NorthConnectorSpec/NorthWall validate edge/full-wall cap rules and unsupported skins.
+        self.spec.validate()
         if self.opening.start_chunk != 6 or self.opening.width_chunks != 1:
             raise ValueError("reference-style R24 north join currently expects Opening(6, 1)")
 
@@ -210,16 +222,19 @@ def build_r24_three_room_case(connector: R24NorthConnector | None = None) -> lis
 
 
 def connector_regions(connector: R24NorthConnector, scene_name: str) -> list[Rect]:
+    spec = connector.spec
+    north_x, north_y, north_w, north_h = spec.north_wall_region
+    open_x, open_y, open_w, open_h = spec.opening_window
     base_regions = [
         Rect("REFERENCE_UPPER_NORTH_FRAGMENT", connector.upper_fragment_x, connector.stamp_y, 25, 3),
-        Rect("REFERENCE_TAIL_ABOVE_NORTH_EDGE", connector.opening_start_x, connector.stamp_y + 2, 5, 1),
-        Rect("ROOM2_NORTH_WALL_WITH_OPENING", connector.room_x, connector.room_y, 34, 2),
+        Rect("REFERENCE_TAIL_ABOVE_NORTH_EDGE", open_x, connector.stamp_y + 2, 5, 1),
+        Rect("ROOM2_NORTH_WALL_WITH_OPENING", north_x, north_y, north_w, north_h),
         Rect(
             f"NORTHWALL_OPENING_CHUNKS_{connector.opening.start_chunk}_{connector.opening.end_chunk}",
-            connector.opening_start_x,
-            connector.room_y,
-            connector.opening.width_chunks * CHUNK_GLYPH_W + 1,
-            2,
+            open_x,
+            open_y,
+            open_w,
+            open_h,
         ),
     ]
     if scene_name == "room2_only":
