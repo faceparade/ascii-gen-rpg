@@ -1,0 +1,42 @@
+# Python cache/build output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Hermes local planning/session metadata
+.hermes/
+
+# Third-party/reference checkouts cloned for research
+references/
+
+# Legacy/archive experiments kept outside the current source tree
+_archive/
+
+# Generated visual-review artifacts
+*.html
+*_annotated.txt
+north_wall_opening_samples.txt
+r24_north_connector_port_report.txt
+r24_north_connector_room2_only.txt
+r24_north_connector_three_room.txt
+regular_vertical_pathway_macro.txt
+three_room_macro_test.txt
+three_room_north_wall_parametric_*.txt
+two_room_generated.txt
+two_room_generated_annotated.txt
+
+# Scratch browser/JS check files
+_check_*.js
+_tmp_check.js
+_north_editor_script_check.js
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
