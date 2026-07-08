@@ -1,0 +1,9 @@
+# Keep ASCII art, tests, and scripts line-ending-stable across Windows checkouts.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
