@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Parametric RoomShell generator for Tristan's curved dungeon grammar.
 
-This module reproduces the three LOCKED room-shell stamps byte-for-byte at
+This module reproduces the locked room-shell stamps byte-for-byte at
 their default configuration, while also exposing a parametric surface:
 
 * ``room_shell_middle_8()``  -> ``RoomShell(variant='middle')``
 * ``room_shell_left_8()``    -> ``RoomShell(variant='left')``
 * ``empty_terminal_room_shell_8()`` -> ``RoomShell(variant='terminal')``
+* ``single_room_four_openings.txt`` -> ``RoomShell(variant='four_openings')``
 
-All three are exact at ``width_chunks == 8`` / ``height_chunks == 5``.
+The shell variants are exact at ``width_chunks == 8`` / ``height_chunks == 5``;
+``four_openings`` is a locked ragged fragment and ignores scaling until the full
+four-side grammar is proven.
 
 Design
 ------
@@ -16,10 +19,10 @@ Each variant shares the north wall (delegated to ``NorthWall`` so north
 openings already work via the existing ``Opening`` type) and is otherwise
 composed of logical bands:
 
-* ``variant='middle'`` (v2): a rectangular 8x12 box — north wall + solid ``|``
+* ``variant='middle'`` (v3): a rectangular 8x11 box — north wall + solid ``|``
   side walls + interior pillars on the backtick grid (which can double as
   interior walls if the top is inaccessible in-game) + a backtick-corner bottom
-  rail.  The box is locked to 8x5 (the v2 interior is hand-tuned, not
+  rail.  The box is locked to 8x5 (the v3 interior is hand-tuned, not
   per-chunk-repeatable).
 * ``variant='terminal'`` : north wall + a repeating ``|/|`` / ``| |` plain
   floor band (``height_chunks`` controls how many) + bottom rail.  No platform.
@@ -27,14 +30,16 @@ composed of logical bands:
   stamp) + a plain floor band whose west edge is ``,`` on every row and whose
   east side uses the left-specific connector grammar, + bottom rail (also
   padded to 35).  No platform.
+* ``variant='four_openings'`` : exact locked copy of
+  ``single_room_four_openings.txt`` including ragged widths/trailing spaces.
 
 Height scaling
 --------------
-For ``middle`` and ``terminal`` the plain floor band count scales with
-``height_chunks`` (the locked default is 5, which yields exactly the 12-row
-locked stamp).  ``left`` is locked to 8x5 and raises ``NotImplementedError``
-for other sizes (the left east-connector grammar is irregular; extending it
-is documented as a follow-up).
+For ``terminal`` the plain floor band count scales with ``height_chunks`` (the
+locked default is 5, which yields exactly the 12-row terminal stamp). ``middle``
+and ``left`` are locked to 8x5 and raise ``NotImplementedError`` for unsupported
+sizes (the middle interior and left east-connector grammar are irregular;
+extending them is documented as a follow-up).
 
 East / west openings
 --------------------
@@ -57,7 +62,6 @@ from modular_canvas import ModularCanvas, OPAQUE
 from geometry import RoomSpec, WallSpan, PortSpec, ChunkGrid
 from modular_ascii_parts import NorthWall, CHUNK_GLYPH_W, Opening
 from caps import VerticalOpening, west_cap_skin, east_cap_skin, render_side_opening_column
-from curved_dungeon_grammar import wide_platform
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -76,12 +80,12 @@ from curved_dungeon_grammar import wide_platform
 MIDDLE_BODY_V3: list[str] = [
     "|                              | |",
     "|  `   `   `   `   `   `   `   |/|",
-    "|   ._ _ _ _ _ _ _ _ _.        | |",
-    "|  /| . . . . . . . . |        |/|",
-    "|  ,| .   .   .   .   |        | |",
-    "|  ,| . . . . . . . . |        |/|",
-    "|  ,t —,— —,— —,— —,— j        | |",
-    "|  t__/_._/;.;/_._/_./         |/|",
+    "|                              | |",
+    "|  `   `   `   `   `   `   `   |/|",
+    "|                              | |",
+    "|  `   `   `   `   `   `   `   |/|",
+    "|                              | |",
+    "|  `   `   `   `   `   `   `   |/|",
     "`— — — — — — — — — — — — — — — — '",
 ]
 
@@ -106,6 +110,33 @@ LEFT_TICK_ROWS = frozenset({3, 5, 7, 9})
 # present in the locked room_shell_left_8() reference).
 LEFT_WIDTH = 35
 
+# Locked single-room shell with all four directional openings.  This is a
+# user-supplied reference fragment, intentionally ragged/trailing-space-bearing;
+# do not rectangularize it or derive it procedurally until the full four-side
+# wall grammar has been proven byte-for-byte.
+FOUR_OPENINGS_LOCKED: list[str] = [
+    "       ,— —,— —,— —,— —,— —'  | ‘ —,— —,.    ",
+    "       |__/___/___/___/___/   ‘/__/___/ |    ",
+    "       |                              |/|   ",
+    "       |  `   `   `   `   `   `   `   | |   ",
+    "— —,— —,                              |/‘— —",
+    "__/___/   `   `   `   `   `   `   `   ‘/___/",
+    "                                            ",
+    "— — — —.  `   `   `   `   `   `   `   ` ,— —",
+    "       |                               /|   ",
+    "       |  `   `   `   `   `   `   `   , |   ",
+    "       |                              |/|   ",
+    "       |                              | |   ",
+    "       |          `   `   `   `   `   |/| ",
+    "       `— — — — — — — — — —.    ,— — — —'   ",
+    "                           |  `/|",
+]
+
+
+def single_room_four_openings_shell() -> list[str]:
+    """Return the locked four-opening single-room shell reference."""
+    return list(FOUR_OPENINGS_LOCKED)
+
 
 def close_north_wall_for_middle(wall_rows: list[str]) -> list[str]:
     """Close a bare NorthWall for the v3 middle RoomShell box.
@@ -127,7 +158,7 @@ def close_north_wall_for_middle(wall_rows: list[str]) -> list[str]:
 
 @dataclass
 class RoomShell:
-    """Parametric room-shell generator covering the three locked variants.
+    """Parametric room-shell generator covering the locked shell variants.
 
     Attributes
     ----------
@@ -141,7 +172,8 @@ class RoomShell:
         Identifier for the interior floor skin.  Only ``'plain_ticks'`` is
         implemented (the locked `` ` ``-tick floor).
     variant:
-        Which locked shell to reproduce: ``'middle'`` | ``'left'`` | ``'terminal'``.
+        Which locked shell to reproduce: ``'middle'`` | ``'left'`` |
+        ``'terminal'`` | ``'four_openings'``.
     north_opening:
         Optional ``Opening`` carved into the north wall (rows 0-1).
     west_opening:
@@ -191,9 +223,11 @@ class RoomShell:
             rows = self._render_terminal()
         elif self.variant == "left":
             rows = self._render_left()
+        elif self.variant == "four_openings":
+            rows = single_room_four_openings_shell()
         else:
             raise ValueError(
-                f"unknown variant {self.variant!r}; expected 'middle', 'left', or 'terminal'"
+                f"unknown variant {self.variant!r}; expected 'middle', 'left', 'terminal', or 'four_openings'"
             )
 
         # Carve west/east side-wall openings (no-op when both are None, which
@@ -240,19 +274,19 @@ class RoomShell:
 
     # ── middle variant ──────────────────────────────────────────────────────
     def _render_middle(self) -> List[str]:
-        # v2 interior is hand-tuned for the 8-chunk box and is not
+        # v3 interior is hand-tuned for the 8-chunk box and is not
         # per-chunk-repeatable; other widths are intentionally unsupported.
         if self.width_chunks != 8 or self.height_chunks != 5:
             raise NotImplementedError(
-                "variant='middle' (v2) reproduces only the locked 8x5 stamp "
-                "(room_shell_middle_8) exactly; the v2 interior is hand-tuned "
+                "variant='middle' (v3) reproduces only the locked 8x5 stamp "
+                "(room_shell_middle_8) exactly; the v3 interior is hand-tuned "
                 "and not per-chunk repeatable, so width/height scaling is a "
                 "documented follow-up."
             )
         W = self.width_chunks
         openings = (self.north_opening,) if self.north_opening is not None else ()
 
-        # Rows 0-1: north wall.  v2 closes the box, so row 0 is the 34-wide
+        # Rows 0-1: north wall.  v3 closes the box, so row 0 is the 34-wide
         # top ','— -'*8 + '.|' and row 1's left wall is '|' (not the open ','
         # that NorthWall emits for the unclosed style).  NorthWall still
         # supplies the opening carve on both rows.

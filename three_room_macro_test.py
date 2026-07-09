@@ -18,15 +18,15 @@ from curved_dungeon_grammar import (
     horizontal_corridor,
     room_shell_left_8,
     room_shell_middle_8,
-    wide_platform,
 )
+from platform_shell import PlatformShell
 
 ROOM_PITCH_X = 57
 CORRIDOR_OFFSET_X = 32
 ROOM_Y = 0
 CORRIDOR_Y = 4
-WIDE_PLATFORM_ROOM_OFFSET_X = 7
-WIDE_PLATFORM_ROOM_OFFSET_Y = 5
+PLATFORM_ROOM3_OFFSET_X = 3
+PLATFORM_ROOM3_OFFSET_Y = 4
 
 
 def empty_terminal_room_shell_8() -> list[str]:
@@ -68,12 +68,12 @@ def build_three_room_macro_test() -> list[str]:
     for x in (room_x[0] + CORRIDOR_OFFSET_X, room_x[1] + CORRIDOR_OFFSET_X):
         _paste(canvas, horizontal_corridor(6), x, CORRIDOR_Y)
 
-    # Keep the verified wide platform in room 2.
+    # Move the raised floor section into room 3; room 2 stays empty.
     _paste(
         canvas,
-        wide_platform(4),
-        room_x[1] + WIDE_PLATFORM_ROOM_OFFSET_X,
-        ROOM_Y + WIDE_PLATFORM_ROOM_OFFSET_Y,
+        PlatformShell(4).render(),
+        room_x[2] + PLATFORM_ROOM3_OFFSET_X,
+        ROOM_Y + PLATFORM_ROOM3_OFFSET_Y,
     )
 
     return ["".join(row).rstrip() for row in canvas]
@@ -84,13 +84,14 @@ def main() -> None:
     regions = [
         Rect("ROOM_1_LEFT_SHELL", 0, 0, 35, 12),
         Rect("CORRIDOR_1_TO_2", 32, 4, 28, 7),
-        Rect("ROOM_2_MIDDLE_WITH_PLATFORM", 57, 0, 35, 12),
-        Rect("ROOM_2_WIDE_PLATFORM", 64, 5, 20, 5),
+        Rect("ROOM_2_EMPTY_MIDDLE", 57, 0, 35, 12),
         Rect("CORRIDOR_2_TO_3", 89, 4, 28, 7),
-        Rect("ROOM_3_EMPTY_TERMINAL", 114, 0, 35, 12),
+        Rect("ROOM_3_TERMINAL_WITH_MODULAR_PLATFORM", 114, 0, 35, 12),
+        Rect("ROOM_3_RAISED_PLATFORM_MODULE", 117, 4, 23, 7),
     ]
 
     txt = OUT_DIR / "three_room_macro_test.txt"
+
     ann = OUT_DIR / "three_room_macro_test_annotated.txt"
     html = OUT_DIR / "three_room_macro_test.html"
 

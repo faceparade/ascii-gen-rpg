@@ -10,6 +10,13 @@ Two kinds of presets live here:
 * ``NORTH_OPENING_PRESETS`` — named ``Opening`` configs (chunk-based north-wall
   openings). ``Opening`` defaults its ``skin`` to the plain skin via its own
   ``__post_init__``.
+* ``SOUTH_OPENING_TEMPLATE_PRESETS`` — locked visible upper/south-opening rows
+  as room-local ``(x, text)`` pairs for fragments not yet parameterized.
+* ``VERTICAL_PATHWAY_PRESETS`` — locked vertical/offshoot pathway stamp rows.
+* ``RAISED_FRAGMENT_PRESETS`` — locked raised-floor / raised-edge fragment rows
+  used as independent structural anchors inside the six-room source.
+* ``SCENE_FRAGMENT_PRESETS`` — locked generic scene fragment rows used as
+  independent structural anchors inside the six-room source.
 * ``SHELL_PRESETS`` — named shell configs as plain dicts. A preset carries a
   ``variant`` plus the geometry kwargs accepted by ``RoomShell`` (and, for the
   left/terminal variants that ``RoomShell``'s current geometry cannot yet
@@ -20,6 +27,10 @@ Helpers
 * ``build_shell(name)`` returns a ``RoomShell`` (or a ``RoomShell``-like object
   whose ``.render()`` matches the locked reference) for the named preset.
 * ``build_north_opening(name)`` returns the named ``Opening``.
+* ``build_south_opening_template(name)`` returns the named locked row template.
+* ``build_vertical_pathway(name)`` returns the named locked pathway stamp rows.
+* ``build_raised_fragment(name)`` returns the named locked raised fragment rows.
+* ``build_scene_fragment(name)`` returns the named locked generic scene fragment rows.
 """
 from __future__ import annotations
 
@@ -50,6 +61,77 @@ NORTH_OPENING_PRESETS: Dict[str, Opening] = {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# South-opening / upper-fragment templates (DATA: room-local rows)
+# ─────────────────────────────────────────────────────────────────────────────
+SOUTH_OPENING_TEMPLATE_PRESETS: Dict[str, tuple[tuple[int, str], ...]] = {
+    "compact_r24": (
+        (8, "|  `   `   `   `   `   |/|"),
+        (8, "'— — — — — —.    ,— — — —'"),
+        (20, "|  `/|"),
+        (20, "|  , |"),
+    ),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vertical/offshoot pathway presets (DATA: locked stamp rows)
+# ─────────────────────────────────────────────────────────────────────────────
+VERTICAL_PATHWAY_PRESETS: Dict[str, tuple[str, ...]] = {
+    "regular_r24_6": (
+        ', -,- -,—-j` . |t--,- -,.'.ljust(27),
+        '|_/___/__j ` . t__/___/,| '.ljust(27),
+        '|. ` . ` . ` . ` . ` .| |  '.ljust(27),
+        "|. ` . ` . ` . ` . ` .'/|  ".ljust(27),
+        "'- - - - -.` . `.- - -'-'".ljust(27),
+        '          |` . /|'.ljust(27),
+    ),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Raised-floor / raised-edge fragments (DATA: locked row slices)
+# ─────────────────────────────────────────────────────────────────────────────
+RAISED_FRAGMENT_PRESETS: Dict[str, tuple[str, ...]] = {
+    # Small connector fragment whose leading backtick was corrected to live on
+    # line 15 in the six-room source. Keep this as a named spec so source
+    # alignment tests do not hide row drift behind source-vs-source equality.
+    "connector_line15_short": (
+        "` ,— — — —'",
+        " /|",
+        ", |",
+        "|/‘ —,— —,.",
+        "‘/__/___/ |",
+    ),
+    # Widened 27-column raised-edge fragments embedded in four room interiors.
+    "widened_27_partial": (
+        "` ,— — — — — — — — — — — —.",
+        " /|                       |",
+        ", |                       |",
+        "|/|                       |",
+    ),
+    # Decorated center connector fragment with ;.; floor detail and right-side
+    # grid ticks. This one-off is fragile enough to lock independently.
+    "center_decorated_29": (
+        "` ,— — — — — — — — — —. `   ‘",
+        " /|                   |      ",
+        ", |                   | `   `",
+        "|/‘— —,— —,— —,— —,— -'      ",
+        "‘/___/___/;.;/___/___/  `   ,",
+    ),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Generic scene fragments (DATA: locked row slices)
+# ─────────────────────────────────────────────────────────────────────────────
+SCENE_FRAGMENT_PRESETS: Dict[str, tuple[str, ...]] = {
+    "room_bottom_rail_34": (
+        "`— — — — — — — — — — — — — — — — '",
+    ),
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Shell presets (DATA: plain dicts)
 # ─────────────────────────────────────────────────────────────────────────────
 SHELL_PRESETS: Dict[str, Dict[str, object]] = {
@@ -62,9 +144,9 @@ SHELL_PRESETS: Dict[str, Dict[str, object]] = {
         "variant": "left",
         "width_chunks": 8,
         "height_chunks": 5,
-        # RoomShell's platformless fallback uses a uniform east grammar and does
-        # NOT reproduce the locked left-shell connector; delegate to the
-        # verified reference so the preset stays thin (data, not new rendering).
+        # RoomShell's generic empty-room fallback uses a uniform east grammar and
+        # does NOT reproduce the locked left-shell connector; delegate to the
+        # compatibility macro until left-shell rendering is parameterized.
         "render_ref": "room_shell_left_8",
     },
     "terminal_8": {
@@ -73,6 +155,11 @@ SHELL_PRESETS: Dict[str, Dict[str, object]] = {
         "height_chunks": 5,
         # Same situation as left_8: delegate to the locked reference render.
         "render_ref": "empty_terminal_room_shell_8",
+    },
+    "four_openings_single": {
+        "variant": "four_openings",
+        "width_chunks": 8,
+        "height_chunks": 5,
     },
 }
 
@@ -109,8 +196,8 @@ def build_shell(name: str) -> RoomShell:
     """
     cfg = dict(SHELL_PRESETS[name])
     ref = cfg.pop("render_ref", None)
-    cfg.pop("variant", None)  # consumed for dispatch only
     if ref is not None:
+        cfg.pop("variant", None)  # consumed for locked-reference dispatch only
         return _LockedShell(ref)
     return RoomShell(**cfg)
 
@@ -118,3 +205,23 @@ def build_shell(name: str) -> RoomShell:
 def build_north_opening(name: str) -> Opening:
     """Return the named north-opening preset."""
     return NORTH_OPENING_PRESETS[name]
+
+
+def build_south_opening_template(name: str) -> tuple[tuple[int, str], ...]:
+    """Return the named locked south-opening/upper-fragment row template."""
+    return SOUTH_OPENING_TEMPLATE_PRESETS[name]
+
+
+def build_vertical_pathway(name: str) -> tuple[str, ...]:
+    """Return the named locked vertical/offshoot pathway stamp rows."""
+    return VERTICAL_PATHWAY_PRESETS[name]
+
+
+def build_raised_fragment(name: str) -> tuple[str, ...]:
+    """Return the named locked raised-floor / raised-edge fragment rows."""
+    return RAISED_FRAGMENT_PRESETS[name]
+
+
+def build_scene_fragment(name: str) -> tuple[str, ...]:
+    """Return the named locked generic scene fragment rows."""
+    return SCENE_FRAGMENT_PRESETS[name]

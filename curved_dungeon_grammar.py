@@ -75,22 +75,54 @@ def horizontal_corridor(width_units: int = 6) -> list[str]:
 
 
 def regular_vertical_pathway(width_units: int = 6) -> list[str]:
-    """Return R24 from Rooms.md: the regular vertical/offshoot pathway.
-
-    This is the plain pathway family selected as the best fit for a regular
-    vertical/offshoot corridor. It is kept as a locked 27-column stamp first;
-    parameterization comes after visual placement is approved.
-    """
+    """Compatibility wrapper for the locked R24 vertical/offshoot pathway preset."""
     if width_units != 6:
         raise NotImplementedError("regular_vertical_pathway currently supports only the locked R24 width")
-    return [
-        ', -,- -,—-j` . |t--,- -,.'.ljust(27),
-        '|_/___/__j ` . t__/___/,| '.ljust(27),
-        '|. ` . ` . ` . ` . ` .| |  '.ljust(27),
-        "|. ` . ` . ` . ` . ` .'/|  ".ljust(27),
-        "'- - - - -.` . `.- - -'-'".ljust(27),
-        '          |` . /|'.ljust(27),
+    from presets import build_vertical_pathway
+
+    return list(build_vertical_pathway("regular_r24_6"))
+
+
+def raised_platform(width_units: int = 4) -> list[str]:
+    """Compatibility wrapper for the full raised floor section source stamp."""
+    if width_units != 4:
+        raise NotImplementedError("raised_platform currently supports only the locked 4-unit raised floor section")
+    rows = [
+        "` ,— — — — — — — — — —.",
+        " /|                   |",
+        ", |                   |",
+        "|/|                   |",
+        "| |                   |",
+        "|/‘— —,— —,— —,— —,— -,",
+        "‘/___/___/;.;/___/___/",
     ]
+    width = max(len(row) for row in rows)
+    return [row.ljust(width) for row in rows]
+
+
+def raised_floor_section_tall_narrow() -> list[str]:
+    """Return the locked small tall/narrow raised floor section source stamp."""
+    rows = [
+        "` ,— —.",
+        " /|   |",
+        ", |   |",
+        "|/|   |",
+        "| |   |",
+        "|/‘— —,",
+        "‘/___/ ",
+    ]
+    width = max(len(row) for row in rows)
+    return [row.ljust(width) for row in rows]
+
+
+def south_opening_template(name: str = "compact_r24") -> list[tuple[int, str]]:
+    """Compatibility wrapper for locked south-opening preset rows."""
+    from presets import build_south_opening_template
+
+    try:
+        return list(build_south_opening_template(name))
+    except KeyError as exc:
+        raise NotImplementedError("only the compact_r24 south-opening template is locked so far") from exc
 
 
 def wide_platform(width_units: int = 4) -> list[str]:
@@ -141,12 +173,12 @@ def room_shell_middle_8() -> list[str]:
         '|__/___/___/___/___/___/___/___/ |',
         '|                              | |',
         '|  `   `   `   `   `   `   `   |/|',
-        '|   ._ _ _ _ _ _ _ _ _.        | |',
-        '|  /| . . . . . . . . |        |/|',
-        '|  ,| .   .   .   .   |        | |',
-        '|  ,| . . . . . . . . |        |/|',
-        '|  ,t —,— —,— —,— —,— j        | |',
-        '|  t__/_._/;.;/_._/_./         |/|',
+        '|                              | |',
+        '|  `   `   `   `   `   `   `   |/|',
+        '|                              | |',
+        '|  `   `   `   `   `   `   `   |/|',
+        '|                              | |',
+        '|  `   `   `   `   `   `   `   |/|',
         '`— — — — — — — — — — — — — — — — \'',
     ]
 

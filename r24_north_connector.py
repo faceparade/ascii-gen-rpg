@@ -13,30 +13,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from connector_specs import NorthConnectorSpec
+from connector_specs import NorthConnectorSpec, SouthOpeningTemplateSpec, VerticalPathwaySpec
 from curved_dungeon_grammar import (
     OUT_DIR,
     Rect,
     annotate,
     html_review,
-    regular_vertical_pathway,
-    room_shell_middle_8,
-    wide_platform,
 )
+from latest_r24_style import r24_new_style_with_room3_platform
 from modular_ascii_parts import CHUNK_GLYPH_W, Opening, NorthWall
 from modular_canvas import ModularCanvas, OPAQUE, TRANSPARENT_SPACE
-from three_room_macro_test import (
-    WIDE_PLATFORM_ROOM_OFFSET_X,
-    WIDE_PLATFORM_ROOM_OFFSET_Y,
-    build_three_room_macro_test,
-)
+from presets import build_shell
 
 PATHWAY_W = 27
 ROOM_CHUNKS = 8
 ROOM_W = 35
 ROOM_H = 12
 DEFAULT_ROOM2_X = 57
-DEFAULT_ROOM_Y = 3
+DEFAULT_ROOM_Y = 4
 
 
 @dataclass(frozen=True)
@@ -71,7 +65,7 @@ class R24TailPort:
 
 def r24_tail_port(stamp: list[str] | None = None) -> R24TailPort:
     """Derive the R24 tail side-wall bounds from the locked stamp's tail row."""
-    rows = regular_vertical_pathway(6) if stamp is None else stamp
+    rows = VerticalPathwaySpec.regular_r24().render() if stamp is None else stamp
     if not rows:
         raise ValueError("R24 stamp is empty")
     tail_row_index = len(rows) - 1
@@ -98,7 +92,12 @@ class R24NorthConnector:
 
     @property
     def stamp(self) -> list[str]:
-        return regular_vertical_pathway(self.pathway_width_units)
+        return self.pathway_spec.render()
+
+    @property
+    def pathway_spec(self) -> VerticalPathwaySpec:
+        """Reusable locked R24 vertical/offshoot pathway spec."""
+        return VerticalPathwaySpec.regular_r24(self.pathway_width_units)
 
     @property
     def reference_upper_rows(self) -> list[tuple[int, str]]:
@@ -109,11 +108,12 @@ class R24NorthConnector:
         edge, while the north wall/edge row below carries the `j  ,t` corner
         join.
         """
-        return [
-            (8, "|  `   `   `   `   `  '/|"),
-            (8, "'- - - - - -.   .- - - -'"),
-            (20, "|  /|"),
-        ]
+        return list(self.south_opening_spec.rows)
+
+    @property
+    def south_opening_spec(self) -> SouthOpeningTemplateSpec:
+        """Reusable locked south-opening/upper-room fragment for this join."""
+        return SouthOpeningTemplateSpec.compact_r24()
 
     @property
     def spec(self) -> NorthConnectorSpec:
@@ -172,11 +172,11 @@ def _replace_north_wall(canvas: ModularCanvas, connector: R24NorthConnector) -> 
 
 
 def _paste_reference_upper_fragment(canvas: ModularCanvas, connector: R24NorthConnector) -> None:
-    for dy, (dx, row) in enumerate(connector.reference_upper_rows):
+    for x, y, row in connector.south_opening_spec.rows_for_room(connector.room_x, connector.room_y):
         canvas.paste_stamp(
             [row],
-            connector.room_x + dx,
-            connector.stamp_y + dy,
+            x,
+            y,
             TRANSPARENT_SPACE,
             source="ref_upper_fragment",
             layer="connector",
@@ -191,15 +191,7 @@ def build_r24_room2_only_case(connector: R24NorthConnector | None = None) -> lis
     height = max(c.room_y + ROOM_H, c.stamp_y + len(c.stamp))
     canvas = ModularCanvas(width, height)
     canvas.paste_stamp(
-        room_shell_middle_8(), c.room_x, c.room_y, OPAQUE, source="room_shell", layer="room"
-    )
-    canvas.paste_stamp(
-        wide_platform(4),
-        c.room_x + WIDE_PLATFORM_ROOM_OFFSET_X,
-        c.room_y + WIDE_PLATFORM_ROOM_OFFSET_Y,
-        OPAQUE,
-        source="wide_platform",
-        layer="room",
+        build_shell("middle_8").render(), c.room_x, c.room_y, OPAQUE, source="room_shell", layer="room"
     )
     _replace_north_wall(canvas, c)
     _paste_reference_upper_fragment(canvas, c)
@@ -207,27 +199,26 @@ def build_r24_room2_only_case(connector: R24NorthConnector | None = None) -> lis
 
 
 def build_r24_three_room_case(connector: R24NorthConnector | None = None) -> list[str]:
-    """Render the existing three-room macro test shifted down, then add R24."""
+    """Return the active scene source of truth for R24/sampling review.
+
+    Historical callers still use the ``three_room`` name, but the source now is
+    ``six_rooms_two_platforms.txt`` via ``latest_r24_style``.
+    """
     c = connector or R24NorthConnector()
     c.validate()
-    base = build_three_room_macro_test()
-    width = max(max(len(row) for row in base), c.stamp_x + PATHWAY_W)
-    height = max(c.room_y + len(base), c.stamp_y + len(c.stamp))
-    canvas = ModularCanvas(width, height)
-    for y, row in enumerate(base):
-        canvas.paste_stamp([row], 0, c.room_y + y, OPAQUE, source="three_room_base", layer="room")
-    _replace_north_wall(canvas, c)
-    _paste_reference_upper_fragment(canvas, c)
-    return canvas.render_lines()
+    return r24_new_style_with_room3_platform()
 
 
 def connector_regions(connector: R24NorthConnector, scene_name: str) -> list[Rect]:
     spec = connector.spec
     north_x, north_y, north_w, north_h = spec.north_wall_region
     open_x, open_y, open_w, open_h = spec.opening_window
+    upper_x, upper_y, upper_w, upper_h = connector.south_opening_spec.region_from_room(
+        connector.room_x, connector.room_y
+    )
     base_regions = [
-        Rect("REFERENCE_UPPER_NORTH_FRAGMENT", connector.upper_fragment_x, connector.stamp_y, 25, 3),
-        Rect("REFERENCE_TAIL_ABOVE_NORTH_EDGE", open_x, connector.stamp_y + 2, 5, 1),
+        Rect("REFERENCE_UPPER_NORTH_FRAGMENT", upper_x, upper_y, upper_w, upper_h),
+        Rect("REFERENCE_TAIL_ABOVE_NORTH_EDGE", open_x, connector.stamp_y + upper_h - 2, 6, 2),
         Rect("ROOM2_NORTH_WALL_WITH_OPENING", north_x, north_y, north_w, north_h),
         Rect(
             f"NORTHWALL_OPENING_CHUNKS_{connector.opening.start_chunk}_{connector.opening.end_chunk}",

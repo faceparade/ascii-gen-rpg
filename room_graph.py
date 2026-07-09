@@ -10,16 +10,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from curved_dungeon_grammar import horizontal_corridor, wide_platform
+from connector_specs import HorizontalConnectorSpec
 from modular_canvas import ModularCanvas, OPAQUE
+from platform_shell import PlatformShell
 from presets import build_shell
 from three_room_macro_test import (
     CORRIDOR_OFFSET_X,
     CORRIDOR_Y,
     ROOM_PITCH_X,
     ROOM_Y,
-    WIDE_PLATFORM_ROOM_OFFSET_X,
-    WIDE_PLATFORM_ROOM_OFFSET_Y,
+    PLATFORM_ROOM3_OFFSET_X,
+    PLATFORM_ROOM3_OFFSET_Y,
 )
 
 
@@ -40,18 +41,9 @@ class RoomNode:
 
 
 @dataclass(frozen=True)
-class HorizontalConnector:
-    from_room: str
-    to_room: str
-    offset_x: int
-    y: int
-    width_units: int
-
-
-@dataclass(frozen=True)
 class RoomGraph:
     rooms: tuple[RoomNode, ...]
-    horizontal_connectors: tuple[HorizontalConnector, ...] = ()
+    horizontal_connectors: tuple[HorizontalConnectorSpec, ...] = ()
 
 
 def build_three_room_graph() -> RoomGraph:
@@ -59,18 +51,18 @@ def build_three_room_graph() -> RoomGraph:
     return RoomGraph(
         rooms=(
             RoomNode("room1", "left_8", 0, ROOM_Y),
+            RoomNode("room2", "middle_8", ROOM_PITCH_X, ROOM_Y),
             RoomNode(
-                "room2",
-                "middle_8",
-                ROOM_PITCH_X,
+                "room3",
+                "terminal_8",
+                ROOM_PITCH_X * 2,
                 ROOM_Y,
-                PlatformPlacement(4, WIDE_PLATFORM_ROOM_OFFSET_X, WIDE_PLATFORM_ROOM_OFFSET_Y),
+                PlatformPlacement(4, PLATFORM_ROOM3_OFFSET_X, PLATFORM_ROOM3_OFFSET_Y),
             ),
-            RoomNode("room3", "terminal_8", ROOM_PITCH_X * 2, ROOM_Y),
         ),
         horizontal_connectors=(
-            HorizontalConnector("room1", "room2", CORRIDOR_OFFSET_X, CORRIDOR_Y, 6),
-            HorizontalConnector("room2", "room3", CORRIDOR_OFFSET_X, CORRIDOR_Y, 6),
+            HorizontalConnectorSpec("room1", "room2", CORRIDOR_OFFSET_X, CORRIDOR_Y, 6),
+            HorizontalConnectorSpec("room2", "room3", CORRIDOR_OFFSET_X, CORRIDOR_Y, 6),
         ),
     )
 
@@ -94,16 +86,15 @@ def _canvas_size(graph: RoomGraph) -> tuple[int, int]:
         width = max(width, _stamp_extent(shell, room.x, room.y)[0])
         height = max(height, _stamp_extent(shell, room.x, room.y)[1])
         if room.platform is not None:
-            platform = wide_platform(room.platform.width_units)
+            platform = PlatformShell(room.platform.width_units).render()
             px = room.x + room.platform.offset_x
             py = room.y + room.platform.offset_y
             width = max(width, _stamp_extent(platform, px, py)[0])
             height = max(height, _stamp_extent(platform, px, py)[1])
     for connector in graph.horizontal_connectors:
         source = rooms[connector.from_room]
-        corridor = horizontal_corridor(connector.width_units)
-        cx = source.x + connector.offset_x
-        cy = connector.y
+        corridor = connector.render()
+        cx, cy = connector.origin_from_room_x(source.x)
         width = max(width, _stamp_extent(corridor, cx, cy)[0])
         height = max(height, _stamp_extent(corridor, cx, cy)[1])
     return (width, height)
@@ -129,10 +120,11 @@ def render_room_graph(graph: RoomGraph) -> list[str]:
 
     for connector in graph.horizontal_connectors:
         source = rooms[connector.from_room]
+        cx, cy = connector.origin_from_room_x(source.x)
         canvas.paste_stamp(
-            horizontal_corridor(connector.width_units),
-            source.x + connector.offset_x,
-            connector.y,
+            connector.render(),
+            cx,
+            cy,
             OPAQUE,
             source=f"{connector.from_room}->{connector.to_room}",
             layer="connector",
@@ -142,7 +134,7 @@ def render_room_graph(graph: RoomGraph) -> list[str]:
         if room.platform is None:
             continue
         canvas.paste_stamp(
-            wide_platform(room.platform.width_units),
+            PlatformShell(room.platform.width_units).render(),
             room.x + room.platform.offset_x,
             room.y + room.platform.offset_y,
             OPAQUE,
