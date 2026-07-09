@@ -30,6 +30,23 @@ class SixRoomLayoutSpec:
         return sum(self.segment_widths)
 
 
+@dataclass(frozen=True)
+class SceneRegionSpec:
+    """Named contiguous region in the locked six-room scene."""
+
+    name: str
+    start_line: int
+    rows: tuple[str, ...]
+
+    @property
+    def end_line(self) -> int:
+        return self.start_line + len(self.rows) - 1
+
+    @property
+    def widths(self) -> tuple[int, ...]:
+        return tuple(len(row) for row in self.rows)
+
+
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
@@ -113,13 +130,42 @@ def assemble_upper_band_rows() -> list[str]:
     return assemble_striped_region(strips)
 
 
+def top_region() -> SceneRegionSpec:
+    return SceneRegionSpec("top", 1, SCENE_TOP_ROWS)
+
+
+def upper_band_region() -> SceneRegionSpec:
+    return SceneRegionSpec("upper_band", 5, tuple(assemble_upper_band_rows()))
+
+
+def mid_connector_region() -> SceneRegionSpec:
+    return SceneRegionSpec("mid_connector", 14, SCENE_MID_CONNECTOR_ROWS)
+
+
+def middle_seam_region() -> SceneRegionSpec:
+    return SceneRegionSpec("middle_seam", 18, tuple(assemble_middle_seam_rows()))
+
+
+def lower_connector_region() -> SceneRegionSpec:
+    return SceneRegionSpec("lower_connector", 20, SCENE_LOWER_CONNECTOR_ROWS)
+
+
+def lower_band_region() -> SceneRegionSpec:
+    return SceneRegionSpec("lower_band", 23, tuple(assemble_lower_band_rows()))
+
+
+def scene_regions() -> list[SceneRegionSpec]:
+    """Return the locked six-room scene as named contiguous regions."""
+    return [
+        top_region(),
+        upper_band_region(),
+        mid_connector_region(),
+        middle_seam_region(),
+        lower_connector_region(),
+        lower_band_region(),
+    ]
+
+
 def assemble_six_room_scene_rows() -> list[str]:
     """Rebuild the locked six-room source from named scene regions."""
-    return [
-        *SCENE_TOP_ROWS,
-        *assemble_upper_band_rows(),
-        *SCENE_MID_CONNECTOR_ROWS,
-        *assemble_middle_seam_rows(),
-        *SCENE_LOWER_CONNECTOR_ROWS,
-        *assemble_lower_band_rows(),
-    ]
+    return [row for region in scene_regions() for row in region.rows]

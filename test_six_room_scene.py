@@ -50,6 +50,22 @@ def test_validate_region_widths_rejects_width_drift() -> None:
     print("PASS six-room strip width validation rejects drift")
 
 
+def test_scene_regions_cover_locked_line_spans() -> None:
+    from six_room_scene import scene_regions
+
+    regions = scene_regions()
+    assert [(region.name, region.start_line, region.end_line) for region in regions] == [
+        ("top", 1, 4),
+        ("upper_band", 5, 13),
+        ("mid_connector", 14, 17),
+        ("middle_seam", 18, 19),
+        ("lower_connector", 20, 22),
+        ("lower_band", 23, 29),
+    ]
+    assert [row for region in regions for row in region.rows] == load_scene_lines()
+    print("PASS six-room scene regions cover locked spans")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -77,6 +93,7 @@ def main() -> None:
     test_layout_spec_documents_locked_segment_widths()
     test_striped_region_composer_rejects_mismatched_heights()
     test_validate_region_widths_rejects_width_drift()
+    test_scene_regions_cover_locked_line_spans()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
