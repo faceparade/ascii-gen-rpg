@@ -60,6 +60,17 @@ class SceneRoomPlacement:
     height: int = 9
 
 
+@dataclass(frozen=True)
+class SceneCellInfo:
+    """Debug metadata for one zero-based scene coordinate."""
+
+    x: int
+    y: int
+    char: str | None
+    regions: tuple[str, ...]
+    rooms: tuple[str, ...]
+
+
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
@@ -227,6 +238,43 @@ def scene_room_rects() -> list[Rect]:
 def scene_review_rects() -> list[Rect]:
     """Return both fragment-region and room-placement rectangles."""
     return scene_region_rects() + scene_room_rects()
+
+
+def scene_bounds() -> tuple[int, int]:
+    """Return ``(width, height)`` for the ragged six-room scene canvas."""
+    rows = assemble_six_room_scene_rows()
+    return (max(map(len, rows)), len(rows))
+
+
+def scene_regions_at(x: int, y: int) -> tuple[str, ...]:
+    """Return named source regions covering a zero-based scene coordinate."""
+    return tuple(
+        rect.name
+        for rect in scene_region_rects()
+        if rect.x <= x < rect.x + rect.w and rect.y <= y < rect.y + rect.h
+    )
+
+
+def scene_rooms_at(x: int, y: int) -> tuple[str, ...]:
+    """Return room ids covering a zero-based scene coordinate."""
+    return tuple(
+        rect.name
+        for rect in scene_room_rects()
+        if rect.x <= x < rect.x + rect.w and rect.y <= y < rect.y + rect.h
+    )
+
+
+def scene_cell_info(x: int, y: int) -> SceneCellInfo:
+    """Return glyph + region/room metadata for a zero-based scene coordinate."""
+    rows = assemble_six_room_scene_rows()
+    char = rows[y][x] if 0 <= y < len(rows) and 0 <= x < len(rows[y]) else None
+    return SceneCellInfo(
+        x=x,
+        y=y,
+        char=char,
+        regions=scene_regions_at(x, y),
+        rooms=scene_rooms_at(x, y),
+    )
 
 
 def write_six_room_scene_artifacts(output_dir: Path) -> list[Path]:

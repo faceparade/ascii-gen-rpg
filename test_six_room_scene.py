@@ -8,8 +8,12 @@ from six_room_scene import (
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
+    scene_bounds,
+    scene_cell_info,
     scene_region_rects,
+    scene_regions_at,
     scene_room_rects,
+    scene_rooms_at,
 )
 
 
@@ -105,6 +109,22 @@ def test_scene_rects_expose_review_coordinates() -> None:
     print("PASS six-room review rect coordinates")
 
 
+def test_scene_coordinate_lookup_reports_region_room_and_glyph() -> None:
+    assert scene_bounds() == (149, 29)
+    assert scene_regions_at(0, 4) == ("upper_band",)
+    assert scene_rooms_at(0, 4) == ("upper_left",)
+    assert scene_rooms_at(40, 4) == ()
+    assert scene_regions_at(40, 4) == ("upper_band",)
+    assert scene_regions_at(57, 17) == ("middle_seam",)
+    assert scene_rooms_at(57, 17) == ("lower_middle",)
+    upper_left_cell = scene_cell_info(0, 4)
+    assert upper_left_cell.char == "|"
+    assert upper_left_cell.regions == ("upper_band",)
+    assert upper_left_cell.rooms == ("upper_left",)
+    assert scene_cell_info(148, 0).char is None
+    print("PASS six-room coordinate lookup metadata")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -161,6 +181,7 @@ def main() -> None:
     test_scene_regions_cover_locked_line_spans()
     test_six_room_placements_match_locked_strip_boundaries()
     test_scene_rects_expose_review_coordinates()
+    test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_write_six_room_scene_artifacts()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
