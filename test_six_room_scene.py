@@ -8,8 +8,10 @@ from six_room_scene import (
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
+    build_six_room_scene_graph,
     format_scene_cell_info,
     main as six_room_scene_main,
+    render_six_room_scene_graph,
     scene_bounds,
     scene_cell_info,
     scene_region_rects,
@@ -88,6 +90,28 @@ def test_six_room_placements_match_locked_strip_boundaries() -> None:
     ]
     print("PASS six-room placements match locked strip boundaries")
 
+
+def test_six_room_scene_graph_lives_in_scene_module() -> None:
+    graph = build_six_room_scene_graph()
+    assert [(room.room_id, room.x, room.y, room.width, room.height) for room in graph.rooms] == [
+        ("upper_left", 0, 4, 34, 9),
+        ("upper_middle", 57, 4, 34, 9),
+        ("upper_right", 114, 4, 34, 9),
+        ("lower_left", 0, 17, 34, 12),
+        ("lower_middle", 57, 17, 34, 12),
+        ("lower_right", 114, 17, 34, 12),
+    ]
+    assert [(c.from_room, c.to_room, c.kind, c.region_name) for c in graph.connections] == [
+        ("upper_left", "upper_middle", "horizontal", "upper_band"),
+        ("upper_middle", "upper_right", "horizontal", "upper_band"),
+        ("upper_left", "lower_left", "vertical", "mid_connector"),
+        ("upper_middle", "lower_middle", "vertical", "mid_connector"),
+        ("upper_right", "lower_right", "vertical", "mid_connector"),
+        ("lower_left", "lower_middle", "horizontal", "lower_band"),
+        ("lower_middle", "lower_right", "horizontal", "lower_band"),
+    ]
+    assert render_six_room_scene_graph(graph) == load_scene_lines()
+    print("PASS six-room scene graph lives in scene module")
 
 def test_scene_rects_expose_review_coordinates() -> None:
     region_rects = scene_region_rects()
@@ -208,6 +232,7 @@ def main() -> None:
     test_validate_region_widths_rejects_width_drift()
     test_scene_regions_cover_locked_line_spans()
     test_six_room_placements_match_locked_strip_boundaries()
+    test_six_room_scene_graph_lives_in_scene_module()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_six_room_scene_cli_generates_artifacts_and_cell_report()

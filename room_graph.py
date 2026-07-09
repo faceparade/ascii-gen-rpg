@@ -14,7 +14,7 @@ from connector_specs import HorizontalConnectorSpec
 from modular_canvas import ModularCanvas, OPAQUE
 from platform_shell import PlatformShell
 from presets import build_shell
-from six_room_scene import SceneRegionSpec, SceneRoomPlacement, scene_regions, six_room_placements
+from six_room_scene import build_six_room_scene_graph, render_six_room_scene_graph
 from three_room_macro_test import (
     CORRIDOR_OFFSET_X,
     CORRIDOR_Y,
@@ -45,47 +45,6 @@ class RoomNode:
 class RoomGraph:
     rooms: tuple[RoomNode, ...]
     horizontal_connectors: tuple[HorizontalConnectorSpec, ...] = ()
-
-
-@dataclass(frozen=True)
-class SceneConnection:
-    """Named adjacency edge in the locked six-room scene."""
-
-    from_room: str
-    to_room: str
-    kind: str
-    region_name: str
-
-
-@dataclass(frozen=True)
-class SixRoomSceneGraph:
-    """Data model for the locked six-room scene assembly."""
-
-    rooms: tuple[SceneRoomPlacement, ...]
-    connections: tuple[SceneConnection, ...]
-    regions: tuple[SceneRegionSpec, ...]
-
-
-def build_six_room_scene_graph() -> SixRoomSceneGraph:
-    """Return the locked six-room scene as rooms, visible adjacencies, and source regions."""
-    return SixRoomSceneGraph(
-        rooms=six_room_placements(),
-        connections=(
-            SceneConnection("upper_left", "upper_middle", "horizontal", "upper_band"),
-            SceneConnection("upper_middle", "upper_right", "horizontal", "upper_band"),
-            SceneConnection("upper_left", "lower_left", "vertical", "mid_connector"),
-            SceneConnection("upper_middle", "lower_middle", "vertical", "mid_connector"),
-            SceneConnection("upper_right", "lower_right", "vertical", "mid_connector"),
-            SceneConnection("lower_left", "lower_middle", "horizontal", "lower_band"),
-            SceneConnection("lower_middle", "lower_right", "horizontal", "lower_band"),
-        ),
-        regions=tuple(scene_regions()),
-    )
-
-
-def render_six_room_scene_graph(graph: SixRoomSceneGraph) -> list[str]:
-    """Render a six-room scene graph from its ordered named source regions."""
-    return [row for region in graph.regions for row in region.rows]
 
 
 def build_three_room_graph() -> RoomGraph:

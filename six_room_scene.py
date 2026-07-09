@@ -72,6 +72,25 @@ class SceneCellInfo:
     rooms: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class SceneConnection:
+    """Named adjacency edge in the locked six-room scene."""
+
+    from_room: str
+    to_room: str
+    kind: str
+    region_name: str
+
+
+@dataclass(frozen=True)
+class SixRoomSceneGraph:
+    """Data model for the locked six-room scene assembly."""
+
+    rooms: tuple[SceneRoomPlacement, ...]
+    connections: tuple[SceneConnection, ...]
+    regions: tuple[SceneRegionSpec, ...]
+
+
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
@@ -209,9 +228,31 @@ def scene_regions() -> list[SceneRegionSpec]:
     ]
 
 
+def build_six_room_scene_graph() -> SixRoomSceneGraph:
+    """Return the locked six-room scene as rooms, visible adjacencies, and source regions."""
+    return SixRoomSceneGraph(
+        rooms=six_room_placements(),
+        connections=(
+            SceneConnection("upper_left", "upper_middle", "horizontal", "upper_band"),
+            SceneConnection("upper_middle", "upper_right", "horizontal", "upper_band"),
+            SceneConnection("upper_left", "lower_left", "vertical", "mid_connector"),
+            SceneConnection("upper_middle", "lower_middle", "vertical", "mid_connector"),
+            SceneConnection("upper_right", "lower_right", "vertical", "mid_connector"),
+            SceneConnection("lower_left", "lower_middle", "horizontal", "lower_band"),
+            SceneConnection("lower_middle", "lower_right", "horizontal", "lower_band"),
+        ),
+        regions=tuple(scene_regions()),
+    )
+
+
+def render_six_room_scene_graph(graph: SixRoomSceneGraph) -> list[str]:
+    """Render a six-room scene graph from its ordered named source regions."""
+    return [row for region in graph.regions for row in region.rows]
+
+
 def assemble_six_room_scene_rows() -> list[str]:
-    """Rebuild the locked six-room source from named scene regions."""
-    return [row for region in scene_regions() for row in region.rows]
+    """Rebuild the locked six-room source through the six-room scene graph."""
+    return render_six_room_scene_graph(build_six_room_scene_graph())
 
 
 def scene_region_rects() -> list[Rect]:
@@ -278,10 +319,11 @@ def scene_cell_info(x: int, y: int) -> SceneCellInfo:
     )
 
 
-def write_six_room_scene_artifacts(output_dir: Path) -> list[Path]:
+def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
     """Write generated scene text, coordinate annotations, and HTML review."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    rows = assemble_six_room_scene_rows()
+    graph = graph or build_six_room_scene_graph()
+    rows = render_six_room_scene_graph(graph)
     rects = scene_review_rects()
 
     scene_path = output_dir / "six_room_scene_generated.txt"
