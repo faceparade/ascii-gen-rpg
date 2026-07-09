@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from connector_specs import HorizontalConnectorSpec
 from curved_dungeon_grammar import horizontal_corridor
-from room_graph import build_three_room_graph, render_room_graph
+from room_graph import build_six_room_scene_graph, build_three_room_graph, render_room_graph, render_six_room_scene_graph
+from six_room_scene import assemble_six_room_scene_rows
 from three_room_macro_test import build_three_room_macro_test
 
 
@@ -39,10 +40,52 @@ def test_three_room_graph_render_matches_locked_macro() -> None:
     assert_equal(generated, locked, "graph-generated three-room scene must match locked macro byte-for-byte")
 
 
+def test_six_room_scene_graph_declares_rooms_connections_and_regions() -> None:
+    graph = build_six_room_scene_graph()
+    assert_equal(
+        [(room.room_id, room.x, room.y, room.width, room.height) for room in graph.rooms],
+        [
+            ("upper_left", 0, 4, 34, 9),
+            ("upper_middle", 57, 4, 34, 9),
+            ("upper_right", 114, 4, 34, 9),
+            ("lower_left", 0, 17, 34, 12),
+            ("lower_middle", 57, 17, 34, 12),
+            ("lower_right", 114, 17, 34, 12),
+        ],
+        "six-room scene graph should expose locked room placements as data",
+    )
+    assert_equal(
+        [(c.from_room, c.to_room, c.kind, c.region_name) for c in graph.connections],
+        [
+            ("upper_left", "upper_middle", "horizontal", "upper_band"),
+            ("upper_middle", "upper_right", "horizontal", "upper_band"),
+            ("upper_left", "lower_left", "vertical", "mid_connector"),
+            ("upper_middle", "lower_middle", "vertical", "mid_connector"),
+            ("upper_right", "lower_right", "vertical", "mid_connector"),
+            ("lower_left", "lower_middle", "horizontal", "lower_band"),
+            ("lower_middle", "lower_right", "horizontal", "lower_band"),
+        ],
+        "six-room scene graph should expose visible room adjacency as data",
+    )
+    assert_equal(
+        [(region.name, region.start_line, region.end_line) for region in graph.regions],
+        [("top", 1, 4), ("upper_band", 5, 13), ("mid_connector", 14, 17), ("middle_seam", 18, 19), ("lower_connector", 20, 22), ("lower_band", 23, 29)],
+        "six-room scene graph should preserve named source regions as data",
+    )
+
+
+def test_six_room_scene_graph_render_matches_locked_scene() -> None:
+    generated = render_six_room_scene_graph(build_six_room_scene_graph())
+    locked = assemble_six_room_scene_rows()
+    assert_equal(generated, locked, "graph-generated six-room scene must match locked scene byte-for-byte")
+
+
 def main() -> None:
     test_three_room_graph_declares_room_and_connector_specs()
     test_horizontal_connector_spec_resolves_origin_and_locked_stamp()
     test_three_room_graph_render_matches_locked_macro()
+    test_six_room_scene_graph_declares_rooms_connections_and_regions()
+    test_six_room_scene_graph_render_matches_locked_scene()
     print("Room graph tests passed")
 
 
