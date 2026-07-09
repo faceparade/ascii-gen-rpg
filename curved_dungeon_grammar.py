@@ -285,8 +285,13 @@ def _rect_names_at(regions: list[Rect], x: int, y: int) -> list[str]:
     ]
 
 
-def html_review(lines: list[str], regions: list[Rect]) -> str:
+def html_review(
+    lines: list[str],
+    regions: list[Rect],
+    cell_attrs: dict[tuple[int, int], dict[str, str]] | None = None,
+) -> str:
     width = max(map(len, lines))
+    cell_attrs = cell_attrs or {}
     body = []
     for y, line in enumerate(lines):
         cells = []
@@ -295,11 +300,15 @@ def html_review(lines: list[str], regions: list[Rect]) -> str:
             ink = " ink" if ch != " " else ""
             rect_names = _rect_names_at(regions, x, y)
             rect_attr = escape(",".join(rect_names), quote=True)
+            extra_attrs = "".join(
+                f'data-{escape(name, quote=True)}="{escape(value, quote=True)}" '
+                for name, value in cell_attrs.get((x, y), {}).items()
+            )
             title = escape(f"L{y:02d} C{x:03d} {'/'.join(rect_names) if rect_names else 'unassigned'}", quote=True)
             cells.append(
                 f'<span class="ch{ink}" data-x="{x}" data-y="{y}" '
                 f'data-ch="{escape(ch, quote=True)}" data-regions="{rect_attr}" '
-                f'title="{title}">{content}</span>'
+                f'{extra_attrs}title="{title}">{content}</span>'
             )
         body.append(f'<div class="line"><span class="lineno">L{y:02d}</span>{"".join(cells)}</div>')
     region_html = "\n".join(
@@ -330,7 +339,8 @@ document.querySelectorAll('.ch').forEach(ch => ch.addEventListener('click', () =
   const raw = ch.dataset.ch;
   const shown = raw === ' ' ? 'SPACE' : raw;
   const regions = ch.dataset.regions || 'none';
-  const text = `L${{y}} C${{x}} char=${{shown}} regions=${{regions}} should be ...`;
+  const connections = ch.dataset.connections || 'none';
+  const text = `L${{y}} C${{x}} char=${{shown}} regions=${{regions}} connections=${{connections}} should be ...`;
   navigator.clipboard?.writeText(text);
   document.getElementById('readout').textContent = text;
 }}));

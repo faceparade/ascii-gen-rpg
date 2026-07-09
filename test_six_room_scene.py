@@ -365,6 +365,11 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "L04-L12" in annotated
         assert "data-x=\"0\" data-y=\"0\"" in html
         assert 'data-regions="upper_band,upper_left"' in html
+        assert (
+            'data-connections="upper_left(horizontal:upper_band),'
+            'upper_right(horizontal:upper_band),lower_middle(vertical:mid_connector)"'
+        ) in html
+        assert "connections=${connections}" in html
         assert "regions=${regions}" in html
     print("PASS six-room scene artifact writer")
 

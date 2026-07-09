@@ -381,6 +381,25 @@ def scene_cell_info(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> S
     )
 
 
+def format_scene_room_connections(graph: SixRoomSceneGraph, room_id: str) -> str:
+    """Return oriented room adjacency metadata for compact reports and HTML cells."""
+    return ",".join(
+        f"{connection.to_room}({connection.kind}:{connection.region_name})"
+        for connection in scene_connections_for_room(graph, room_id)
+    ) or "none"
+
+
+def scene_room_connection_cell_attrs(graph: SixRoomSceneGraph) -> dict[tuple[int, int], dict[str, str]]:
+    """Return per-cell HTML attributes for room adjacency metadata."""
+    attrs: dict[tuple[int, int], dict[str, str]] = {}
+    for room in graph.rooms:
+        connections = format_scene_room_connections(graph, room.room_id)
+        for y in range(room.y, room.y + room.height):
+            for x in range(room.x, room.x + room.width):
+                attrs[(x, y)] = {"connections": connections}
+    return attrs
+
+
 def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
     """Write generated scene text, coordinate annotations, and HTML review."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -394,7 +413,10 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
 
     write_text(scene_path, rows)
     annotated_path.write_text(annotate(rows, rects), encoding="utf-8")
-    html_path.write_text(html_review(rows, rects), encoding="utf-8")
+    html_path.write_text(
+        html_review(rows, rects, scene_room_connection_cell_attrs(graph)),
+        encoding="utf-8",
+    )
 
     return [scene_path, annotated_path, html_path]
 
@@ -443,12 +465,8 @@ def format_scene_room_info(graph: SixRoomSceneGraph, room_id: str) -> str:
     room = rooms_by_id.get(room_id)
     if room is None:
         return f"room {room_id} not found"
-    connections = scene_connections_for_room(graph, room_id)
     regions = scene_regions_for_room(graph, room_id)
-    connection_text = ",".join(
-        f"{connection.to_room}({connection.kind}:{connection.region_name})"
-        for connection in connections
-    ) or "none"
+    connection_text = format_scene_room_connections(graph, room_id)
     region_text = ",".join(regions) if regions else "none"
     return (
         f"room {room.room_id} bounds=x{room.x}..{room.x + room.width - 1} "
