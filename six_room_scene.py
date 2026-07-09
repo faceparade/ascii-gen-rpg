@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import json
+from html import escape
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -401,10 +402,32 @@ def scene_room_connection_cell_attrs(graph: SixRoomSceneGraph) -> dict[tuple[int
     return attrs
 
 
+def _room_center(room: SceneRoomPlacement) -> dict[str, int]:
+    """Return integer center coordinate for a room rectangle."""
+    return {"x": room.x + room.width // 2 - 1, "y": room.y + room.height // 2}
+
+
 def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
     """Return machine-readable graph metadata for review/editor tooling."""
     width, height = scene_bounds(graph)
+    rooms_by_id = {room.room_id: room for room in graph.rooms}
+
+    def connection_center(room_id: str) -> dict[str, int] | None:
+        room = rooms_by_id.get(room_id)
+        return _room_center(room) if room is not None else None
+
+    def connection_midpoint(connection: SceneConnection) -> dict[str, int] | None:
+        from_center = connection_center(connection.from_room)
+        to_center = connection_center(connection.to_room)
+        if from_center is None or to_center is None:
+            return None
+        return {
+            "x": (from_center["x"] + to_center["x"]) // 2,
+            "y": (from_center["y"] + to_center["y"]) // 2,
+        }
+
     return {
+        "schema_version": 1,
         "bounds": {"width": width, "height": height},
         "rooms": [
             {
@@ -413,6 +436,7 @@ def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
                 "y": room.y,
                 "width": room.width,
                 "height": room.height,
+                "center": _room_center(room),
                 "regions": list(scene_regions_for_room(graph, room.room_id)),
                 "connections": [
                     {
@@ -429,8 +453,12 @@ def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
             {
                 "from_room": connection.from_room,
                 "to_room": connection.to_room,
+                "rooms": [connection.from_room, connection.to_room],
                 "kind": connection.kind,
                 "region_name": connection.region_name,
+                "from_center": connection_center(connection.from_room),
+                "to_center": connection_center(connection.to_room),
+                "midpoint": connection_midpoint(connection),
             }
             for connection in graph.connections
         ],
@@ -444,6 +472,24 @@ def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
             for region in graph.regions
         ],
     }
+
+
+def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoomSceneGraph) -> str:
+    """Return HTML review with embedded graph data and a connection legend."""
+    base_html = html_review(rows, rects, scene_room_connection_cell_attrs(graph))
+    graph_json = json.dumps(six_room_scene_graph_data(graph), indent=2).replace("</", "<\\/")
+    connection_items = "\n".join(
+        "<li>"
+        f"<code>{escape(connection.from_room)}</code> → <code>{escape(connection.to_room)}</code> "
+        f"<span>{escape(connection.kind)} via {escape(connection.region_name)}</span>"
+        "</li>"
+        for connection in graph.connections
+    )
+    graph_block = (
+        f'<script type="application/json" id="scene-graph-data">\n{graph_json}\n</script>\n'
+        f"<h2>Connections</h2><ul>{connection_items}</ul>\n"
+    )
+    return base_html.replace("<script>\n", graph_block + "<script>\n", 1)
 
 
 def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
@@ -461,7 +507,7 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
     write_text(scene_path, rows)
     annotated_path.write_text(annotate(rows, rects), encoding="utf-8")
     html_path.write_text(
-        html_review(rows, rects, scene_room_connection_cell_attrs(graph)),
+        six_room_scene_html_review(rows, rects, graph),
         encoding="utf-8",
     )
     graph_json_path.write_text(
@@ -559,9 +605,18 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also print graph validation status and any validation errors.",
     )
+    parser.add_argument(
+        "--print-graph-json",
+        action="store_true",
+        help="Print only the machine-readable graph JSON to stdout.",
+    )
     args = parser.parse_args(argv)
 
     graph = build_six_room_scene_graph()
+    if args.print_graph_json:
+        print(json.dumps(six_room_scene_graph_data(graph), indent=2))
+        return 0
+
     written = write_six_room_scene_artifacts(args.output_dir, graph)
     width, height = scene_bounds(graph)
     print(f"six-room scene bounds: width={width} height={height}")

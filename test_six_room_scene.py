@@ -25,6 +25,7 @@ from six_room_scene import (
     scene_regions_for_room,
     scene_room_rects,
     scene_rooms_at,
+    six_room_scene_graph_data,
     validate_six_room_scene_graph,
 )
 
@@ -152,6 +153,18 @@ def test_validate_six_room_scene_graph_reports_broken_references() -> None:
         "connection upper_left->missing_room references unknown region missing_region",
     )
     print("PASS six-room graph validation reports broken references")
+
+
+def test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors() -> None:
+    graph_data = six_room_scene_graph_data(build_six_room_scene_graph())
+    assert graph_data["schema_version"] == 1
+    upper_left_to_middle = graph_data["connections"][0]
+    assert upper_left_to_middle["from_center"] == {"x": 16, "y": 8}
+    assert upper_left_to_middle["to_center"] == {"x": 73, "y": 8}
+    assert upper_left_to_middle["midpoint"] == {"x": 44, "y": 8}
+    assert upper_left_to_middle["rooms"] == ["upper_left", "upper_middle"]
+    assert graph_data["rooms"][0]["center"] == {"x": 16, "y": 8}
+    print("PASS six-room graph JSON exposes connection anchors")
 
 
 def test_format_scene_room_info_reports_bounds_and_connections() -> None:
@@ -341,6 +354,25 @@ def test_six_room_scene_cli_validates_graph() -> None:
     print("PASS six-room scene CLI graph validation")
 
 
+def test_six_room_scene_cli_prints_graph_json() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from tempfile import TemporaryDirectory
+    import json
+
+    with TemporaryDirectory() as temp:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--output-dir", temp, "--print-graph-json"])
+        graph_data = json.loads(stdout.getvalue())
+        assert exit_code == 0
+        assert graph_data["schema_version"] == 1
+        assert graph_data["bounds"] == {"width": 149, "height": 29}
+        assert graph_data["rooms"][1]["room_id"] == "upper_middle"
+        assert graph_data["connections"][0]["midpoint"] == {"x": 44, "y": 8}
+    print("PASS six-room scene CLI graph JSON output")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -372,29 +404,32 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         ) in html
         assert "connections=${connections}" in html
         assert "regions=${regions}" in html
+        assert '<script type="application/json" id="scene-graph-data">' in html
+        assert '<h2>Connections</h2>' in html
+        assert '<code>upper_left</code> → <code>upper_middle</code>' in html
         import json
 
         graph_data = json.loads(written[3].read_text(encoding="utf-8"))
         assert graph_data["bounds"] == {"width": 149, "height": 29}
-        assert graph_data["rooms"][1] == {
-            "room_id": "upper_middle",
-            "x": 57,
-            "y": 4,
-            "width": 34,
-            "height": 9,
-            "regions": ["upper_band"],
-            "connections": [
-                {"to_room": "upper_left", "kind": "horizontal", "region_name": "upper_band"},
-                {"to_room": "upper_right", "kind": "horizontal", "region_name": "upper_band"},
-                {"to_room": "lower_middle", "kind": "vertical", "region_name": "mid_connector"},
-            ],
-        }
-        assert graph_data["connections"][0] == {
+        upper_middle_room = graph_data["rooms"][1]
+        assert upper_middle_room["room_id"] == "upper_middle"
+        assert upper_middle_room["x"] == 57
+        assert upper_middle_room["y"] == 4
+        assert upper_middle_room["width"] == 34
+        assert upper_middle_room["height"] == 9
+        assert upper_middle_room["center"] == {"x": 73, "y": 8}
+        assert upper_middle_room["regions"] == ["upper_band"]
+        assert upper_middle_room["connections"] == [
+            {"to_room": "upper_left", "kind": "horizontal", "region_name": "upper_band"},
+            {"to_room": "upper_right", "kind": "horizontal", "region_name": "upper_band"},
+            {"to_room": "lower_middle", "kind": "vertical", "region_name": "mid_connector"},
+        ]
+        assert graph_data["connections"][0] | {
             "from_room": "upper_left",
             "to_room": "upper_middle",
             "kind": "horizontal",
             "region_name": "upper_band",
-        }
+        } == graph_data["connections"][0]
     print("PASS six-room scene artifact writer")
 
 
@@ -408,6 +443,7 @@ def test_write_six_room_scene_artifacts_uses_supplied_graph_rects() -> None:
     graph = replace(
         build_six_room_scene_graph(),
         rooms=(SceneRoomPlacement("probe_room", 10, 4, 3, 2),),
+        connections=(),
     )
     with TemporaryDirectory() as temp:
         _, annotated_path, html_path, graph_json_path = write_six_room_scene_artifacts(Path(temp), graph)
@@ -454,6 +490,7 @@ def main() -> None:
     test_six_room_scene_graph_lives_in_scene_module()
     test_six_room_graph_connection_lookup_lists_room_adjacencies()
     test_validate_six_room_scene_graph_reports_broken_references()
+    test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors()
     test_format_scene_room_info_reports_bounds_and_connections()
     test_format_scene_room_summary_reports_compact_bounds()
     test_format_scene_connection_summary_reports_edges()
@@ -464,6 +501,7 @@ def main() -> None:
     test_six_room_scene_cli_lists_rooms()
     test_six_room_scene_cli_lists_connections()
     test_six_room_scene_cli_validates_graph()
+    test_six_room_scene_cli_prints_graph_json()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()
