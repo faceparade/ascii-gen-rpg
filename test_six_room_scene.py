@@ -8,6 +8,8 @@ from six_room_scene import (
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
+    scene_region_rects,
+    scene_room_rects,
 )
 
 
@@ -81,6 +83,54 @@ def test_six_room_placements_match_locked_strip_boundaries() -> None:
     print("PASS six-room placements match locked strip boundaries")
 
 
+def test_scene_rects_expose_review_coordinates() -> None:
+    region_rects = scene_region_rects()
+    room_rects = scene_room_rects()
+    assert [(rect.name, rect.x, rect.y, rect.w, rect.h) for rect in region_rects] == [
+        ("top", 0, 0, 148, 4),
+        ("upper_band", 0, 4, 148, 9),
+        ("mid_connector", 0, 13, 149, 4),
+        ("middle_seam", 0, 17, 149, 2),
+        ("lower_connector", 0, 19, 148, 3),
+        ("lower_band", 0, 22, 148, 7),
+    ]
+    assert [(rect.name, rect.x, rect.y, rect.w, rect.h) for rect in room_rects] == [
+        ("upper_left", 0, 4, 34, 9),
+        ("upper_middle", 57, 4, 34, 9),
+        ("upper_right", 114, 4, 34, 9),
+        ("lower_left", 0, 17, 34, 12),
+        ("lower_middle", 57, 17, 34, 12),
+        ("lower_right", 114, 17, 34, 12),
+    ]
+    print("PASS six-room review rect coordinates")
+
+
+def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    from six_room_scene import assemble_six_room_scene_rows, write_six_room_scene_artifacts
+
+    with TemporaryDirectory() as temp:
+        written = write_six_room_scene_artifacts(Path(temp))
+        names = [path.name for path in written]
+        assert names == [
+            "six_room_scene_generated.txt",
+            "six_room_scene_generated_annotated.txt",
+            "six_room_scene_generated.html",
+        ]
+        for path in written:
+            assert path.exists(), path
+        assert written[0].read_text(encoding="utf-8").splitlines() == assemble_six_room_scene_rows()
+        annotated = written[1].read_text(encoding="utf-8")
+        html = written[2].read_text(encoding="utf-8")
+        assert "upper_left" in annotated
+        assert "upper_left" in html
+        assert "L04-L12" in annotated
+        assert "data-x=\"0\" data-y=\"0\"" in html
+    print("PASS six-room scene artifact writer")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -110,6 +160,8 @@ def main() -> None:
     test_validate_region_widths_rejects_width_drift()
     test_scene_regions_cover_locked_line_spans()
     test_six_room_placements_match_locked_strip_boundaries()
+    test_scene_rects_expose_review_coordinates()
+    test_write_six_room_scene_artifacts()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()

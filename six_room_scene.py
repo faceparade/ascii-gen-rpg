@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from connector_specs import SceneFragmentSpec
+from curved_dungeon_grammar import Rect, annotate, html_review, write_text
 
 
 @dataclass(frozen=True)
@@ -198,3 +200,47 @@ def scene_regions() -> list[SceneRegionSpec]:
 def assemble_six_room_scene_rows() -> list[str]:
     """Rebuild the locked six-room source from named scene regions."""
     return [row for region in scene_regions() for row in region.rows]
+
+
+def scene_region_rects() -> list[Rect]:
+    """Return named source-region rectangles for coordinate review artifacts."""
+    return [
+        Rect(
+            region.name,
+            0,
+            region.start_line - 1,
+            max(region.widths) if region.widths else 0,
+            len(region.rows),
+        )
+        for region in scene_regions()
+    ]
+
+
+def scene_room_rects() -> list[Rect]:
+    """Return room-placement rectangles for coordinate review artifacts."""
+    return [
+        Rect(placement.room_id, placement.x, placement.y, placement.width, placement.height)
+        for placement in six_room_placements()
+    ]
+
+
+def scene_review_rects() -> list[Rect]:
+    """Return both fragment-region and room-placement rectangles."""
+    return scene_region_rects() + scene_room_rects()
+
+
+def write_six_room_scene_artifacts(output_dir: Path) -> list[Path]:
+    """Write generated scene text, coordinate annotations, and HTML review."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    rows = assemble_six_room_scene_rows()
+    rects = scene_review_rects()
+
+    scene_path = output_dir / "six_room_scene_generated.txt"
+    annotated_path = output_dir / "six_room_scene_generated_annotated.txt"
+    html_path = output_dir / "six_room_scene_generated.html"
+
+    write_text(scene_path, rows)
+    annotated_path.write_text(annotate(rows, rects), encoding="utf-8")
+    html_path.write_text(html_review(rows, rects), encoding="utf-8")
+
+    return [scene_path, annotated_path, html_path]
