@@ -30,6 +30,7 @@ three_room_north_wall_parametric_*.txt
 two_room_generated.txt
 two_room_generated_annotated.txt
 six_room_scene_generated.txt
+*_visual_consistency.png
 
 # Scratch browser/JS check files
 _check_*.js
