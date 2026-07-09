@@ -276,6 +276,15 @@ def annotate(lines: list[str], regions: list[Rect]) -> str:
     return "\n".join(out) + "\n"
 
 
+def _rect_names_at(regions: list[Rect], x: int, y: int) -> list[str]:
+    """Return all named review rectangles that cover a zero-based coordinate."""
+    return [
+        r.name
+        for r in regions
+        if r.x <= x < r.x + r.w and r.y <= y < r.y + r.h
+    ]
+
+
 def html_review(lines: list[str], regions: list[Rect]) -> str:
     width = max(map(len, lines))
     body = []
@@ -284,7 +293,14 @@ def html_review(lines: list[str], regions: list[Rect]) -> str:
         for x, ch in enumerate(line.ljust(width)):
             content = "&nbsp;" if ch == " " else escape(ch)
             ink = " ink" if ch != " " else ""
-            cells.append(f'<span class="ch{ink}" data-x="{x}" data-y="{y}" data-ch="{escape(ch)}">{content}</span>')
+            rect_names = _rect_names_at(regions, x, y)
+            rect_attr = escape(",".join(rect_names), quote=True)
+            title = escape(f"L{y:02d} C{x:03d} {'/'.join(rect_names) if rect_names else 'unassigned'}", quote=True)
+            cells.append(
+                f'<span class="ch{ink}" data-x="{x}" data-y="{y}" '
+                f'data-ch="{escape(ch, quote=True)}" data-regions="{rect_attr}" '
+                f'title="{title}">{content}</span>'
+            )
         body.append(f'<div class="line"><span class="lineno">L{y:02d}</span>{"".join(cells)}</div>')
     region_html = "\n".join(
         f"<li><code>{escape(r.name)}</code>: L{r.y:02d}-L{r.y+r.h-1:02d}, C{r.x:03d}-C{r.x+r.w-1:03d}</li>"
@@ -292,7 +308,7 @@ def html_review(lines: list[str], regions: list[Rect]) -> str:
     )
     return f"""<!doctype html>
 <meta charset="utf-8">
-<title>Two Room Generated Review</title>
+<title>ASCII Dungeon Coordinate Review</title>
 <style>
 body {{ background:#10100f; color:#ddd0a8; font-family:system-ui,sans-serif; margin:20px; }}
 .map {{ font-family:'Cascadia Mono','Consolas','Courier New',monospace; font-size:16px; line-height:1.1; white-space:pre; }}
@@ -304,7 +320,7 @@ body {{ background:#10100f; color:#ddd0a8; font-family:system-ui,sans-serif; mar
 #readout {{ position:sticky; top:0; background:#1b1a16; padding:8px; border:1px solid #5b5130; margin-bottom:12px; }}
 code {{ color:#ffd36d; }}
 </style>
-<div id="readout">Click a cell to copy coordinate.</div>
+<div id="readout">Click a cell to copy coordinate, glyph, and region membership.</div>
 <div class="map">{''.join(body)}</div>
 <h2>Regions</h2><ul>{region_html}</ul>
 <script>
@@ -313,7 +329,8 @@ document.querySelectorAll('.ch').forEach(ch => ch.addEventListener('click', () =
   const x = ch.dataset.x.padStart(3,'0');
   const raw = ch.dataset.ch;
   const shown = raw === ' ' ? 'SPACE' : raw;
-  const text = `L${{y}} C${{x}} char=${{shown}} should be ...`;
+  const regions = ch.dataset.regions || 'none';
+  const text = `L${{y}} C${{x}} char=${{shown}} regions=${{regions}} should be ...`;
   navigator.clipboard?.writeText(text);
   document.getElementById('readout').textContent = text;
 }}));
