@@ -562,6 +562,7 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
         '<div class="review-controls">'
         '<button id="copy-graph-json" type="button">Copy graph JSON</button> '
         '<button id="copy-selected-room-json" type="button">Copy selected room JSON</button> '
+        '<button id="reset-graph-edits" type="button">Reset edits</button> '
         '<label><input id="toggle-room-boxes" type="checkbox" checked> rooms</label> '
         '<label><input id="toggle-connection-lines" type="checkbox" checked> connections</label> '
         '<span id="graph-copy-status"></span>'
@@ -589,7 +590,8 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
     )
     overlay_script = """
 <script>
-const sceneGraphData = JSON.parse(document.getElementById('scene-graph-data').textContent);
+const originalSceneGraphData = JSON.parse(document.getElementById('scene-graph-data').textContent);
+let sceneGraphData = structuredClone(originalSceneGraphData);
 let selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
 let selectedConnectionIndex = null;
 function graphStatus(text) { document.getElementById('graph-copy-status').textContent = text; }
@@ -610,15 +612,28 @@ function renderInspector() {
   if (selectedConnectionIndex !== null) {
     const connection = connectionByIndex(selectedConnectionIndex);
     inspector.innerHTML = `<strong>Connection</strong><br>${connectionSummary(connection)}<br>` +
+      `<label>from <input id="edit-connection-from-room" value="${connection.from_room}"></label> ` +
+      `<label>to <input id="edit-connection-to-room" value="${connection.to_room}"></label> ` +
+      `<label>kind <input id="edit-connection-kind" value="${connection.kind}"></label> ` +
+      `<label>region <input id="edit-connection-region" value="${connection.region_name}"></label> ` +
+      `<button id="apply-connection-edits" type="button">Apply connection edits</button><br>` +
       `from_center=${JSON.stringify(connection.from_center)} to_center=${JSON.stringify(connection.to_center)} midpoint=${JSON.stringify(connection.midpoint)}`;
+    document.getElementById('apply-connection-edits')?.addEventListener('click', applyConnectionInspectorEdits);
     return;
   }
   const room = roomById(selectedRoomId);
   if (!room) { inspector.textContent = 'Select a room or connection.'; return; }
   inspector.innerHTML = `<strong>Room</strong> ${room.room_id}<br>` +
+    `<label>id <input id="edit-room-id" value="${room.room_id}"></label> ` +
+    `<label>x <input id="edit-room-x" type="number" value="${room.x}"></label> ` +
+    `<label>y <input id="edit-room-y" type="number" value="${room.y}"></label> ` +
+    `<label>w <input id="edit-room-width" type="number" value="${room.width}"></label> ` +
+    `<label>h <input id="edit-room-height" type="number" value="${room.height}"></label> ` +
+    `<label>regions <input id="edit-room-regions" value="${room.regions.join(',')}"></label> ` +
+    `<button id="apply-room-edits" type="button">Apply room edits</button><br>` +
     `bounds=x${room.x}..${room.x + room.width - 1} y${room.y}..${room.y + room.height - 1} size=${room.width}x${room.height}<br>` +
-    `regions=${room.regions.join(', ')}<br>` +
     `connections=${room.connections.map(c => `${c.to_room}(${c.kind}:${c.region_name})`).join(', ')}`;
+  document.getElementById('apply-room-edits')?.addEventListener('click', applyRoomInspectorEdits);
 }
 function selectRoom(roomId) {
   selectedRoomId = roomId;
@@ -640,6 +655,101 @@ function selectConnection(index) {
   });
   document.getElementById('readout').textContent = connectionSummary(connection);
   renderInspector();
+}
+function intFromInput(id) { return Number.parseInt(document.getElementById(id).value, 10); }
+function roomCenter(room) { return {x: room.x + Math.floor(room.width / 2) - 1, y: room.y + Math.floor(room.height / 2) - 1}; }
+function rebuildRoomConnectionSummaries() {
+  sceneGraphData.rooms.forEach(room => { room.connections = []; });
+  sceneGraphData.connections.forEach(connection => {
+    const from = roomById(connection.from_room);
+    const to = roomById(connection.to_room);
+    if (from) from.connections.push({to_room: connection.to_room, kind: connection.kind, region_name: connection.region_name});
+    if (to) to.connections.push({to_room: connection.from_room, kind: connection.kind, region_name: connection.region_name});
+  });
+}
+function recomputeGraphAnchors() {
+  sceneGraphData.rooms.forEach(room => { room.center = roomCenter(room); });
+  sceneGraphData.connections.forEach(connection => {
+    const from = roomById(connection.from_room);
+    const to = roomById(connection.to_room);
+    connection.rooms = [connection.from_room, connection.to_room];
+    connection.from_center = from ? roomCenter(from) : null;
+    connection.to_center = to ? roomCenter(to) : null;
+    connection.midpoint = (connection.from_center && connection.to_center)
+      ? {x: Math.floor((connection.from_center.x + connection.to_center.x) / 2), y: Math.floor((connection.from_center.y + connection.to_center.y) / 2)}
+      : null;
+  });
+  rebuildRoomConnectionSummaries();
+}
+function updateOverlayFromGraph() {
+  recomputeGraphAnchors();
+  document.querySelectorAll('.room-box').forEach(box => {
+    const room = roomById(box.dataset.roomId);
+    if (!room) return;
+    box.setAttribute('x', room.x * 10 + 40);
+    box.setAttribute('y', room.y * 18 + 10);
+    box.setAttribute('width', room.width * 10);
+    box.setAttribute('height', room.height * 18);
+  });
+  document.querySelectorAll('.room-label').forEach(label => {
+    const room = roomById(label.dataset.roomId);
+    if (!room) return;
+    label.setAttribute('x', room.x * 10 + 46);
+    label.setAttribute('y', room.y * 18 + 26);
+    label.textContent = room.room_id;
+  });
+  document.querySelectorAll('.connection-line').forEach(line => {
+    const connection = connectionByIndex(line.dataset.connectionIndex);
+    if (!connection?.from_center || !connection?.to_center) return;
+    line.dataset.fromRoom = connection.from_room;
+    line.dataset.toRoom = connection.to_room;
+    line.setAttribute('x1', connection.from_center.x * 10 + 40);
+    line.setAttribute('y1', connection.from_center.y * 18 + 10);
+    line.setAttribute('x2', connection.to_center.x * 10 + 40);
+    line.setAttribute('y2', connection.to_center.y * 18 + 10);
+  });
+}
+function applyRoomInspectorEdits() {
+  const room = roomById(selectedRoomId);
+  if (!room) return;
+  const oldRoomId = room.room_id;
+  const newRoomId = document.getElementById('edit-room-id').value.trim();
+  room.room_id = newRoomId || oldRoomId;
+  room.x = intFromInput('edit-room-x');
+  room.y = intFromInput('edit-room-y');
+  room.width = intFromInput('edit-room-width');
+  room.height = intFromInput('edit-room-height');
+  room.regions = document.getElementById('edit-room-regions').value.split(',').map(value => value.trim()).filter(Boolean);
+  if (room.room_id !== oldRoomId) {
+    sceneGraphData.connections.forEach(connection => {
+      if (connection.from_room === oldRoomId) connection.from_room = room.room_id;
+      if (connection.to_room === oldRoomId) connection.to_room = room.room_id;
+    });
+    document.querySelectorAll(`[data-room-id="${CSS.escape(oldRoomId)}"]`).forEach(node => { node.dataset.roomId = room.room_id; });
+    selectedRoomId = room.room_id;
+  }
+  updateOverlayFromGraph();
+  selectRoom(room.room_id);
+  graphStatus(`applied room edits: ${room.room_id}`);
+}
+function applyConnectionInspectorEdits() {
+  const connection = connectionByIndex(selectedConnectionIndex);
+  if (!connection) return;
+  connection.from_room = document.getElementById('edit-connection-from-room').value.trim();
+  connection.to_room = document.getElementById('edit-connection-to-room').value.trim();
+  connection.kind = document.getElementById('edit-connection-kind').value.trim();
+  connection.region_name = document.getElementById('edit-connection-region').value.trim();
+  updateOverlayFromGraph();
+  selectConnection(selectedConnectionIndex);
+  graphStatus(`applied connection edits: ${connectionSummary(connection)}`);
+}
+function resetGraphEdits() {
+  sceneGraphData = structuredClone(originalSceneGraphData);
+  selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
+  selectedConnectionIndex = null;
+  updateOverlayFromGraph();
+  if (selectedRoomId) selectRoom(selectedRoomId);
+  graphStatus('reset graph edits');
 }
 function copyGraphJson() {
   const text = JSON.stringify(sceneGraphData, null, 2);
@@ -664,10 +774,11 @@ function drawConnectionOverlay() {
 }
 document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
 document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
+document.getElementById('reset-graph-edits')?.addEventListener('click', resetGraphEdits);
 drawConnectionOverlay();
 </script>
 """
-    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
+    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
     return (
         base_html
         .replace("#readout {{", overlay_css, 1)

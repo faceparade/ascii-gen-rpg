@@ -448,6 +448,7 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert 'data-connection-index="0"' in html
         assert '<button id="copy-graph-json"' in html
         assert '<button id="copy-selected-room-json"' in html
+        assert '<button id="reset-graph-edits"' in html
         assert '<input id="toggle-room-boxes"' in html
         assert '<input id="toggle-connection-lines"' in html
         assert '<div id="graph-inspector"' in html
@@ -456,6 +457,14 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "selectRoom(roomId)" in html
         assert "selectConnection(index)" in html
         assert "renderInspector" in html
+        assert "applyRoomInspectorEdits" in html
+        assert "applyConnectionInspectorEdits" in html
+        assert "resetGraphEdits" in html
+        assert "updateOverlayFromGraph" in html
+        assert 'id=\"edit-room-id\"' in html
+        assert 'id=\"edit-connection-from-room\"' in html
+        assert 'id=\"apply-room-edits\"' in html
+        assert 'id=\"apply-connection-edits\"' in html
         assert '<h2>Connections</h2>' in html
         assert '<code>upper_left</code> → <code>upper_middle</code>' in html
         import json
