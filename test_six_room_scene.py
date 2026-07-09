@@ -13,6 +13,7 @@ from six_room_scene import (
     build_six_room_scene_graph,
     format_scene_cell_info,
     format_scene_room_info,
+    format_scene_room_summary,
     main as six_room_scene_main,
     render_six_room_scene_graph,
     scene_bounds,
@@ -173,6 +174,19 @@ def test_format_scene_room_info_reports_bounds_and_connections() -> None:
     assert format_scene_room_info(graph, "missing_room") == "room missing_room not found"
     print("PASS six-room room-info formatter")
 
+
+def test_format_scene_room_summary_reports_compact_bounds() -> None:
+    graph = build_six_room_scene_graph()
+    assert [format_scene_room_summary(room) for room in graph.rooms] == [
+        "upper_left x0..33 y4..12 size=34x9",
+        "upper_middle x57..90 y4..12 size=34x9",
+        "upper_right x114..147 y4..12 size=34x9",
+        "lower_left x0..33 y17..28 size=34x12",
+        "lower_middle x57..90 y17..28 size=34x12",
+        "lower_right x114..147 y17..28 size=34x12",
+    ]
+    print("PASS six-room room summary formatter")
+
 def test_scene_rects_expose_review_coordinates() -> None:
     region_rects = scene_region_rects()
     room_rects = scene_room_rects()
@@ -254,6 +268,26 @@ def test_six_room_scene_cli_generates_artifacts_and_cell_report() -> None:
         ):
             assert (Path(temp) / name).exists(), name
     print("PASS six-room scene CLI artifact generation")
+
+
+def test_six_room_scene_cli_lists_rooms() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--output-dir", temp, "--list-rooms"])
+        output = stdout.getvalue().splitlines()
+        assert exit_code == 0
+        assert "upper_left x0..33 y4..12 size=34x9" in output
+        assert "upper_middle x57..90 y4..12 size=34x9" in output
+        assert "upper_right x114..147 y4..12 size=34x9" in output
+        assert "lower_left x0..33 y17..28 size=34x12" in output
+        assert "lower_middle x57..90 y17..28 size=34x12" in output
+        assert "lower_right x114..147 y17..28 size=34x12" in output
+    print("PASS six-room scene CLI room listing")
 
 
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
@@ -339,10 +373,12 @@ def main() -> None:
     test_six_room_graph_connection_lookup_lists_room_adjacencies()
     test_validate_six_room_scene_graph_reports_broken_references()
     test_format_scene_room_info_reports_bounds_and_connections()
+    test_format_scene_room_summary_reports_compact_bounds()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_graph_scoped_coordinate_lookup_uses_supplied_graph()
     test_six_room_scene_cli_generates_artifacts_and_cell_report()
+    test_six_room_scene_cli_lists_rooms()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()

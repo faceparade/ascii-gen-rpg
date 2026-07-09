@@ -421,6 +421,14 @@ def format_scene_cell_info(info: SceneCellInfo) -> str:
     return f"L{info.y:02d} C{info.x:03d} char={shown} regions={regions} rooms={rooms}"
 
 
+def format_scene_room_summary(room: SceneRoomPlacement) -> str:
+    """Return a compact room id + bounds summary line."""
+    return (
+        f"{room.room_id} x{room.x}..{room.x + room.width - 1} "
+        f"y{room.y}..{room.y + room.height - 1} size={room.width}x{room.height}"
+    )
+
+
 def format_scene_room_info(graph: SixRoomSceneGraph, room_id: str) -> str:
     """Return room bounds and oriented adjacency metadata for one room."""
     rooms_by_id = {room.room_id: room for room in graph.rooms}
@@ -459,6 +467,11 @@ def main(argv: list[str] | None = None) -> int:
         metavar="ROOM_ID",
         help="Also print bounds and adjacency metadata for a room id, e.g. --room upper_middle.",
     )
+    parser.add_argument(
+        "--list-rooms",
+        action="store_true",
+        help="Also print compact bounds for every room in graph order.",
+    )
     args = parser.parse_args(argv)
 
     graph = build_six_room_scene_graph()
@@ -474,6 +487,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.room:
         print(format_scene_room_info(graph, args.room))
+
+    if args.list_rooms:
+        for room in graph.rooms:
+            print(format_scene_room_summary(room))
 
     return 0
 
