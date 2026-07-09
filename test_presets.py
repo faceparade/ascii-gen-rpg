@@ -117,6 +117,19 @@ def main() -> None:
     assert SceneFragmentSpec.room_top_band_34().width == 34
     assert SceneFragmentSpec.room_floor_band_34().width == 34
     assert SceneFragmentSpec.middle_seam_connector_gap_80().width == 80
+    lower_band_specs = {
+        "lower_band_left_room_strip_34": SceneFragmentSpec.lower_band_left_room_strip_34(),
+        "lower_band_gap_strip_23": SceneFragmentSpec.lower_band_gap_strip_23(),
+        "lower_band_middle_room_strip_34": SceneFragmentSpec.lower_band_middle_room_strip_34(),
+        "lower_band_right_room_strip_34": SceneFragmentSpec.lower_band_right_room_strip_34(),
+    }
+    assert lower_band_specs["lower_band_left_room_strip_34"].width == 34
+    assert lower_band_specs["lower_band_gap_strip_23"].width == 23
+    assert lower_band_specs["lower_band_middle_room_strip_34"].width == 34
+    assert lower_band_specs["lower_band_right_room_strip_34"].width == 34
+    assert {spec.height for spec in lower_band_specs.values()} == {7}
+    for name, spec in lower_band_specs.items():
+        assert spec.render() == list(SCENE_FRAGMENT_PRESETS[name])
     assert SceneFragmentSpec.room_top_band_34().render() == list(room_top_band)
     assert SceneFragmentSpec.room_floor_band_34().render() == list(room_floor_band)
     assert SceneFragmentSpec.middle_seam_connector_gap_80().render() == list(middle_seam_gap)

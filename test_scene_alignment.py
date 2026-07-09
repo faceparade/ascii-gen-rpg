@@ -2,7 +2,12 @@
 """Tests for independent six-room structural alignment checks."""
 from __future__ import annotations
 
-from scene_alignment import assemble_middle_seam_rows, assert_scene_alignment, load_scene_lines
+from scene_alignment import (
+    assemble_lower_band_rows,
+    assemble_middle_seam_rows,
+    assert_scene_alignment,
+    load_scene_lines,
+)
 
 
 def _replace_char(row: str, column: int, char: str) -> str:
@@ -22,6 +27,12 @@ def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
     print("PASS middle seam assembles from named fragments")
+
+
+def test_lower_band_assembles_from_named_strips() -> None:
+    lines = load_scene_lines()
+    assert assemble_lower_band_rows() == lines[23 - 1:29]
+    print("PASS lower band assembles from named strips")
 
 
 def _assert_alignment_failure(lines: list[str], *expected_fragments: str) -> None:
@@ -140,15 +151,33 @@ def test_alignment_catches_middle_seam_connector_gap_drift() -> None:
     print("PASS structural alignment catches middle seam connector-gap drift")
 
 
+def test_alignment_catches_lower_band_gap_strip_drift() -> None:
+    lines = load_scene_lines()
+    bad = list(lines)
+
+    # Mutate the repeated 23-column lower inter-room strip while preserving all
+    # row widths. The lower-band strip anchor should identify the gap drift.
+    bad[25 - 1] = _replace_char(bad[25 - 1], 44, "-")
+
+    _assert_alignment_failure(
+        bad,
+        "slice drift in lower-band inter-room gap strip",
+        "line 25",
+    )
+    print("PASS structural alignment catches lower-band gap-strip drift")
+
+
 def main() -> None:
     test_current_scene_alignment()
     test_middle_seam_assembles_from_named_fragments()
+    test_lower_band_assembles_from_named_strips()
     test_alignment_catches_line15_backtick_moved_to_line16()
     test_alignment_catches_source_width_drift()
     test_alignment_catches_center_decorated_floor_detail_drift()
     test_alignment_catches_room_bottom_rail_drift()
     test_alignment_catches_room_top_band_drift()
     test_alignment_catches_middle_seam_connector_gap_drift()
+    test_alignment_catches_lower_band_gap_strip_drift()
     print("ALL scene alignment tests passed")
 
 

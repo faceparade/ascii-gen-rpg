@@ -155,6 +155,26 @@ class SceneFragmentSpec:
         """Return the 80-column connector interruption in the middle seam."""
         return cls.from_preset("middle_seam_connector_gap_80")
 
+    @classmethod
+    def lower_band_left_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column lower-band left room strip."""
+        return cls.from_preset("lower_band_left_room_strip_34")
+
+    @classmethod
+    def lower_band_gap_strip_23(cls) -> "SceneFragmentSpec":
+        """Return the repeated 23-column lower-band inter-room gap strip."""
+        return cls.from_preset("lower_band_gap_strip_23")
+
+    @classmethod
+    def lower_band_middle_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column lower-band middle room strip."""
+        return cls.from_preset("lower_band_middle_room_strip_34")
+
+    @classmethod
+    def lower_band_right_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column lower-band right room strip."""
+        return cls.from_preset("lower_band_right_room_strip_34")
+
     @property
     def height(self) -> int:
         return len(self.rows)

@@ -101,6 +101,10 @@ ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
 MIDDLE_SEAM_CONNECTOR_GAP = tuple(SceneFragmentSpec.middle_seam_connector_gap_80().render())
+LOWER_BAND_LEFT_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_left_room_strip_34().render())
+LOWER_BAND_GAP_STRIP = tuple(SceneFragmentSpec.lower_band_gap_strip_23().render())
+LOWER_BAND_MIDDLE_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_middle_room_strip_34().render())
+LOWER_BAND_RIGHT_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_right_room_strip_34().render())
 
 
 def assemble_middle_seam_rows() -> list[str]:
@@ -116,6 +120,21 @@ def assemble_middle_seam_rows() -> list[str]:
         top + top_gap + top + " ",
         floor + floor_gap + floor,
     ]
+
+
+def assemble_lower_band_rows() -> list[str]:
+    """Rebuild source lines 23–29 from named lower-band strips."""
+    return [
+        left + gap + middle + gap + right
+        for left, gap, middle, right in zip(
+            LOWER_BAND_LEFT_ROOM_STRIP,
+            LOWER_BAND_GAP_STRIP,
+            LOWER_BAND_MIDDLE_ROOM_STRIP,
+            LOWER_BAND_RIGHT_ROOM_STRIP,
+            strict=True,
+        )
+    ]
+
 
 SLICE_SPECS: tuple[SliceSpec, ...] = (
     SliceSpec(
@@ -219,6 +238,36 @@ SLICE_SPECS: tuple[SliceSpec, ...] = (
         line=18,
         column=35,
         rows=MIDDLE_SEAM_CONNECTOR_GAP,
+    ),
+    SliceSpec(
+        name="lower-band left room strip",
+        line=23,
+        column=1,
+        rows=LOWER_BAND_LEFT_ROOM_STRIP,
+    ),
+    SliceSpec(
+        name="lower-band inter-room gap strip",
+        line=23,
+        column=35,
+        rows=LOWER_BAND_GAP_STRIP,
+    ),
+    SliceSpec(
+        name="lower-band middle room strip",
+        line=23,
+        column=58,
+        rows=LOWER_BAND_MIDDLE_ROOM_STRIP,
+    ),
+    SliceSpec(
+        name="lower-band repeated inter-room gap strip",
+        line=23,
+        column=92,
+        rows=LOWER_BAND_GAP_STRIP,
+    ),
+    SliceSpec(
+        name="lower-band right room strip",
+        line=23,
+        column=115,
+        rows=LOWER_BAND_RIGHT_ROOM_STRIP,
     ),
 )
 
