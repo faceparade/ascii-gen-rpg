@@ -47,6 +47,16 @@ SCENE_MID_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_mid_connector_rows_14_1
 SCENE_LOWER_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_lower_connector_rows_20_22().render())
 
 
+def assemble_striped_region(strips: tuple[tuple[str, ...], ...]) -> list[str]:
+    """Join same-height horizontal strips row-by-row."""
+    if not strips:
+        return []
+    heights = {len(strip) for strip in strips}
+    if len(heights) != 1:
+        raise ValueError(f"strip heights must match: {sorted(heights)}")
+    return ["".join(parts) for parts in zip(*strips, strict=True)]
+
+
 def assemble_middle_seam_rows() -> list[str]:
     """Rebuild source lines 18–19 from named scene fragments.
 
@@ -64,30 +74,28 @@ def assemble_middle_seam_rows() -> list[str]:
 
 def assemble_lower_band_rows() -> list[str]:
     """Rebuild source lines 23–29 from named lower-band strips."""
-    return [
-        left + gap + middle + gap + right
-        for left, gap, middle, right in zip(
+    return assemble_striped_region(
+        (
             LOWER_BAND_LEFT_ROOM_STRIP,
             LOWER_BAND_GAP_STRIP,
             LOWER_BAND_MIDDLE_ROOM_STRIP,
+            LOWER_BAND_GAP_STRIP,
             LOWER_BAND_RIGHT_ROOM_STRIP,
-            strict=True,
         )
-    ]
+    )
 
 
 def assemble_upper_band_rows() -> list[str]:
     """Rebuild source lines 5–13 from named upper-band strips."""
-    return [
-        left + gap + middle + gap + right
-        for left, gap, middle, right in zip(
+    return assemble_striped_region(
+        (
             UPPER_BAND_LEFT_ROOM_STRIP,
             UPPER_BAND_GAP_STRIP,
             UPPER_BAND_MIDDLE_ROOM_STRIP,
+            UPPER_BAND_GAP_STRIP,
             UPPER_BAND_RIGHT_ROOM_STRIP,
-            strict=True,
         )
-    ]
+    )
 
 
 def assemble_six_room_scene_rows() -> list[str]:

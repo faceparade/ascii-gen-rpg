@@ -23,6 +23,18 @@ def test_layout_spec_documents_locked_segment_widths() -> None:
     print("PASS six-room layout spec locked widths")
 
 
+def test_striped_region_composer_rejects_mismatched_heights() -> None:
+    from six_room_scene import assemble_striped_region
+
+    try:
+        assemble_striped_region((("aa", "bb"), ("cc",)))
+    except ValueError as exc:
+        assert "strip heights must match" in str(exc)
+    else:
+        raise AssertionError("mismatched strip heights should fail")
+    print("PASS six-room striped region rejects height drift")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -48,6 +60,7 @@ def test_full_scene_assembles_from_named_regions() -> None:
 
 def main() -> None:
     test_layout_spec_documents_locked_segment_widths()
+    test_striped_region_composer_rejects_mismatched_heights()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
