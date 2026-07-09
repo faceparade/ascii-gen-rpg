@@ -175,6 +175,26 @@ class SceneFragmentSpec:
         """Return the 34-column lower-band right room strip."""
         return cls.from_preset("lower_band_right_room_strip_34")
 
+    @classmethod
+    def upper_band_left_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column upper-band left room strip."""
+        return cls.from_preset("upper_band_left_room_strip_34")
+
+    @classmethod
+    def upper_band_gap_strip_23(cls) -> "SceneFragmentSpec":
+        """Return the repeated 23-column upper-band inter-room gap strip."""
+        return cls.from_preset("upper_band_gap_strip_23")
+
+    @classmethod
+    def upper_band_middle_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column upper-band middle room strip."""
+        return cls.from_preset("upper_band_middle_room_strip_34")
+
+    @classmethod
+    def upper_band_right_room_strip_34(cls) -> "SceneFragmentSpec":
+        """Return the 34-column upper-band right room strip."""
+        return cls.from_preset("upper_band_right_room_strip_34")
+
     @property
     def height(self) -> int:
         return len(self.rows)

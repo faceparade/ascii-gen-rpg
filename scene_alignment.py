@@ -105,6 +105,10 @@ LOWER_BAND_LEFT_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_left_room_strip_
 LOWER_BAND_GAP_STRIP = tuple(SceneFragmentSpec.lower_band_gap_strip_23().render())
 LOWER_BAND_MIDDLE_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_middle_room_strip_34().render())
 LOWER_BAND_RIGHT_ROOM_STRIP = tuple(SceneFragmentSpec.lower_band_right_room_strip_34().render())
+UPPER_BAND_LEFT_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_left_room_strip_34().render())
+UPPER_BAND_GAP_STRIP = tuple(SceneFragmentSpec.upper_band_gap_strip_23().render())
+UPPER_BAND_MIDDLE_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_middle_room_strip_34().render())
+UPPER_BAND_RIGHT_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_right_room_strip_34().render())
 
 
 def assemble_middle_seam_rows() -> list[str]:
@@ -131,6 +135,20 @@ def assemble_lower_band_rows() -> list[str]:
             LOWER_BAND_GAP_STRIP,
             LOWER_BAND_MIDDLE_ROOM_STRIP,
             LOWER_BAND_RIGHT_ROOM_STRIP,
+            strict=True,
+        )
+    ]
+
+
+def assemble_upper_band_rows() -> list[str]:
+    """Rebuild source lines 5–13 from named upper-band strips."""
+    return [
+        left + gap + middle + gap + right
+        for left, gap, middle, right in zip(
+            UPPER_BAND_LEFT_ROOM_STRIP,
+            UPPER_BAND_GAP_STRIP,
+            UPPER_BAND_MIDDLE_ROOM_STRIP,
+            UPPER_BAND_RIGHT_ROOM_STRIP,
             strict=True,
         )
     ]
@@ -268,6 +286,36 @@ SLICE_SPECS: tuple[SliceSpec, ...] = (
         line=23,
         column=115,
         rows=LOWER_BAND_RIGHT_ROOM_STRIP,
+    ),
+    SliceSpec(
+        name="upper-band left room strip",
+        line=5,
+        column=1,
+        rows=UPPER_BAND_LEFT_ROOM_STRIP,
+    ),
+    SliceSpec(
+        name="upper-band inter-room gap strip",
+        line=5,
+        column=35,
+        rows=UPPER_BAND_GAP_STRIP,
+    ),
+    SliceSpec(
+        name="upper-band middle room strip",
+        line=5,
+        column=58,
+        rows=UPPER_BAND_MIDDLE_ROOM_STRIP,
+    ),
+    SliceSpec(
+        name="upper-band repeated inter-room gap strip",
+        line=5,
+        column=92,
+        rows=UPPER_BAND_GAP_STRIP,
+    ),
+    SliceSpec(
+        name="upper-band right room strip",
+        line=5,
+        column=115,
+        rows=UPPER_BAND_RIGHT_ROOM_STRIP,
     ),
 )
 
