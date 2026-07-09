@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from argparse import ArgumentParser
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -400,6 +401,51 @@ def scene_room_connection_cell_attrs(graph: SixRoomSceneGraph) -> dict[tuple[int
     return attrs
 
 
+def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
+    """Return machine-readable graph metadata for review/editor tooling."""
+    width, height = scene_bounds(graph)
+    return {
+        "bounds": {"width": width, "height": height},
+        "rooms": [
+            {
+                "room_id": room.room_id,
+                "x": room.x,
+                "y": room.y,
+                "width": room.width,
+                "height": room.height,
+                "regions": list(scene_regions_for_room(graph, room.room_id)),
+                "connections": [
+                    {
+                        "to_room": connection.to_room,
+                        "kind": connection.kind,
+                        "region_name": connection.region_name,
+                    }
+                    for connection in scene_connections_for_room(graph, room.room_id)
+                ],
+            }
+            for room in graph.rooms
+        ],
+        "connections": [
+            {
+                "from_room": connection.from_room,
+                "to_room": connection.to_room,
+                "kind": connection.kind,
+                "region_name": connection.region_name,
+            }
+            for connection in graph.connections
+        ],
+        "regions": [
+            {
+                "name": region.name,
+                "start_line": region.start_line,
+                "end_line": region.end_line,
+                "widths": list(region.widths),
+            }
+            for region in graph.regions
+        ],
+    }
+
+
 def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
     """Write generated scene text, coordinate annotations, and HTML review."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -410,6 +456,7 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
     scene_path = output_dir / "six_room_scene_generated.txt"
     annotated_path = output_dir / "six_room_scene_generated_annotated.txt"
     html_path = output_dir / "six_room_scene_generated.html"
+    graph_json_path = output_dir / "six_room_scene_graph.json"
 
     write_text(scene_path, rows)
     annotated_path.write_text(annotate(rows, rects), encoding="utf-8")
@@ -417,8 +464,12 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
         html_review(rows, rects, scene_room_connection_cell_attrs(graph)),
         encoding="utf-8",
     )
+    graph_json_path.write_text(
+        json.dumps(six_room_scene_graph_data(graph), indent=2) + "\n",
+        encoding="utf-8",
+    )
 
-    return [scene_path, annotated_path, html_path]
+    return [scene_path, annotated_path, html_path, graph_json_path]
 
 
 def _parse_cell_arg(value: str) -> tuple[int, int]:

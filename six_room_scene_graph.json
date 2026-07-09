@@ -1,0 +1,273 @@
+{
+  "bounds": {
+    "width": 149,
+    "height": 29
+  },
+  "rooms": [
+    {
+      "room_id": "upper_left",
+      "x": 0,
+      "y": 4,
+      "width": 34,
+      "height": 9,
+      "regions": [
+        "upper_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_middle",
+          "kind": "horizontal",
+          "region_name": "upper_band"
+        },
+        {
+          "to_room": "lower_left",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        }
+      ]
+    },
+    {
+      "room_id": "upper_middle",
+      "x": 57,
+      "y": 4,
+      "width": 34,
+      "height": 9,
+      "regions": [
+        "upper_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_left",
+          "kind": "horizontal",
+          "region_name": "upper_band"
+        },
+        {
+          "to_room": "upper_right",
+          "kind": "horizontal",
+          "region_name": "upper_band"
+        },
+        {
+          "to_room": "lower_middle",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        }
+      ]
+    },
+    {
+      "room_id": "upper_right",
+      "x": 114,
+      "y": 4,
+      "width": 34,
+      "height": 9,
+      "regions": [
+        "upper_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_middle",
+          "kind": "horizontal",
+          "region_name": "upper_band"
+        },
+        {
+          "to_room": "lower_right",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        }
+      ]
+    },
+    {
+      "room_id": "lower_left",
+      "x": 0,
+      "y": 17,
+      "width": 34,
+      "height": 12,
+      "regions": [
+        "middle_seam",
+        "lower_connector",
+        "lower_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_left",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        },
+        {
+          "to_room": "lower_middle",
+          "kind": "horizontal",
+          "region_name": "lower_band"
+        }
+      ]
+    },
+    {
+      "room_id": "lower_middle",
+      "x": 57,
+      "y": 17,
+      "width": 34,
+      "height": 12,
+      "regions": [
+        "middle_seam",
+        "lower_connector",
+        "lower_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_middle",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        },
+        {
+          "to_room": "lower_left",
+          "kind": "horizontal",
+          "region_name": "lower_band"
+        },
+        {
+          "to_room": "lower_right",
+          "kind": "horizontal",
+          "region_name": "lower_band"
+        }
+      ]
+    },
+    {
+      "room_id": "lower_right",
+      "x": 114,
+      "y": 17,
+      "width": 34,
+      "height": 12,
+      "regions": [
+        "middle_seam",
+        "lower_connector",
+        "lower_band"
+      ],
+      "connections": [
+        {
+          "to_room": "upper_right",
+          "kind": "vertical",
+          "region_name": "mid_connector"
+        },
+        {
+          "to_room": "lower_middle",
+          "kind": "horizontal",
+          "region_name": "lower_band"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from_room": "upper_left",
+      "to_room": "upper_middle",
+      "kind": "horizontal",
+      "region_name": "upper_band"
+    },
+    {
+      "from_room": "upper_middle",
+      "to_room": "upper_right",
+      "kind": "horizontal",
+      "region_name": "upper_band"
+    },
+    {
+      "from_room": "upper_left",
+      "to_room": "lower_left",
+      "kind": "vertical",
+      "region_name": "mid_connector"
+    },
+    {
+      "from_room": "upper_middle",
+      "to_room": "lower_middle",
+      "kind": "vertical",
+      "region_name": "mid_connector"
+    },
+    {
+      "from_room": "upper_right",
+      "to_room": "lower_right",
+      "kind": "vertical",
+      "region_name": "mid_connector"
+    },
+    {
+      "from_room": "lower_left",
+      "to_room": "lower_middle",
+      "kind": "horizontal",
+      "region_name": "lower_band"
+    },
+    {
+      "from_room": "lower_middle",
+      "to_room": "lower_right",
+      "kind": "horizontal",
+      "region_name": "lower_band"
+    }
+  ],
+  "regions": [
+    {
+      "name": "top",
+      "start_line": 1,
+      "end_line": 4,
+      "widths": [
+        0,
+        148,
+        148,
+        148
+      ]
+    },
+    {
+      "name": "upper_band",
+      "start_line": 5,
+      "end_line": 13,
+      "widths": [
+        148,
+        148,
+        148,
+        148,
+        148,
+        148,
+        148,
+        148,
+        148
+      ]
+    },
+    {
+      "name": "mid_connector",
+      "start_line": 14,
+      "end_line": 17,
+      "widths": [
+        92,
+        96,
+        122,
+        149
+      ]
+    },
+    {
+      "name": "middle_seam",
+      "start_line": 18,
+      "end_line": 19,
+      "widths": [
+        149,
+        148
+      ]
+    },
+    {
+      "name": "lower_connector",
+      "start_line": 20,
+      "end_line": 22,
+      "widths": [
+        148,
+        148,
+        148
+      ]
+    },
+    {
+      "name": "lower_band",
+      "start_line": 23,
+      "end_line": 29,
+      "widths": [
+        148,
+        148,
+        148,
+        148,
+        148,
+        148,
+        148
+      ]
+    }
+  ]
+}

@@ -354,6 +354,7 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
             "six_room_scene_generated.txt",
             "six_room_scene_generated_annotated.txt",
             "six_room_scene_generated.html",
+            "six_room_scene_graph.json",
         ]
         for path in written:
             assert path.exists(), path
@@ -371,6 +372,29 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         ) in html
         assert "connections=${connections}" in html
         assert "regions=${regions}" in html
+        import json
+
+        graph_data = json.loads(written[3].read_text(encoding="utf-8"))
+        assert graph_data["bounds"] == {"width": 149, "height": 29}
+        assert graph_data["rooms"][1] == {
+            "room_id": "upper_middle",
+            "x": 57,
+            "y": 4,
+            "width": 34,
+            "height": 9,
+            "regions": ["upper_band"],
+            "connections": [
+                {"to_room": "upper_left", "kind": "horizontal", "region_name": "upper_band"},
+                {"to_room": "upper_right", "kind": "horizontal", "region_name": "upper_band"},
+                {"to_room": "lower_middle", "kind": "vertical", "region_name": "mid_connector"},
+            ],
+        }
+        assert graph_data["connections"][0] == {
+            "from_room": "upper_left",
+            "to_room": "upper_middle",
+            "kind": "horizontal",
+            "region_name": "upper_band",
+        }
     print("PASS six-room scene artifact writer")
 
 
@@ -386,11 +410,13 @@ def test_write_six_room_scene_artifacts_uses_supplied_graph_rects() -> None:
         rooms=(SceneRoomPlacement("probe_room", 10, 4, 3, 2),),
     )
     with TemporaryDirectory() as temp:
-        _, annotated_path, html_path = write_six_room_scene_artifacts(Path(temp), graph)
+        _, annotated_path, html_path, graph_json_path = write_six_room_scene_artifacts(Path(temp), graph)
         annotated = annotated_path.read_text(encoding="utf-8")
         html = html_path.read_text(encoding="utf-8")
+        graph_json = graph_json_path.read_text(encoding="utf-8")
         assert "probe_room" in annotated
         assert "probe_room" in html
+        assert "probe_room" in graph_json
         assert "upper_left" not in annotated
         assert "upper_left" not in html
     print("PASS six-room graph-scoped artifact writer")
