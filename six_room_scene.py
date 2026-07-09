@@ -286,6 +286,11 @@ def validate_six_room_scene_graph(graph: SixRoomSceneGraph) -> tuple[str, ...]:
     return tuple(errors)
 
 
+def _is_int(value: object) -> bool:
+    """Return True for real ints while rejecting bools masquerading as ints."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ...]:
     """Return validation errors for exported graph JSON data."""
     errors: list[str] = []
@@ -305,11 +310,29 @@ def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ..
         errors.append("connections must be a list")
         connection_entries = []
 
-    room_ids = {
-        room.get("room_id")
-        for room in room_entries
-        if isinstance(room, dict) and isinstance(room.get("room_id"), str)
-    }
+    room_ids: set[str] = set()
+    for index, room in enumerate(room_entries):
+        if not isinstance(room, dict):
+            errors.append(f"room {index} must be an object")
+            continue
+        room_id = room.get("room_id")
+        if not isinstance(room_id, str) or not room_id:
+            errors.append(f"room {index} room_id must be a non-empty string")
+            continue
+        if room_id in room_ids:
+            errors.append(f"room {room_id} is duplicated")
+        room_ids.add(room_id)
+        for field in ("x", "y", "width", "height"):
+            value = room.get(field)
+            if not _is_int(value):
+                errors.append(f"room {room_id} {field} must be an integer")
+        width = room.get("width")
+        height = room.get("height")
+        if _is_int(width) and width <= 0:
+            errors.append(f"room {room_id} width must be positive")
+        if _is_int(height) and height <= 0:
+            errors.append(f"room {room_id} height must be positive")
+
     region_names = {
         region.get("name")
         for region in region_entries
@@ -322,7 +345,16 @@ def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ..
         from_room = connection.get("from_room")
         to_room = connection.get("to_room")
         region_name = connection.get("region_name")
+        kind = connection.get("kind")
         label = f"connection {from_room}->{to_room}"
+        if not isinstance(from_room, str):
+            errors.append(f"{label} from_room must be a string")
+        if not isinstance(to_room, str):
+            errors.append(f"{label} to_room must be a string")
+        if not isinstance(kind, str) or not kind:
+            errors.append(f"{label} kind must be a non-empty string")
+        if not isinstance(region_name, str):
+            errors.append(f"{label} region_name must be a string")
         if from_room not in room_ids:
             errors.append(f"{label} references unknown from_room {from_room}")
         if to_room not in room_ids:
@@ -330,6 +362,39 @@ def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ..
         if region_name not in region_names:
             errors.append(f"{label} references unknown region {region_name}")
     return tuple(errors)
+
+
+def six_room_scene_graph_from_data(data: dict[str, object]) -> SixRoomSceneGraph:
+    """Build a graph model from exported/editor graph JSON using locked source regions."""
+    errors = validate_six_room_scene_graph_data(data)
+    if errors:
+        raise ValueError("invalid six-room graph JSON: " + "; ".join(errors))
+    room_entries = data["rooms"]
+    connection_entries = data["connections"]
+    assert isinstance(room_entries, list)
+    assert isinstance(connection_entries, list)
+    rooms = tuple(
+        SceneRoomPlacement(
+            str(room["room_id"]),
+            int(room["x"]),
+            int(room["y"]),
+            int(room["width"]),
+            int(room["height"]),
+        )
+        for room in room_entries
+        if isinstance(room, dict)
+    )
+    connections = tuple(
+        SceneConnection(
+            str(connection["from_room"]),
+            str(connection["to_room"]),
+            str(connection["kind"]),
+            str(connection["region_name"]),
+        )
+        for connection in connection_entries
+        if isinstance(connection, dict)
+    )
+    return SixRoomSceneGraph(rooms=rooms, connections=connections, regions=tuple(scene_regions()))
 
 
 def assemble_six_room_scene_rows() -> list[str]:
@@ -912,24 +977,22 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    graph = build_six_room_scene_graph()
+    loaded_graph_json = False
     if args.graph_json:
         graph_data = json.loads(args.graph_json.read_text(encoding="utf-8"))
-        if args.print_graph_json:
-            print(json.dumps(graph_data, indent=2))
-            return 0
-        if args.validate_graph:
-            errors = validate_six_room_scene_graph_data(graph_data)
-            if errors:
-                print("graph json validation: failed")
-                for error in errors:
-                    print(f"graph json validation error: {error}")
-                return 1
+        errors = validate_six_room_scene_graph_data(graph_data)
+        if errors:
+            print("graph json validation: failed")
+            for error in errors:
+                print(f"graph json validation error: {error}")
+            return 1
+        graph = six_room_scene_graph_from_data(graph_data)
+        loaded_graph_json = True
+        if args.validate_graph and not any((args.cell, args.room, args.list_rooms, args.list_connections)):
             print("graph json validation: ok")
             return 0
-        print(f"loaded graph json: {args.graph_json.resolve()}")
-        return 0
 
-    graph = build_six_room_scene_graph()
     if args.print_graph_json:
         print(json.dumps(six_room_scene_graph_data(graph), indent=2))
         return 0
@@ -937,6 +1000,8 @@ def main(argv: list[str] | None = None) -> int:
     written = write_six_room_scene_artifacts(args.output_dir, graph)
     width, height = scene_bounds(graph)
     print(f"six-room scene bounds: width={width} height={height}")
+    if loaded_graph_json:
+        print(f"loaded graph json: {args.graph_json.resolve()}")
     for path in written:
         print(path.resolve())
 

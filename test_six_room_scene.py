@@ -26,6 +26,7 @@ from six_room_scene import (
     scene_room_rects,
     scene_rooms_at,
     six_room_scene_graph_data,
+    six_room_scene_graph_from_data,
     validate_six_room_scene_graph,
     validate_six_room_scene_graph_data,
 )
@@ -179,7 +180,28 @@ def test_validate_six_room_scene_graph_data_checks_round_trip_json() -> None:
         "connection upper_left->missing_room references unknown to_room missing_room",
         "connection upper_left->missing_room references unknown region missing_region",
     )
+    broken_room_data = dict(graph_data)
+    broken_room_data["rooms"] = [dict(graph_data["rooms"][0], width=0)]
+    broken_room_data["connections"] = []
+    assert "room upper_left width must be positive" in validate_six_room_scene_graph_data(broken_room_data)
     print("PASS six-room graph JSON validation")
+
+
+def test_six_room_scene_graph_from_data_imports_edited_room_and_connection_metadata() -> None:
+    graph_data = six_room_scene_graph_data(build_six_room_scene_graph())
+    graph_data["rooms"][1]["room_id"] = "upper_center"
+    graph_data["rooms"][1]["x"] = 60
+    graph_data["connections"][0]["to_room"] = "upper_center"
+    graph_data["connections"][1]["from_room"] = "upper_center"
+    graph_data["connections"][3]["from_room"] = "upper_center"
+    graph = six_room_scene_graph_from_data(graph_data)
+    assert graph.rooms[1] == SceneRoomPlacement("upper_center", 60, 4, 34, 9)
+    assert graph.connections[0] == SceneConnection("upper_left", "upper_center", "horizontal", "upper_band")
+    normalized = six_room_scene_graph_data(graph)
+    assert normalized["rooms"][1]["center"] == {"x": 76, "y": 8}
+    assert normalized["connections"][0]["to_center"] == {"x": 76, "y": 8}
+    assert render_six_room_scene_graph(graph) == load_scene_lines()
+    print("PASS six-room graph JSON importer")
 
 
 def test_format_scene_room_info_reports_bounds_and_connections() -> None:
@@ -407,6 +429,37 @@ def test_six_room_scene_cli_validates_loaded_graph_json() -> None:
     print("PASS six-room scene CLI loaded graph JSON validation")
 
 
+def test_six_room_scene_cli_regenerates_artifacts_from_loaded_graph_json() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+    import json
+
+    with TemporaryDirectory() as temp:
+        temp_path = Path(temp)
+        graph_data = six_room_scene_graph_data(build_six_room_scene_graph())
+        graph_data["rooms"][1]["room_id"] = "upper_center"
+        graph_data["connections"][0]["to_room"] = "upper_center"
+        graph_data["connections"][1]["from_room"] = "upper_center"
+        graph_data["connections"][3]["from_room"] = "upper_center"
+        graph_json = temp_path / "edited_graph.json"
+        graph_json.write_text(json.dumps(graph_data), encoding="utf-8")
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--graph-json", str(graph_json), "--output-dir", temp, "--room", "upper_center"])
+        output = stdout.getvalue()
+        html = (temp_path / "six_room_scene_generated.html").read_text(encoding="utf-8")
+        normalized_data = json.loads((temp_path / "six_room_scene_graph.json").read_text(encoding="utf-8"))
+        assert exit_code == 0
+        assert "loaded graph json:" in output
+        assert "room upper_center bounds=x57..90 y4..12 size=34x9" in output
+        assert "upper_center" in html
+        assert normalized_data["rooms"][1]["room_id"] == "upper_center"
+        assert normalized_data["connections"][0]["to_room"] == "upper_center"
+    print("PASS six-room scene CLI graph JSON artifact regeneration")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -552,6 +605,7 @@ def main() -> None:
     test_validate_six_room_scene_graph_reports_broken_references()
     test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors()
     test_validate_six_room_scene_graph_data_checks_round_trip_json()
+    test_six_room_scene_graph_from_data_imports_edited_room_and_connection_metadata()
     test_format_scene_room_info_reports_bounds_and_connections()
     test_format_scene_room_summary_reports_compact_bounds()
     test_format_scene_connection_summary_reports_edges()
@@ -564,6 +618,7 @@ def main() -> None:
     test_six_room_scene_cli_validates_graph()
     test_six_room_scene_cli_prints_graph_json()
     test_six_room_scene_cli_validates_loaded_graph_json()
+    test_six_room_scene_cli_regenerates_artifacts_from_loaded_graph_json()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()
