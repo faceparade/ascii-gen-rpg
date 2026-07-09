@@ -440,12 +440,22 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "regions=${regions}" in html
         assert '<script type="application/json" id="scene-graph-data">' in html
         assert '<svg id="connection-overlay"' in html
+        assert '<g id="connection-line-layer">' in html
+        assert '<g id="room-box-layer">' in html
         assert '<line class="connection-line"' in html
+        assert '<rect class="room-box" data-room-id="upper_left"' in html
+        assert '<text class="room-label" data-room-id="upper_left"' in html
         assert 'data-connection-index="0"' in html
         assert '<button id="copy-graph-json"' in html
         assert '<button id="copy-selected-room-json"' in html
+        assert '<input id="toggle-room-boxes"' in html
+        assert '<input id="toggle-connection-lines"' in html
+        assert '<div id="graph-inspector"' in html
         assert "drawConnectionOverlay" in html
         assert "copyGraphJson" in html
+        assert "selectRoom(roomId)" in html
+        assert "selectConnection(index)" in html
+        assert "renderInspector" in html
         assert '<h2>Connections</h2>' in html
         assert '<code>upper_left</code> → <code>upper_middle</code>' in html
         import json

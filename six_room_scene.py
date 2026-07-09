@@ -521,7 +521,7 @@ def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
 
 
 def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoomSceneGraph) -> str:
-    """Return HTML review with embedded graph data and a connection legend."""
+    """Return HTML review with embedded graph data, overlays, and an inspector."""
     base_html = html_review(rows, rects, scene_room_connection_cell_attrs(graph))
     graph_json = json.dumps(six_room_scene_graph_data(graph), indent=2).replace("</", "<\\/")
     cell_w = 10
@@ -529,30 +529,51 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
     line_offset_x = 40
     line_offset_y = 10
     width, height = scene_bounds(graph)
+    rooms_by_id = {room.room_id: room for room in graph.rooms}
+    overlay_width = width * cell_w + line_offset_x * 2
+    overlay_height = height * cell_h + 24
+    room_boxes = "\n".join(
+        (
+            f'<rect class="room-box" data-room-id="{escape(room.room_id, quote=True)}" '
+            f'x="{room.x * cell_w + line_offset_x}" '
+            f'y="{room.y * cell_h + line_offset_y}" '
+            f'width="{room.width * cell_w}" '
+            f'height="{room.height * cell_h}" />'
+            f'<text class="room-label" data-room-id="{escape(room.room_id, quote=True)}" '
+            f'x="{room.x * cell_w + line_offset_x + 6}" '
+            f'y="{room.y * cell_h + line_offset_y + 16}">{escape(room.room_id)}</text>'
+        )
+        for room in graph.rooms
+    )
     overlay_lines = "\n".join(
         (
             f'<line class="connection-line" data-connection-index="{index}" '
             f'data-from-room="{escape(connection.from_room, quote=True)}" '
             f'data-to-room="{escape(connection.to_room, quote=True)}" '
-            f'x1="{_room_center(next(room for room in graph.rooms if room.room_id == connection.from_room))["x"] * cell_w + line_offset_x}" '
-            f'y1="{_room_center(next(room for room in graph.rooms if room.room_id == connection.from_room))["y"] * cell_h + line_offset_y}" '
-            f'x2="{_room_center(next(room for room in graph.rooms if room.room_id == connection.to_room))["x"] * cell_w + line_offset_x}" '
-            f'y2="{_room_center(next(room for room in graph.rooms if room.room_id == connection.to_room))["y"] * cell_h + line_offset_y}" />'
+            f'x1="{_room_center(rooms_by_id[connection.from_room])["x"] * cell_w + line_offset_x}" '
+            f'y1="{_room_center(rooms_by_id[connection.from_room])["y"] * cell_h + line_offset_y}" '
+            f'x2="{_room_center(rooms_by_id[connection.to_room])["x"] * cell_w + line_offset_x}" '
+            f'y2="{_room_center(rooms_by_id[connection.to_room])["y"] * cell_h + line_offset_y}" />'
         )
         for index, connection in enumerate(graph.connections)
-        if any(room.room_id == connection.from_room for room in graph.rooms)
-        and any(room.room_id == connection.to_room for room in graph.rooms)
+        if connection.from_room in rooms_by_id and connection.to_room in rooms_by_id
     )
     overlay_html = (
         '<div class="review-controls">'
         '<button id="copy-graph-json" type="button">Copy graph JSON</button> '
         '<button id="copy-selected-room-json" type="button">Copy selected room JSON</button> '
+        '<label><input id="toggle-room-boxes" type="checkbox" checked> rooms</label> '
+        '<label><input id="toggle-connection-lines" type="checkbox" checked> connections</label> '
         '<span id="graph-copy-status"></span>'
         '</div>\n'
-        f'<svg id="connection-overlay" viewBox="0 0 {width * cell_w + line_offset_x * 2} {height * cell_h + 24}" '
-        'aria-label="Room connection overlay">'
+        '<div id="graph-inspector" aria-live="polite">Select a room or connection.</div>\n'
+        f'<svg id="connection-overlay" viewBox="0 0 {overlay_width} {overlay_height}" '
+        'aria-label="Room and connection overlay">'
+        '<g id="connection-line-layer">'
         f'{overlay_lines}'
-        '</svg>\n'
+        '</g><g id="room-box-layer">'
+        f'{room_boxes}'
+        '</g></svg>\n'
     )
     connection_items = "\n".join(
         "<li>"
@@ -570,7 +591,56 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
 <script>
 const sceneGraphData = JSON.parse(document.getElementById('scene-graph-data').textContent);
 let selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
+let selectedConnectionIndex = null;
 function graphStatus(text) { document.getElementById('graph-copy-status').textContent = text; }
+function roomById(roomId) { return sceneGraphData.rooms.find(room => room.room_id === roomId); }
+function connectionByIndex(index) { return sceneGraphData.connections[Number(index)]; }
+function connectionSummary(connection) {
+  return `${connection.from_room} -> ${connection.to_room} (${connection.kind}, ${connection.region_name})`;
+}
+function updateLayerToggles() {
+  document.getElementById('room-box-layer').style.display = document.getElementById('toggle-room-boxes').checked ? '' : 'none';
+  document.getElementById('connection-line-layer').style.display = document.getElementById('toggle-connection-lines').checked ? '' : 'none';
+}
+function clearGraphSelection() {
+  document.querySelectorAll('.room-box,.room-label,.connection-line').forEach(node => node.classList.remove('selected', 'related'));
+}
+function renderInspector() {
+  const inspector = document.getElementById('graph-inspector');
+  if (selectedConnectionIndex !== null) {
+    const connection = connectionByIndex(selectedConnectionIndex);
+    inspector.innerHTML = `<strong>Connection</strong><br>${connectionSummary(connection)}<br>` +
+      `from_center=${JSON.stringify(connection.from_center)} to_center=${JSON.stringify(connection.to_center)} midpoint=${JSON.stringify(connection.midpoint)}`;
+    return;
+  }
+  const room = roomById(selectedRoomId);
+  if (!room) { inspector.textContent = 'Select a room or connection.'; return; }
+  inspector.innerHTML = `<strong>Room</strong> ${room.room_id}<br>` +
+    `bounds=x${room.x}..${room.x + room.width - 1} y${room.y}..${room.y + room.height - 1} size=${room.width}x${room.height}<br>` +
+    `regions=${room.regions.join(', ')}<br>` +
+    `connections=${room.connections.map(c => `${c.to_room}(${c.kind}:${c.region_name})`).join(', ')}`;
+}
+function selectRoom(roomId) {
+  selectedRoomId = roomId;
+  selectedConnectionIndex = null;
+  clearGraphSelection();
+  document.querySelectorAll(`[data-room-id="${CSS.escape(roomId)}"]`).forEach(node => node.classList.add('selected'));
+  document.querySelectorAll(`.connection-line[data-from-room="${CSS.escape(roomId)}"], .connection-line[data-to-room="${CSS.escape(roomId)}"]`).forEach(node => node.classList.add('related'));
+  document.getElementById('readout').textContent = `room ${roomId}`;
+  renderInspector();
+}
+function selectConnection(index) {
+  const connection = connectionByIndex(index);
+  selectedRoomId = connection.from_room;
+  selectedConnectionIndex = Number(index);
+  clearGraphSelection();
+  document.querySelector(`.connection-line[data-connection-index="${index}"]`)?.classList.add('selected');
+  [connection.from_room, connection.to_room].forEach(roomId => {
+    document.querySelectorAll(`[data-room-id="${CSS.escape(roomId)}"]`).forEach(node => node.classList.add('related'));
+  });
+  document.getElementById('readout').textContent = connectionSummary(connection);
+  renderInspector();
+}
 function copyGraphJson() {
   const text = JSON.stringify(sceneGraphData, null, 2);
   navigator.clipboard?.writeText(text);
@@ -578,26 +648,29 @@ function copyGraphJson() {
   return text;
 }
 function copySelectedRoomJson() {
-  const room = sceneGraphData.rooms.find(room => room.room_id === selectedRoomId) || sceneGraphData.rooms[0];
+  const room = roomById(selectedRoomId) || sceneGraphData.rooms[0];
   const text = JSON.stringify(room, null, 2);
   navigator.clipboard?.writeText(text);
   graphStatus(`copied room ${room?.room_id || 'none'}`);
   return text;
 }
 function drawConnectionOverlay() {
-  document.querySelectorAll('.connection-line').forEach(line => line.addEventListener('click', () => {
-    selectedRoomId = line.dataset.fromRoom;
-    document.getElementById('readout').textContent = `${line.dataset.fromRoom} -> ${line.dataset.toRoom}`;
-  }));
+  document.querySelectorAll('.connection-line').forEach(line => line.addEventListener('click', () => selectConnection(line.dataset.connectionIndex)));
+  document.querySelectorAll('.room-box,.room-label').forEach(node => node.addEventListener('click', () => selectRoom(node.dataset.roomId)));
+  document.getElementById('toggle-room-boxes')?.addEventListener('change', updateLayerToggles);
+  document.getElementById('toggle-connection-lines')?.addEventListener('change', updateLayerToggles);
+  updateLayerToggles();
+  if (selectedRoomId) selectRoom(selectedRoomId);
 }
 document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
 document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
 drawConnectionOverlay();
 </script>
 """
+    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
     return (
         base_html
-        .replace("#readout {{", "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.7; cursor:pointer; }\n.connection-line:hover { stroke:#72d6ff; opacity:1; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#readout {{", 1)
+        .replace("#readout {{", overlay_css, 1)
         .replace("<script>\n", graph_block + "<script>\n", 1)
         .replace("</script>\n", "</script>\n" + overlay_script, 1)
     )
