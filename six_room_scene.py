@@ -485,6 +485,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also print every graph connection in deterministic graph order.",
     )
+    parser.add_argument(
+        "--validate-graph",
+        action="store_true",
+        help="Also print graph validation status and any validation errors.",
+    )
     args = parser.parse_args(argv)
 
     graph = build_six_room_scene_graph()
@@ -508,6 +513,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.list_connections:
         for connection in graph.connections:
             print(format_scene_connection_summary(connection))
+
+    if args.validate_graph:
+        errors = validate_six_room_scene_graph(graph)
+        if errors:
+            print("graph validation: failed")
+            for error in errors:
+                print(f"graph validation error: {error}")
+        else:
+            print("graph validation: ok")
 
     return 0
 

@@ -326,6 +326,21 @@ def test_six_room_scene_cli_lists_connections() -> None:
     print("PASS six-room scene CLI connection listing")
 
 
+def test_six_room_scene_cli_validates_graph() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--output-dir", temp, "--validate-graph"])
+        output = stdout.getvalue().splitlines()
+        assert exit_code == 0
+        assert "graph validation: ok" in output
+    print("PASS six-room scene CLI graph validation")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -417,6 +432,7 @@ def main() -> None:
     test_six_room_scene_cli_generates_artifacts_and_cell_report()
     test_six_room_scene_cli_lists_rooms()
     test_six_room_scene_cli_lists_connections()
+    test_six_room_scene_cli_validates_graph()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()
