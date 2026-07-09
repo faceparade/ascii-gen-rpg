@@ -429,6 +429,14 @@ def format_scene_room_summary(room: SceneRoomPlacement) -> str:
     )
 
 
+def format_scene_connection_summary(connection: SceneConnection) -> str:
+    """Return a compact directed graph-edge summary line."""
+    return (
+        f"{connection.from_room} -> {connection.to_room} "
+        f"kind={connection.kind} region={connection.region_name}"
+    )
+
+
 def format_scene_room_info(graph: SixRoomSceneGraph, room_id: str) -> str:
     """Return room bounds and oriented adjacency metadata for one room."""
     rooms_by_id = {room.room_id: room for room in graph.rooms}
@@ -472,6 +480,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Also print compact bounds for every room in graph order.",
     )
+    parser.add_argument(
+        "--list-connections",
+        action="store_true",
+        help="Also print every graph connection in deterministic graph order.",
+    )
     args = parser.parse_args(argv)
 
     graph = build_six_room_scene_graph()
@@ -491,6 +504,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.list_rooms:
         for room in graph.rooms:
             print(format_scene_room_summary(room))
+
+    if args.list_connections:
+        for connection in graph.connections:
+            print(format_scene_connection_summary(connection))
 
     return 0
 

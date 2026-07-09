@@ -12,6 +12,7 @@ from six_room_scene import (
     assemble_upper_band_rows,
     build_six_room_scene_graph,
     format_scene_cell_info,
+    format_scene_connection_summary,
     format_scene_room_info,
     format_scene_room_summary,
     main as six_room_scene_main,
@@ -187,6 +188,20 @@ def test_format_scene_room_summary_reports_compact_bounds() -> None:
     ]
     print("PASS six-room room summary formatter")
 
+
+def test_format_scene_connection_summary_reports_edges() -> None:
+    graph = build_six_room_scene_graph()
+    assert [format_scene_connection_summary(connection) for connection in graph.connections] == [
+        "upper_left -> upper_middle kind=horizontal region=upper_band",
+        "upper_middle -> upper_right kind=horizontal region=upper_band",
+        "upper_left -> lower_left kind=vertical region=mid_connector",
+        "upper_middle -> lower_middle kind=vertical region=mid_connector",
+        "upper_right -> lower_right kind=vertical region=mid_connector",
+        "lower_left -> lower_middle kind=horizontal region=lower_band",
+        "lower_middle -> lower_right kind=horizontal region=lower_band",
+    ]
+    print("PASS six-room connection summary formatter")
+
 def test_scene_rects_expose_review_coordinates() -> None:
     region_rects = scene_region_rects()
     room_rects = scene_room_rects()
@@ -290,6 +305,27 @@ def test_six_room_scene_cli_lists_rooms() -> None:
     print("PASS six-room scene CLI room listing")
 
 
+def test_six_room_scene_cli_lists_connections() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--output-dir", temp, "--list-connections"])
+        output = stdout.getvalue().splitlines()
+        assert exit_code == 0
+        assert "upper_left -> upper_middle kind=horizontal region=upper_band" in output
+        assert "upper_middle -> upper_right kind=horizontal region=upper_band" in output
+        assert "upper_left -> lower_left kind=vertical region=mid_connector" in output
+        assert "upper_middle -> lower_middle kind=vertical region=mid_connector" in output
+        assert "upper_right -> lower_right kind=vertical region=mid_connector" in output
+        assert "lower_left -> lower_middle kind=horizontal region=lower_band" in output
+        assert "lower_middle -> lower_right kind=horizontal region=lower_band" in output
+    print("PASS six-room scene CLI connection listing")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -374,11 +410,13 @@ def main() -> None:
     test_validate_six_room_scene_graph_reports_broken_references()
     test_format_scene_room_info_reports_bounds_and_connections()
     test_format_scene_room_summary_reports_compact_bounds()
+    test_format_scene_connection_summary_reports_edges()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_graph_scoped_coordinate_lookup_uses_supplied_graph()
     test_six_room_scene_cli_generates_artifacts_and_cell_report()
     test_six_room_scene_cli_lists_rooms()
+    test_six_room_scene_cli_lists_connections()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()
