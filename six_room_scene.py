@@ -750,17 +750,19 @@ function recomputeGraphAnchors() {
 }
 function updateOverlayFromGraph() {
   recomputeGraphAnchors();
-  document.querySelectorAll('.room-box').forEach(box => {
-    const room = roomById(box.dataset.roomId);
+  document.querySelectorAll('.room-box').forEach((box, index) => {
+    const room = sceneGraphData.rooms[index];
     if (!room) return;
+    box.dataset.roomId = room.room_id;
     box.setAttribute('x', room.x * 10 + 40);
     box.setAttribute('y', room.y * 18 + 10);
     box.setAttribute('width', room.width * 10);
     box.setAttribute('height', room.height * 18);
   });
-  document.querySelectorAll('.room-label').forEach(label => {
-    const room = roomById(label.dataset.roomId);
+  document.querySelectorAll('.room-label').forEach((label, index) => {
+    const room = sceneGraphData.rooms[index];
     if (!room) return;
+    label.dataset.roomId = room.room_id;
     label.setAttribute('x', room.x * 10 + 46);
     label.setAttribute('y', room.y * 18 + 26);
     label.textContent = room.room_id;
@@ -837,7 +839,7 @@ function editedGraphJsonText() {
 }
 function downloadGraphJson() {
   const text = editedGraphJsonText();
-  const blob = new Blob([text + '\n'], {type: 'application/json'});
+  const blob = new Blob([text + '\\n'], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -884,18 +886,25 @@ function drawConnectionOverlay() {
   updateLayerToggles();
   if (selectedRoomId) selectRoom(selectedRoomId);
 }
-document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
-document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
-document.getElementById('download-graph-json')?.addEventListener('click', downloadGraphJson);
-document.getElementById('load-graph-json-file')?.addEventListener('change', loadGraphJsonFile);
-document.getElementById('reset-graph-edits')?.addEventListener('click', resetGraphEdits);
-drawConnectionOverlay();
+function initGraphReview() {
+  document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
+  document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
+  document.getElementById('download-graph-json')?.addEventListener('click', downloadGraphJson);
+  document.getElementById('load-graph-json-file')?.addEventListener('change', loadGraphJsonFile);
+  document.getElementById('reset-graph-edits')?.addEventListener('click', resetGraphEdits);
+  drawConnectionOverlay();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGraphReview);
+} else {
+  initGraphReview();
+}
 </script>
 """
-    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button,.file-load-control { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; display:inline-block; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
+    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button,.file-load-control { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; display:inline-block; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {"
     return (
         base_html
-        .replace("#readout {{", overlay_css, 1)
+        .replace("#readout {", overlay_css, 1)
         .replace("<script>\n", graph_block + "<script>\n", 1)
         .replace("</script>\n", "</script>\n" + overlay_script, 1)
     )

@@ -512,7 +512,10 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "downloadGraphJson" in html
         assert "loadGraphJsonFile" in html
         assert "loadGraphJsonData" in html
+        assert "initGraphReview" in html
+        assert "DOMContentLoaded" in html
         assert "six_room_scene_graph_edited.json" in html
+        assert "text + '\\n'" in html
         assert "selectRoom(roomId)" in html
         assert "selectConnection(index)" in html
         assert "renderInspector" in html
@@ -520,11 +523,16 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "applyConnectionInspectorEdits" in html
         assert "resetGraphEdits" in html
         assert "updateOverlayFromGraph" in html
+        assert "sceneGraphData.rooms[index]" in html
+        assert "box.dataset.roomId = room.room_id" in html
+        assert "label.dataset.roomId = room.room_id" in html
         assert 'id=\"edit-room-id\"' in html
         assert 'id=\"edit-connection-from-room\"' in html
         assert 'id=\"apply-room-edits\"' in html
         assert 'id=\"apply-connection-edits\"' in html
         assert '<h2>Connections</h2>' in html
+        assert ".connection-line { stroke:#f6cf63" in html
+        assert ".room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff" in html
         assert '<code>upper_left</code> → <code>upper_middle</code>' in html
         import json
 
