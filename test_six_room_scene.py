@@ -4,21 +4,24 @@ from __future__ import annotations
 
 from scene_alignment import load_scene_lines
 from six_room_scene import (
+    SceneConnection,
+    SceneRoomPlacement,
     assemble_lower_band_rows,
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
-    SceneRoomPlacement,
     build_six_room_scene_graph,
     format_scene_cell_info,
     main as six_room_scene_main,
     render_six_room_scene_graph,
     scene_bounds,
     scene_cell_info,
+    scene_connections_for_room,
     scene_region_rects,
     scene_regions_at,
     scene_room_rects,
     scene_rooms_at,
+    validate_six_room_scene_graph,
 )
 
 
@@ -113,6 +116,38 @@ def test_six_room_scene_graph_lives_in_scene_module() -> None:
     ]
     assert render_six_room_scene_graph(graph) == load_scene_lines()
     print("PASS six-room scene graph lives in scene module")
+
+
+def test_six_room_graph_connection_lookup_lists_room_adjacencies() -> None:
+    graph = build_six_room_scene_graph()
+    assert [c.to_room for c in scene_connections_for_room(graph, "upper_middle")] == [
+        "upper_left",
+        "upper_right",
+        "lower_middle",
+    ]
+    assert [c.kind for c in scene_connections_for_room(graph, "upper_middle")] == [
+        "horizontal",
+        "horizontal",
+        "vertical",
+    ]
+    assert scene_connections_for_room(graph, "missing_room") == ()
+    print("PASS six-room graph connection lookup")
+
+
+def test_validate_six_room_scene_graph_reports_broken_references() -> None:
+    from dataclasses import replace
+
+    graph = build_six_room_scene_graph()
+    assert validate_six_room_scene_graph(graph) == ()
+    broken_graph = replace(
+        graph,
+        connections=(SceneConnection("upper_left", "missing_room", "horizontal", "missing_region"),),
+    )
+    assert validate_six_room_scene_graph(broken_graph) == (
+        "connection upper_left->missing_room references unknown to_room missing_room",
+        "connection upper_left->missing_room references unknown region missing_region",
+    )
+    print("PASS six-room graph validation reports broken references")
 
 def test_scene_rects_expose_review_coordinates() -> None:
     region_rects = scene_region_rects()
@@ -272,6 +307,8 @@ def main() -> None:
     test_scene_regions_cover_locked_line_spans()
     test_six_room_placements_match_locked_strip_boundaries()
     test_six_room_scene_graph_lives_in_scene_module()
+    test_six_room_graph_connection_lookup_lists_room_adjacencies()
+    test_validate_six_room_scene_graph_reports_broken_references()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_graph_scoped_coordinate_lookup_uses_supplied_graph()

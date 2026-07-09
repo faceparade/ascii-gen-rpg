@@ -250,6 +250,40 @@ def render_six_room_scene_graph(graph: SixRoomSceneGraph) -> list[str]:
     return [row for region in graph.regions for row in region.rows]
 
 
+def scene_connections_for_room(graph: SixRoomSceneGraph, room_id: str) -> tuple[SceneConnection, ...]:
+    """Return connections touching ``room_id``, oriented from that room to its neighbor."""
+    oriented: list[SceneConnection] = []
+    for connection in graph.connections:
+        if connection.from_room == room_id:
+            oriented.append(connection)
+        elif connection.to_room == room_id:
+            oriented.append(
+                SceneConnection(
+                    room_id,
+                    connection.from_room,
+                    connection.kind,
+                    connection.region_name,
+                )
+            )
+    return tuple(oriented)
+
+
+def validate_six_room_scene_graph(graph: SixRoomSceneGraph) -> tuple[str, ...]:
+    """Return graph reference errors without mutating or rendering the scene."""
+    room_ids = {room.room_id for room in graph.rooms}
+    region_names = {region.name for region in graph.regions}
+    errors: list[str] = []
+    for connection in graph.connections:
+        label = f"connection {connection.from_room}->{connection.to_room}"
+        if connection.from_room not in room_ids:
+            errors.append(f"{label} references unknown from_room {connection.from_room}")
+        if connection.to_room not in room_ids:
+            errors.append(f"{label} references unknown to_room {connection.to_room}")
+        if connection.region_name not in region_names:
+            errors.append(f"{label} references unknown region {connection.region_name}")
+    return tuple(errors)
+
+
 def assemble_six_room_scene_rows() -> list[str]:
     """Rebuild the locked six-room source through the six-room scene graph."""
     return render_six_room_scene_graph(build_six_room_scene_graph())
