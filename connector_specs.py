@@ -195,6 +195,21 @@ class SceneFragmentSpec:
         """Return the 34-column upper-band right room strip."""
         return cls.from_preset("upper_band_right_room_strip_34")
 
+    @classmethod
+    def scene_top_rows_1_4(cls) -> "SceneFragmentSpec":
+        """Return the top source-scene rows above the upper band."""
+        return cls.from_preset("scene_top_rows_1_4")
+
+    @classmethod
+    def scene_mid_connector_rows_14_17(cls) -> "SceneFragmentSpec":
+        """Return the connector rows between upper band and middle seam."""
+        return cls.from_preset("scene_mid_connector_rows_14_17")
+
+    @classmethod
+    def scene_lower_connector_rows_20_22(cls) -> "SceneFragmentSpec":
+        """Return the connector rows between middle seam and lower band."""
+        return cls.from_preset("scene_lower_connector_rows_20_22")
+
     @property
     def height(self) -> int:
         return len(self.rows)

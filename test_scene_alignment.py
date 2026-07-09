@@ -5,6 +5,7 @@ from __future__ import annotations
 from scene_alignment import (
     assemble_lower_band_rows,
     assemble_middle_seam_rows,
+    assemble_six_room_scene_rows,
     assemble_upper_band_rows,
     assert_scene_alignment,
     load_scene_lines,
@@ -40,6 +41,11 @@ def test_upper_band_assembles_from_named_strips() -> None:
     lines = load_scene_lines()
     assert assemble_upper_band_rows() == lines[5 - 1:13]
     print("PASS upper band assembles from named strips")
+
+
+def test_full_scene_assembles_from_named_regions() -> None:
+    assert assemble_six_room_scene_rows() == load_scene_lines()
+    print("PASS full six-room scene assembles from named regions")
 
 
 def _assert_alignment_failure(lines: list[str], *expected_fragments: str) -> None:
@@ -195,6 +201,7 @@ def main() -> None:
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
+    test_full_scene_assembles_from_named_regions()
     test_alignment_catches_line15_backtick_moved_to_line16()
     test_alignment_catches_source_width_drift()
     test_alignment_catches_center_decorated_floor_detail_drift()

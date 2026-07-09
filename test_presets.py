@@ -143,6 +143,16 @@ def main() -> None:
         assert spec.render() == list(SCENE_FRAGMENT_PRESETS[name])
     for name, spec in upper_band_specs.items():
         assert spec.render() == list(SCENE_FRAGMENT_PRESETS[name])
+    scene_region_specs = {
+        "scene_top_rows_1_4": SceneFragmentSpec.scene_top_rows_1_4(),
+        "scene_mid_connector_rows_14_17": SceneFragmentSpec.scene_mid_connector_rows_14_17(),
+        "scene_lower_connector_rows_20_22": SceneFragmentSpec.scene_lower_connector_rows_20_22(),
+    }
+    assert scene_region_specs["scene_top_rows_1_4"].height == 4
+    assert scene_region_specs["scene_mid_connector_rows_14_17"].height == 4
+    assert scene_region_specs["scene_lower_connector_rows_20_22"].height == 3
+    for name, spec in scene_region_specs.items():
+        assert spec.render() == list(SCENE_FRAGMENT_PRESETS[name])
     assert SceneFragmentSpec.room_top_band_34().render() == list(room_top_band)
     assert SceneFragmentSpec.room_floor_band_34().render() == list(room_floor_band)
     assert SceneFragmentSpec.middle_seam_connector_gap_80().render() == list(middle_seam_gap)

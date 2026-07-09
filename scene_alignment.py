@@ -109,6 +109,9 @@ UPPER_BAND_LEFT_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_left_room_strip_
 UPPER_BAND_GAP_STRIP = tuple(SceneFragmentSpec.upper_band_gap_strip_23().render())
 UPPER_BAND_MIDDLE_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_middle_room_strip_34().render())
 UPPER_BAND_RIGHT_ROOM_STRIP = tuple(SceneFragmentSpec.upper_band_right_room_strip_34().render())
+SCENE_TOP_ROWS = tuple(SceneFragmentSpec.scene_top_rows_1_4().render())
+SCENE_MID_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_mid_connector_rows_14_17().render())
+SCENE_LOWER_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_lower_connector_rows_20_22().render())
 
 
 def assemble_middle_seam_rows() -> list[str]:
@@ -151,6 +154,18 @@ def assemble_upper_band_rows() -> list[str]:
             UPPER_BAND_RIGHT_ROOM_STRIP,
             strict=True,
         )
+    ]
+
+
+def assemble_six_room_scene_rows() -> list[str]:
+    """Rebuild the locked six-room source from named scene regions."""
+    return [
+        *SCENE_TOP_ROWS,
+        *assemble_upper_band_rows(),
+        *SCENE_MID_CONNECTOR_ROWS,
+        *assemble_middle_seam_rows(),
+        *SCENE_LOWER_CONNECTOR_ROWS,
+        *assemble_lower_band_rows(),
     ]
 
 
