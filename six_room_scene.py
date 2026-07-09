@@ -2,7 +2,33 @@
 """Six-room scene generator assembled from locked named fragments."""
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from connector_specs import SceneFragmentSpec
+
+
+@dataclass(frozen=True)
+class SixRoomLayoutSpec:
+    """Locked horizontal layout for the current three-room scene bands."""
+
+    room_width: int = 34
+    connector_width: int = 23
+    room_count: int = 3
+
+    @property
+    def segment_widths(self) -> tuple[int, int, int, int, int]:
+        return (
+            self.room_width,
+            self.connector_width,
+            self.room_width,
+            self.connector_width,
+            self.room_width,
+        )
+
+    @property
+    def row_width(self) -> int:
+        return sum(self.segment_widths)
+
 
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())

@@ -11,6 +11,18 @@ from six_room_scene import (
 )
 
 
+def test_layout_spec_documents_locked_segment_widths() -> None:
+    from six_room_scene import SixRoomLayoutSpec
+
+    layout = SixRoomLayoutSpec()
+    assert layout.room_width == 34
+    assert layout.connector_width == 23
+    assert layout.room_count == 3
+    assert layout.segment_widths == (34, 23, 34, 23, 34)
+    assert layout.row_width == 148
+    print("PASS six-room layout spec locked widths")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -35,6 +47,7 @@ def test_full_scene_assembles_from_named_regions() -> None:
 
 
 def main() -> None:
+    test_layout_spec_documents_locked_segment_widths()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
