@@ -400,6 +400,24 @@ def format_scene_cell_info(info: SceneCellInfo) -> str:
     return f"L{info.y:02d} C{info.x:03d} char={shown} regions={regions} rooms={rooms}"
 
 
+def format_scene_room_info(graph: SixRoomSceneGraph, room_id: str) -> str:
+    """Return room bounds and oriented adjacency metadata for one room."""
+    rooms_by_id = {room.room_id: room for room in graph.rooms}
+    room = rooms_by_id.get(room_id)
+    if room is None:
+        return f"room {room_id} not found"
+    connections = scene_connections_for_room(graph, room_id)
+    connection_text = ",".join(
+        f"{connection.to_room}({connection.kind}:{connection.region_name})"
+        for connection in connections
+    ) or "none"
+    return (
+        f"room {room.room_id} bounds=x{room.x}..{room.x + room.width - 1} "
+        f"y{room.y}..{room.y + room.height - 1} size={room.width}x{room.height} "
+        f"connections={connection_text}"
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = ArgumentParser(description="Generate six-room scene review artifacts.")
     parser.add_argument(
@@ -413,6 +431,11 @@ def main(argv: list[str] | None = None) -> int:
         metavar="X,Y",
         help="Also print metadata for a zero-based scene coordinate, e.g. --cell 0,4.",
     )
+    parser.add_argument(
+        "--room",
+        metavar="ROOM_ID",
+        help="Also print bounds and adjacency metadata for a room id, e.g. --room upper_middle.",
+    )
     args = parser.parse_args(argv)
 
     graph = build_six_room_scene_graph()
@@ -425,6 +448,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.cell:
         x, y = _parse_cell_arg(args.cell)
         print(format_scene_cell_info(scene_cell_info(x, y, graph)))
+
+    if args.room:
+        print(format_scene_room_info(graph, args.room))
 
     return 0
 

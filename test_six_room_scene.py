@@ -12,6 +12,7 @@ from six_room_scene import (
     assemble_upper_band_rows,
     build_six_room_scene_graph,
     format_scene_cell_info,
+    format_scene_room_info,
     main as six_room_scene_main,
     render_six_room_scene_graph,
     scene_bounds,
@@ -149,6 +150,17 @@ def test_validate_six_room_scene_graph_reports_broken_references() -> None:
     )
     print("PASS six-room graph validation reports broken references")
 
+
+def test_format_scene_room_info_reports_bounds_and_connections() -> None:
+    graph = build_six_room_scene_graph()
+    assert format_scene_room_info(graph, "upper_middle") == (
+        "room upper_middle bounds=x57..90 y4..12 size=34x9 "
+        "connections=upper_left(horizontal:upper_band),upper_right(horizontal:upper_band),"
+        "lower_middle(vertical:mid_connector)"
+    )
+    assert format_scene_room_info(graph, "missing_room") == "room missing_room not found"
+    print("PASS six-room room-info formatter")
+
 def test_scene_rects_expose_review_coordinates() -> None:
     region_rects = scene_region_rects()
     room_rects = scene_room_rects()
@@ -213,11 +225,16 @@ def test_six_room_scene_cli_generates_artifacts_and_cell_report() -> None:
     with TemporaryDirectory() as temp:
         stdout = StringIO()
         with redirect_stdout(stdout):
-            exit_code = six_room_scene_main(["--output-dir", temp, "--cell", "0,4"])
+            exit_code = six_room_scene_main(["--output-dir", temp, "--cell", "0,4", "--room", "upper_middle"])
         output = stdout.getvalue()
         assert exit_code == 0
         assert "six-room scene bounds: width=149 height=29" in output
         assert "L04 C000 char=| regions=upper_band rooms=upper_left" in output
+        assert (
+            "room upper_middle bounds=x57..90 y4..12 size=34x9 "
+            "connections=upper_left(horizontal:upper_band),upper_right(horizontal:upper_band),"
+            "lower_middle(vertical:mid_connector)"
+        ) in output
         for name in (
             "six_room_scene_generated.txt",
             "six_room_scene_generated_annotated.txt",
@@ -309,6 +326,7 @@ def main() -> None:
     test_six_room_scene_graph_lives_in_scene_module()
     test_six_room_graph_connection_lookup_lists_room_adjacencies()
     test_validate_six_room_scene_graph_reports_broken_references()
+    test_format_scene_room_info_reports_bounds_and_connections()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
     test_graph_scoped_coordinate_lookup_uses_supplied_graph()
