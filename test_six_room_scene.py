@@ -8,6 +8,8 @@ from six_room_scene import (
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
+    format_scene_cell_info,
+    main as six_room_scene_main,
     scene_bounds,
     scene_cell_info,
     scene_region_rects,
@@ -121,8 +123,32 @@ def test_scene_coordinate_lookup_reports_region_room_and_glyph() -> None:
     assert upper_left_cell.char == "|"
     assert upper_left_cell.regions == ("upper_band",)
     assert upper_left_cell.rooms == ("upper_left",)
+    assert format_scene_cell_info(upper_left_cell) == "L04 C000 char=| regions=upper_band rooms=upper_left"
     assert scene_cell_info(148, 0).char is None
     print("PASS six-room coordinate lookup metadata")
+
+
+def test_six_room_scene_cli_generates_artifacts_and_cell_report() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--output-dir", temp, "--cell", "0,4"])
+        output = stdout.getvalue()
+        assert exit_code == 0
+        assert "six-room scene bounds: width=149 height=29" in output
+        assert "L04 C000 char=| regions=upper_band rooms=upper_left" in output
+        for name in (
+            "six_room_scene_generated.txt",
+            "six_room_scene_generated_annotated.txt",
+            "six_room_scene_generated.html",
+        ):
+            assert (Path(temp) / name).exists(), name
+    print("PASS six-room scene CLI artifact generation")
 
 
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
@@ -182,6 +208,7 @@ def main() -> None:
     test_six_room_placements_match_locked_strip_boundaries()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
+    test_six_room_scene_cli_generates_artifacts_and_cell_report()
     test_write_six_room_scene_artifacts()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()

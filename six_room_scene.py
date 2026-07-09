@@ -2,6 +2,7 @@
 """Six-room scene generator assembled from locked named fragments."""
 from __future__ import annotations
 
+from argparse import ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -292,3 +293,57 @@ def write_six_room_scene_artifacts(output_dir: Path) -> list[Path]:
     html_path.write_text(html_review(rows, rects), encoding="utf-8")
 
     return [scene_path, annotated_path, html_path]
+
+
+def _parse_cell_arg(value: str) -> tuple[int, int]:
+    """Parse a zero-based ``X,Y`` coordinate argument."""
+    try:
+        x_text, y_text = value.split(",", 1)
+        return (int(x_text), int(y_text))
+    except ValueError as exc:
+        raise ValueError("cell must be formatted as X,Y with zero-based integers") from exc
+
+
+def format_scene_cell_info(info: SceneCellInfo) -> str:
+    """Return a compact human-readable line for one scene cell."""
+    if info.char is None:
+        shown = "OUT_OF_BOUNDS"
+    elif info.char == " ":
+        shown = "SPACE"
+    else:
+        shown = info.char
+    regions = ",".join(info.regions) if info.regions else "none"
+    rooms = ",".join(info.rooms) if info.rooms else "none"
+    return f"L{info.y:02d} C{info.x:03d} char={shown} regions={regions} rooms={rooms}"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = ArgumentParser(description="Generate six-room scene review artifacts.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).resolve().parent,
+        help="Directory for generated .txt/.annotated.txt/.html artifacts (default: this file's folder).",
+    )
+    parser.add_argument(
+        "--cell",
+        metavar="X,Y",
+        help="Also print metadata for a zero-based scene coordinate, e.g. --cell 0,4.",
+    )
+    args = parser.parse_args(argv)
+
+    written = write_six_room_scene_artifacts(args.output_dir)
+    width, height = scene_bounds()
+    print(f"six-room scene bounds: width={width} height={height}")
+    for path in written:
+        print(path.resolve())
+
+    if args.cell:
+        x, y = _parse_cell_arg(args.cell)
+        print(format_scene_cell_info(scene_cell_info(x, y)))
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
