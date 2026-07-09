@@ -124,6 +124,22 @@ def test_alignment_catches_room_top_band_drift() -> None:
     print("PASS structural alignment catches room top-band drift")
 
 
+def test_alignment_catches_middle_seam_connector_gap_drift() -> None:
+    lines = load_scene_lines()
+    bad = list(lines)
+
+    # Change the connector interruption between the left/right 34-wide seam
+    # bands without changing row width. The named 80-column gap should catch it.
+    bad[19 - 1] = _replace_char(bad[19 - 1], 83, "/")
+
+    _assert_alignment_failure(
+        bad,
+        "slice drift in middle seam connector gap",
+        "line 19",
+    )
+    print("PASS structural alignment catches middle seam connector-gap drift")
+
+
 def main() -> None:
     test_current_scene_alignment()
     test_middle_seam_assembles_from_named_fragments()
@@ -132,6 +148,7 @@ def main() -> None:
     test_alignment_catches_center_decorated_floor_detail_drift()
     test_alignment_catches_room_bottom_rail_drift()
     test_alignment_catches_room_top_band_drift()
+    test_alignment_catches_middle_seam_connector_gap_drift()
     print("ALL scene alignment tests passed")
 
 
