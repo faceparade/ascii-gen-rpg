@@ -100,6 +100,22 @@ CENTER_DECORATED_FRAGMENT = tuple(RaisedFragmentSpec.center_decorated_29().rende
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
+MIDDLE_SEAM_CONNECTOR_GAP = tuple(SceneFragmentSpec.middle_seam_connector_gap_80().render())
+
+
+def assemble_middle_seam_rows() -> list[str]:
+    """Rebuild source lines 18–19 from named scene fragments.
+
+    The row-18 trailing space is intentional: line 18 is 149 columns while line
+    19 is 148. Keep that ragged edge explicit instead of padding every row.
+    """
+    top_gap, floor_gap = MIDDLE_SEAM_CONNECTOR_GAP
+    top = ROOM_TOP_BAND[0]
+    floor = ROOM_FLOOR_BAND[0]
+    return [
+        top + top_gap + top + " ",
+        floor + floor_gap + floor,
+    ]
 
 SLICE_SPECS: tuple[SliceSpec, ...] = (
     SliceSpec(
@@ -197,6 +213,12 @@ SLICE_SPECS: tuple[SliceSpec, ...] = (
         line=19,
         column=115,
         rows=ROOM_FLOOR_BAND,
+    ),
+    SliceSpec(
+        name="middle seam connector gap",
+        line=18,
+        column=35,
+        rows=MIDDLE_SEAM_CONNECTOR_GAP,
     ),
 )
 

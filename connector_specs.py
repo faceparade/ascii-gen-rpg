@@ -150,6 +150,11 @@ class SceneFragmentSpec:
         """Return the repeated 34-column room floor/underside band fragment."""
         return cls.from_preset("room_floor_band_34")
 
+    @classmethod
+    def middle_seam_connector_gap_80(cls) -> "SceneFragmentSpec":
+        """Return the 80-column connector interruption in the middle seam."""
+        return cls.from_preset("middle_seam_connector_gap_80")
+
     @property
     def height(self) -> int:
         return len(self.rows)
