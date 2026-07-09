@@ -35,6 +35,21 @@ def test_striped_region_composer_rejects_mismatched_heights() -> None:
     print("PASS six-room striped region rejects height drift")
 
 
+def test_validate_region_widths_rejects_width_drift() -> None:
+    from six_room_scene import validate_region_widths
+
+    strips = (("aa", "bb"), ("ccc", "ddd"))
+    try:
+        validate_region_widths(strips, (2, 2))
+    except ValueError as exc:
+        message = str(exc)
+        assert "strip 2 expected width 2" in message
+        assert "got [3]" in message
+    else:
+        raise AssertionError("strip width drift should fail")
+    print("PASS six-room strip width validation rejects drift")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -61,6 +76,7 @@ def test_full_scene_assembles_from_named_regions() -> None:
 def main() -> None:
     test_layout_spec_documents_locked_segment_widths()
     test_striped_region_composer_rejects_mismatched_heights()
+    test_validate_region_widths_rejects_width_drift()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()

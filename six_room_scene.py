@@ -47,6 +47,21 @@ SCENE_MID_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_mid_connector_rows_14_1
 SCENE_LOWER_CONNECTOR_ROWS = tuple(SceneFragmentSpec.scene_lower_connector_rows_20_22().render())
 
 
+def validate_region_widths(
+    strips: tuple[tuple[str, ...], ...],
+    expected_widths: tuple[int, ...],
+) -> None:
+    """Validate that every row in each strip matches its expected width."""
+    if len(strips) != len(expected_widths):
+        raise ValueError(
+            f"strip count must match expected widths: {len(strips)} != {len(expected_widths)}"
+        )
+    for index, (strip, width) in enumerate(zip(strips, expected_widths, strict=True), start=1):
+        actual_widths = {len(row) for row in strip}
+        if actual_widths != {width}:
+            raise ValueError(f"strip {index} expected width {width}, got {sorted(actual_widths)}")
+
+
 def assemble_striped_region(strips: tuple[tuple[str, ...], ...]) -> list[str]:
     """Join same-height horizontal strips row-by-row."""
     if not strips:
@@ -74,28 +89,28 @@ def assemble_middle_seam_rows() -> list[str]:
 
 def assemble_lower_band_rows() -> list[str]:
     """Rebuild source lines 23–29 from named lower-band strips."""
-    return assemble_striped_region(
-        (
-            LOWER_BAND_LEFT_ROOM_STRIP,
-            LOWER_BAND_GAP_STRIP,
-            LOWER_BAND_MIDDLE_ROOM_STRIP,
-            LOWER_BAND_GAP_STRIP,
-            LOWER_BAND_RIGHT_ROOM_STRIP,
-        )
+    strips = (
+        LOWER_BAND_LEFT_ROOM_STRIP,
+        LOWER_BAND_GAP_STRIP,
+        LOWER_BAND_MIDDLE_ROOM_STRIP,
+        LOWER_BAND_GAP_STRIP,
+        LOWER_BAND_RIGHT_ROOM_STRIP,
     )
+    validate_region_widths(strips, SixRoomLayoutSpec().segment_widths)
+    return assemble_striped_region(strips)
 
 
 def assemble_upper_band_rows() -> list[str]:
     """Rebuild source lines 5–13 from named upper-band strips."""
-    return assemble_striped_region(
-        (
-            UPPER_BAND_LEFT_ROOM_STRIP,
-            UPPER_BAND_GAP_STRIP,
-            UPPER_BAND_MIDDLE_ROOM_STRIP,
-            UPPER_BAND_GAP_STRIP,
-            UPPER_BAND_RIGHT_ROOM_STRIP,
-        )
+    strips = (
+        UPPER_BAND_LEFT_ROOM_STRIP,
+        UPPER_BAND_GAP_STRIP,
+        UPPER_BAND_MIDDLE_ROOM_STRIP,
+        UPPER_BAND_GAP_STRIP,
+        UPPER_BAND_RIGHT_ROOM_STRIP,
     )
+    validate_region_widths(strips, SixRoomLayoutSpec().segment_widths)
+    return assemble_striped_region(strips)
 
 
 def assemble_six_room_scene_rows() -> list[str]:
