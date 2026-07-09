@@ -47,6 +47,17 @@ class SceneRegionSpec:
         return tuple(len(row) for row in self.rows)
 
 
+@dataclass(frozen=True)
+class SceneRoomPlacement:
+    """Room bounds in zero-based scene coordinates."""
+
+    room_id: str
+    x: int
+    y: int
+    width: int = 34
+    height: int = 9
+
+
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
 ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
 ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
@@ -128,6 +139,24 @@ def assemble_upper_band_rows() -> list[str]:
     )
     validate_region_widths(strips, SixRoomLayoutSpec().segment_widths)
     return assemble_striped_region(strips)
+
+
+def six_room_placements() -> tuple[SceneRoomPlacement, ...]:
+    """Return room bounds for the locked six-room scene.
+
+    Coordinates are zero-based. Upper rooms cover lines 5–13. Lower rooms start
+    at the middle seam top on line 18 and extend through line 29.
+    """
+    layout = SixRoomLayoutSpec()
+    x_positions = (0, layout.room_width + layout.connector_width, (layout.room_width + layout.connector_width) * 2)
+    return (
+        SceneRoomPlacement("upper_left", x_positions[0], 4, layout.room_width, 9),
+        SceneRoomPlacement("upper_middle", x_positions[1], 4, layout.room_width, 9),
+        SceneRoomPlacement("upper_right", x_positions[2], 4, layout.room_width, 9),
+        SceneRoomPlacement("lower_left", x_positions[0], 17, layout.room_width, 12),
+        SceneRoomPlacement("lower_middle", x_positions[1], 17, layout.room_width, 12),
+        SceneRoomPlacement("lower_right", x_positions[2], 17, layout.room_width, 12),
+    )
 
 
 def top_region() -> SceneRegionSpec:

@@ -66,6 +66,21 @@ def test_scene_regions_cover_locked_line_spans() -> None:
     print("PASS six-room scene regions cover locked spans")
 
 
+def test_six_room_placements_match_locked_strip_boundaries() -> None:
+    from six_room_scene import six_room_placements
+
+    placements = six_room_placements()
+    assert [(room.room_id, room.x, room.y, room.width, room.height) for room in placements] == [
+        ("upper_left", 0, 4, 34, 9),
+        ("upper_middle", 57, 4, 34, 9),
+        ("upper_right", 114, 4, 34, 9),
+        ("lower_left", 0, 17, 34, 12),
+        ("lower_middle", 57, 17, 34, 12),
+        ("lower_right", 114, 17, 34, 12),
+    ]
+    print("PASS six-room placements match locked strip boundaries")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -94,6 +109,7 @@ def main() -> None:
     test_striped_region_composer_rejects_mismatched_heights()
     test_validate_region_widths_rejects_width_drift()
     test_scene_regions_cover_locked_line_spans()
+    test_six_room_placements_match_locked_strip_boundaries()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
