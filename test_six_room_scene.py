@@ -20,6 +20,7 @@ from six_room_scene import (
     scene_connections_for_room,
     scene_region_rects,
     scene_regions_at,
+    scene_regions_for_room,
     scene_room_rects,
     scene_rooms_at,
     validate_six_room_scene_graph,
@@ -153,10 +154,21 @@ def test_validate_six_room_scene_graph_reports_broken_references() -> None:
 
 def test_format_scene_room_info_reports_bounds_and_connections() -> None:
     graph = build_six_room_scene_graph()
+    assert scene_regions_for_room(graph, "lower_middle") == (
+        "middle_seam",
+        "lower_connector",
+        "lower_band",
+    )
     assert format_scene_room_info(graph, "upper_middle") == (
-        "room upper_middle bounds=x57..90 y4..12 size=34x9 "
+        "room upper_middle bounds=x57..90 y4..12 size=34x9 regions=upper_band "
         "connections=upper_left(horizontal:upper_band),upper_right(horizontal:upper_band),"
         "lower_middle(vertical:mid_connector)"
+    )
+    assert format_scene_room_info(graph, "lower_middle") == (
+        "room lower_middle bounds=x57..90 y17..28 size=34x12 "
+        "regions=middle_seam,lower_connector,lower_band "
+        "connections=upper_middle(vertical:mid_connector),lower_left(horizontal:lower_band),"
+        "lower_right(horizontal:lower_band)"
     )
     assert format_scene_room_info(graph, "missing_room") == "room missing_room not found"
     print("PASS six-room room-info formatter")
@@ -231,7 +243,7 @@ def test_six_room_scene_cli_generates_artifacts_and_cell_report() -> None:
         assert "six-room scene bounds: width=149 height=29" in output
         assert "L04 C000 char=| regions=upper_band rooms=upper_left" in output
         assert (
-            "room upper_middle bounds=x57..90 y4..12 size=34x9 "
+            "room upper_middle bounds=x57..90 y4..12 size=34x9 regions=upper_band "
             "connections=upper_left(horizontal:upper_band),upper_right(horizontal:upper_band),"
             "lower_middle(vertical:mid_connector)"
         ) in output

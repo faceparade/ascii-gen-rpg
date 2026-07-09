@@ -346,6 +346,27 @@ def scene_rooms_at(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> tu
     )
 
 
+def _rects_overlap(left: Rect, right: Rect) -> bool:
+    return (
+        left.x < right.x + right.w
+        and right.x < left.x + left.w
+        and left.y < right.y + right.h
+        and right.y < left.y + left.h
+    )
+
+
+def scene_regions_for_room(graph: SixRoomSceneGraph, room_id: str) -> tuple[str, ...]:
+    """Return scene regions whose rectangles overlap a room placement."""
+    room_rect = next((rect for rect in scene_room_rects(graph) if rect.name == room_id), None)
+    if room_rect is None:
+        return ()
+    return tuple(
+        region_rect.name
+        for region_rect in scene_region_rects(graph)
+        if _rects_overlap(room_rect, region_rect)
+    )
+
+
 def scene_cell_info(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> SceneCellInfo:
     """Return glyph + region/room metadata for a zero-based scene coordinate."""
     scene_graph = _default_graph(graph)
@@ -407,14 +428,16 @@ def format_scene_room_info(graph: SixRoomSceneGraph, room_id: str) -> str:
     if room is None:
         return f"room {room_id} not found"
     connections = scene_connections_for_room(graph, room_id)
+    regions = scene_regions_for_room(graph, room_id)
     connection_text = ",".join(
         f"{connection.to_room}({connection.kind}:{connection.region_name})"
         for connection in connections
     ) or "none"
+    region_text = ",".join(regions) if regions else "none"
     return (
         f"room {room.room_id} bounds=x{room.x}..{room.x + room.width - 1} "
         f"y{room.y}..{room.y + room.height - 1} size={room.width}x{room.height} "
-        f"connections={connection_text}"
+        f"regions={region_text} connections={connection_text}"
     )
 
 
