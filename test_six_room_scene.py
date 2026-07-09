@@ -501,12 +501,18 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert 'data-connection-index="0"' in html
         assert '<button id="copy-graph-json"' in html
         assert '<button id="copy-selected-room-json"' in html
+        assert '<button id="download-graph-json"' in html
+        assert '<input id="load-graph-json-file" type="file"' in html
         assert '<button id="reset-graph-edits"' in html
         assert '<input id="toggle-room-boxes"' in html
         assert '<input id="toggle-connection-lines"' in html
         assert '<div id="graph-inspector"' in html
         assert "drawConnectionOverlay" in html
         assert "copyGraphJson" in html
+        assert "downloadGraphJson" in html
+        assert "loadGraphJsonFile" in html
+        assert "loadGraphJsonData" in html
+        assert "six_room_scene_graph_edited.json" in html
         assert "selectRoom(roomId)" in html
         assert "selectConnection(index)" in html
         assert "renderInspector" in html

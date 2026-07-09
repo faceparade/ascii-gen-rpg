@@ -627,6 +627,8 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
         '<div class="review-controls">'
         '<button id="copy-graph-json" type="button">Copy graph JSON</button> '
         '<button id="copy-selected-room-json" type="button">Copy selected room JSON</button> '
+        '<button id="download-graph-json" type="button">Download edited graph JSON</button> '
+        '<label class="file-load-control">Load graph JSON <input id="load-graph-json-file" type="file" accept=".json,application/json"></label> '
         '<button id="reset-graph-edits" type="button">Reset edits</button> '
         '<label><input id="toggle-room-boxes" type="checkbox" checked> rooms</label> '
         '<label><input id="toggle-connection-lines" type="checkbox" checked> connections</label> '
@@ -829,6 +831,51 @@ function copySelectedRoomJson() {
   graphStatus(`copied room ${room?.room_id || 'none'}`);
   return text;
 }
+function editedGraphJsonText() {
+  recomputeGraphAnchors();
+  return JSON.stringify(sceneGraphData, null, 2);
+}
+function downloadGraphJson() {
+  const text = editedGraphJsonText();
+  const blob = new Blob([text + '\n'], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'six_room_scene_graph_edited.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  graphStatus('downloaded edited graph JSON');
+  return text;
+}
+function graphShapeMatchesOverlay(data) {
+  const roomBoxes = document.querySelectorAll('.room-box').length;
+  const connectionLines = document.querySelectorAll('.connection-line').length;
+  return data?.schema_version === 1 && Array.isArray(data.rooms) && Array.isArray(data.connections)
+    && data.rooms.length === roomBoxes && data.connections.length === connectionLines;
+}
+function loadGraphJsonData(data) {
+  if (!graphShapeMatchesOverlay(data)) {
+    graphStatus('load failed: graph must match current room/connection counts');
+    return false;
+  }
+  sceneGraphData = structuredClone(data);
+  selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
+  selectedConnectionIndex = null;
+  updateOverlayFromGraph();
+  if (selectedRoomId) selectRoom(selectedRoomId);
+  graphStatus('loaded graph JSON file');
+  return true;
+}
+function loadGraphJsonFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  file.text()
+    .then(text => loadGraphJsonData(JSON.parse(text)))
+    .catch(error => graphStatus(`load failed: ${error.message}`));
+  event.target.value = '';
+}
 function drawConnectionOverlay() {
   document.querySelectorAll('.connection-line').forEach(line => line.addEventListener('click', () => selectConnection(line.dataset.connectionIndex)));
   document.querySelectorAll('.room-box,.room-label').forEach(node => node.addEventListener('click', () => selectRoom(node.dataset.roomId)));
@@ -839,11 +886,13 @@ function drawConnectionOverlay() {
 }
 document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
 document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
+document.getElementById('download-graph-json')?.addEventListener('click', downloadGraphJson);
+document.getElementById('load-graph-json-file')?.addEventListener('change', loadGraphJsonFile);
 document.getElementById('reset-graph-edits')?.addEventListener('click', resetGraphEdits);
 drawConnectionOverlay();
 </script>
 """
-    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
+    overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button,.file-load-control { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; display:inline-block; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {{"
     return (
         base_html
         .replace("#readout {{", overlay_css, 1)
