@@ -255,8 +255,13 @@ def assemble_six_room_scene_rows() -> list[str]:
     return render_six_room_scene_graph(build_six_room_scene_graph())
 
 
-def scene_region_rects() -> list[Rect]:
+def _default_graph(graph: SixRoomSceneGraph | None) -> SixRoomSceneGraph:
+    return graph if graph is not None else build_six_room_scene_graph()
+
+
+def scene_region_rects(graph: SixRoomSceneGraph | None = None) -> list[Rect]:
     """Return named source-region rectangles for coordinate review artifacts."""
+    scene_graph = _default_graph(graph)
     return [
         Rect(
             region.name,
@@ -265,57 +270,59 @@ def scene_region_rects() -> list[Rect]:
             max(region.widths) if region.widths else 0,
             len(region.rows),
         )
-        for region in scene_regions()
+        for region in scene_graph.regions
     ]
 
 
-def scene_room_rects() -> list[Rect]:
+def scene_room_rects(graph: SixRoomSceneGraph | None = None) -> list[Rect]:
     """Return room-placement rectangles for coordinate review artifacts."""
+    scene_graph = _default_graph(graph)
     return [
         Rect(placement.room_id, placement.x, placement.y, placement.width, placement.height)
-        for placement in six_room_placements()
+        for placement in scene_graph.rooms
     ]
 
 
-def scene_review_rects() -> list[Rect]:
+def scene_review_rects(graph: SixRoomSceneGraph | None = None) -> list[Rect]:
     """Return both fragment-region and room-placement rectangles."""
-    return scene_region_rects() + scene_room_rects()
+    return scene_region_rects(graph) + scene_room_rects(graph)
 
 
-def scene_bounds() -> tuple[int, int]:
+def scene_bounds(graph: SixRoomSceneGraph | None = None) -> tuple[int, int]:
     """Return ``(width, height)`` for the ragged six-room scene canvas."""
-    rows = assemble_six_room_scene_rows()
+    rows = render_six_room_scene_graph(_default_graph(graph))
     return (max(map(len, rows)), len(rows))
 
 
-def scene_regions_at(x: int, y: int) -> tuple[str, ...]:
+def scene_regions_at(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> tuple[str, ...]:
     """Return named source regions covering a zero-based scene coordinate."""
     return tuple(
         rect.name
-        for rect in scene_region_rects()
+        for rect in scene_region_rects(graph)
         if rect.x <= x < rect.x + rect.w and rect.y <= y < rect.y + rect.h
     )
 
 
-def scene_rooms_at(x: int, y: int) -> tuple[str, ...]:
+def scene_rooms_at(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> tuple[str, ...]:
     """Return room ids covering a zero-based scene coordinate."""
     return tuple(
         rect.name
-        for rect in scene_room_rects()
+        for rect in scene_room_rects(graph)
         if rect.x <= x < rect.x + rect.w and rect.y <= y < rect.y + rect.h
     )
 
 
-def scene_cell_info(x: int, y: int) -> SceneCellInfo:
+def scene_cell_info(x: int, y: int, graph: SixRoomSceneGraph | None = None) -> SceneCellInfo:
     """Return glyph + region/room metadata for a zero-based scene coordinate."""
-    rows = assemble_six_room_scene_rows()
+    scene_graph = _default_graph(graph)
+    rows = render_six_room_scene_graph(scene_graph)
     char = rows[y][x] if 0 <= y < len(rows) and 0 <= x < len(rows[y]) else None
     return SceneCellInfo(
         x=x,
         y=y,
         char=char,
-        regions=scene_regions_at(x, y),
-        rooms=scene_rooms_at(x, y),
+        regions=scene_regions_at(x, y, scene_graph),
+        rooms=scene_rooms_at(x, y, scene_graph),
     )
 
 
@@ -324,7 +331,7 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
     output_dir.mkdir(parents=True, exist_ok=True)
     graph = graph or build_six_room_scene_graph()
     rows = render_six_room_scene_graph(graph)
-    rects = scene_review_rects()
+    rects = scene_review_rects(graph)
 
     scene_path = output_dir / "six_room_scene_generated.txt"
     annotated_path = output_dir / "six_room_scene_generated_annotated.txt"
@@ -374,15 +381,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    written = write_six_room_scene_artifacts(args.output_dir)
-    width, height = scene_bounds()
+    graph = build_six_room_scene_graph()
+    written = write_six_room_scene_artifacts(args.output_dir, graph)
+    width, height = scene_bounds(graph)
     print(f"six-room scene bounds: width={width} height={height}")
     for path in written:
         print(path.resolve())
 
     if args.cell:
         x, y = _parse_cell_arg(args.cell)
-        print(format_scene_cell_info(scene_cell_info(x, y)))
+        print(format_scene_cell_info(scene_cell_info(x, y, graph)))
 
     return 0
 

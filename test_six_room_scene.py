@@ -8,6 +8,7 @@ from six_room_scene import (
     assemble_middle_seam_rows,
     assemble_six_room_scene_rows,
     assemble_upper_band_rows,
+    SceneRoomPlacement,
     build_six_room_scene_graph,
     format_scene_cell_info,
     main as six_room_scene_main,
@@ -152,6 +153,22 @@ def test_scene_coordinate_lookup_reports_region_room_and_glyph() -> None:
     print("PASS six-room coordinate lookup metadata")
 
 
+def test_graph_scoped_coordinate_lookup_uses_supplied_graph() -> None:
+    from dataclasses import replace
+
+    graph = build_six_room_scene_graph()
+    shifted_graph = replace(
+        graph,
+        rooms=(SceneRoomPlacement("probe_room", 10, 4, 3, 2),),
+    )
+    assert scene_bounds(shifted_graph) == (149, 29)
+    assert scene_rooms_at(0, 4, shifted_graph) == ()
+    assert scene_rooms_at(10, 4, shifted_graph) == ("probe_room",)
+    assert scene_cell_info(10, 4, shifted_graph).rooms == ("probe_room",)
+    assert scene_cell_info(10, 4, shifted_graph).regions == ("upper_band",)
+    print("PASS six-room graph-scoped coordinate lookup")
+
+
 def test_six_room_scene_cli_generates_artifacts_and_cell_report() -> None:
     from contextlib import redirect_stdout
     from io import StringIO
@@ -203,6 +220,28 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     print("PASS six-room scene artifact writer")
 
 
+def test_write_six_room_scene_artifacts_uses_supplied_graph_rects() -> None:
+    from dataclasses import replace
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    from six_room_scene import write_six_room_scene_artifacts
+
+    graph = replace(
+        build_six_room_scene_graph(),
+        rooms=(SceneRoomPlacement("probe_room", 10, 4, 3, 2),),
+    )
+    with TemporaryDirectory() as temp:
+        _, annotated_path, html_path = write_six_room_scene_artifacts(Path(temp), graph)
+        annotated = annotated_path.read_text(encoding="utf-8")
+        html = html_path.read_text(encoding="utf-8")
+        assert "probe_room" in annotated
+        assert "probe_room" in html
+        assert "upper_left" not in annotated
+        assert "upper_left" not in html
+    print("PASS six-room graph-scoped artifact writer")
+
+
 def test_middle_seam_assembles_from_named_fragments() -> None:
     lines = load_scene_lines()
     assert assemble_middle_seam_rows() == lines[18 - 1:19]
@@ -235,8 +274,10 @@ def main() -> None:
     test_six_room_scene_graph_lives_in_scene_module()
     test_scene_rects_expose_review_coordinates()
     test_scene_coordinate_lookup_reports_region_room_and_glyph()
+    test_graph_scoped_coordinate_lookup_uses_supplied_graph()
     test_six_room_scene_cli_generates_artifacts_and_cell_report()
     test_write_six_room_scene_artifacts()
+    test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()
     test_lower_band_assembles_from_named_strips()
     test_upper_band_assembles_from_named_strips()
