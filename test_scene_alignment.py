@@ -101,12 +101,30 @@ def test_alignment_catches_room_bottom_rail_drift() -> None:
     print("PASS structural alignment catches room bottom rail drift")
 
 
+def test_alignment_catches_room_top_band_drift() -> None:
+    lines = load_scene_lines()
+    bad = list(lines)
+
+    # Mutate one glyph in the repeated middle-left top/opening band while
+    # preserving width and the backtick grid. The named seam anchor should report
+    # this as a slice drift.
+    bad[18 - 1] = _replace_char(bad[18 - 1], 6, "-")
+
+    _assert_alignment_failure(
+        bad,
+        "slice drift in middle-left room top band",
+        "line 18",
+    )
+    print("PASS structural alignment catches room top-band drift")
+
+
 def main() -> None:
     test_current_scene_alignment()
     test_alignment_catches_line15_backtick_moved_to_line16()
     test_alignment_catches_source_width_drift()
     test_alignment_catches_center_decorated_floor_detail_drift()
     test_alignment_catches_room_bottom_rail_drift()
+    test_alignment_catches_room_top_band_drift()
     print("ALL scene alignment tests passed")
 
 

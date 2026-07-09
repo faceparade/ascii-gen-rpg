@@ -98,6 +98,8 @@ LINE15_RAISED_FRAGMENT = tuple(RaisedFragmentSpec.connector_line15_short().rende
 WIDENED_RAISED_FRAGMENT = tuple(RaisedFragmentSpec.widened_27_partial().render())
 CENTER_DECORATED_FRAGMENT = tuple(RaisedFragmentSpec.center_decorated_29().render())
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
+ROOM_TOP_BAND = tuple(SceneFragmentSpec.room_top_band_34().render())
+ROOM_FLOOR_BAND = tuple(SceneFragmentSpec.room_floor_band_34().render())
 
 SLICE_SPECS: tuple[SliceSpec, ...] = (
     SliceSpec(
@@ -171,6 +173,30 @@ SLICE_SPECS: tuple[SliceSpec, ...] = (
         line=29,
         column=115,
         rows=ROOM_BOTTOM_RAIL,
+    ),
+    SliceSpec(
+        name="middle-left room top band",
+        line=18,
+        column=1,
+        rows=ROOM_TOP_BAND,
+    ),
+    SliceSpec(
+        name="middle-right room top band",
+        line=18,
+        column=115,
+        rows=ROOM_TOP_BAND,
+    ),
+    SliceSpec(
+        name="middle-left room floor band",
+        line=19,
+        column=1,
+        rows=ROOM_FLOOR_BAND,
+    ),
+    SliceSpec(
+        name="middle-right room floor band",
+        line=19,
+        column=115,
+        rows=ROOM_FLOOR_BAND,
     ),
 )
 

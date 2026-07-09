@@ -140,6 +140,16 @@ class SceneFragmentSpec:
         """Return the repeated 34-column room bottom rail fragment."""
         return cls.from_preset("room_bottom_rail_34")
 
+    @classmethod
+    def room_top_band_34(cls) -> "SceneFragmentSpec":
+        """Return the repeated 34-column room top/opening band fragment."""
+        return cls.from_preset("room_top_band_34")
+
+    @classmethod
+    def room_floor_band_34(cls) -> "SceneFragmentSpec":
+        """Return the repeated 34-column room floor/underside band fragment."""
+        return cls.from_preset("room_floor_band_34")
+
     @property
     def height(self) -> int:
         return len(self.rows)

@@ -101,10 +101,18 @@ def main() -> None:
 
     # ── Generic scene-fragment preset data ──
     room_bottom_rail = ("`— — — — — — — — — — — — — — — — '",)
+    room_top_band = (",— —,— —,— —,— —,— —,— —,— —,— —,.",)
+    room_floor_band = ("|__/___/___/___/___/___/___/___/ |",)
     assert SCENE_FRAGMENT_PRESETS["room_bottom_rail_34"] == room_bottom_rail
+    assert SCENE_FRAGMENT_PRESETS["room_top_band_34"] == room_top_band
+    assert SCENE_FRAGMENT_PRESETS["room_floor_band_34"] == room_floor_band
     assert build_scene_fragment("room_bottom_rail_34") is SCENE_FRAGMENT_PRESETS["room_bottom_rail_34"]
     assert SceneFragmentSpec.room_bottom_rail_34().width == 34
     assert SceneFragmentSpec.room_bottom_rail_34().render() == list(room_bottom_rail)
+    assert SceneFragmentSpec.room_top_band_34().width == 34
+    assert SceneFragmentSpec.room_floor_band_34().width == 34
+    assert SceneFragmentSpec.room_top_band_34().render() == list(room_top_band)
+    assert SceneFragmentSpec.room_floor_band_34().render() == list(room_floor_band)
     print("PASS: generic scene-fragment preset data")
 
     # ── build_shell('middle_8') matches the locked middle reference ──

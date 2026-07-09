@@ -128,6 +128,12 @@ SCENE_FRAGMENT_PRESETS: Dict[str, tuple[str, ...]] = {
     "room_bottom_rail_34": (
         "`— — — — — — — — — — — — — — — — '",
     ),
+    "room_top_band_34": (
+        ",— —,— —,— —,— —,— —,— —,— —,— —,.",
+    ),
+    "room_floor_band_34": (
+        "|__/___/___/___/___/___/___/___/ |",
+    ),
 }
 
 
