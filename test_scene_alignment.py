@@ -3,10 +3,6 @@
 from __future__ import annotations
 
 from scene_alignment import (
-    assemble_lower_band_rows,
-    assemble_middle_seam_rows,
-    assemble_six_room_scene_rows,
-    assemble_upper_band_rows,
     assert_scene_alignment,
     load_scene_lines,
 )
@@ -23,29 +19,6 @@ def _replace_char(row: str, column: int, char: str) -> str:
 def test_current_scene_alignment() -> None:
     assert_scene_alignment()
     print("PASS current six-room scene structural alignment")
-
-
-def test_middle_seam_assembles_from_named_fragments() -> None:
-    lines = load_scene_lines()
-    assert assemble_middle_seam_rows() == lines[18 - 1:19]
-    print("PASS middle seam assembles from named fragments")
-
-
-def test_lower_band_assembles_from_named_strips() -> None:
-    lines = load_scene_lines()
-    assert assemble_lower_band_rows() == lines[23 - 1:29]
-    print("PASS lower band assembles from named strips")
-
-
-def test_upper_band_assembles_from_named_strips() -> None:
-    lines = load_scene_lines()
-    assert assemble_upper_band_rows() == lines[5 - 1:13]
-    print("PASS upper band assembles from named strips")
-
-
-def test_full_scene_assembles_from_named_regions() -> None:
-    assert assemble_six_room_scene_rows() == load_scene_lines()
-    print("PASS full six-room scene assembles from named regions")
 
 
 def _assert_alignment_failure(lines: list[str], *expected_fragments: str) -> None:
@@ -198,10 +171,6 @@ def test_alignment_catches_upper_band_gap_strip_drift() -> None:
 
 def main() -> None:
     test_current_scene_alignment()
-    test_middle_seam_assembles_from_named_fragments()
-    test_lower_band_assembles_from_named_strips()
-    test_upper_band_assembles_from_named_strips()
-    test_full_scene_assembles_from_named_regions()
     test_alignment_catches_line15_backtick_moved_to_line16()
     test_alignment_catches_source_width_drift()
     test_alignment_catches_center_decorated_floor_detail_drift()

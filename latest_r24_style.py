@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scene_alignment import assemble_six_room_scene_rows
+from six_room_scene import assemble_six_room_scene_rows
 
 SOURCE_OF_TRUTH_PATH = Path(__file__).resolve().parent / "six_rooms_two_platforms.txt"
 # Backwards-compatible name for tests/callers that still import TEMPLATE_PATH.
