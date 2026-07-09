@@ -27,6 +27,7 @@ from six_room_scene import (
     scene_rooms_at,
     six_room_scene_graph_data,
     validate_six_room_scene_graph,
+    validate_six_room_scene_graph_data,
 )
 
 
@@ -165,6 +166,20 @@ def test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors() -> 
     assert upper_left_to_middle["rooms"] == ["upper_left", "upper_middle"]
     assert graph_data["rooms"][0]["center"] == {"x": 16, "y": 8}
     print("PASS six-room graph JSON exposes connection anchors")
+
+
+def test_validate_six_room_scene_graph_data_checks_round_trip_json() -> None:
+    graph_data = six_room_scene_graph_data(build_six_room_scene_graph())
+    assert validate_six_room_scene_graph_data(graph_data) == ()
+    broken_data = dict(graph_data)
+    broken_data["connections"] = [
+        {"from_room": "upper_left", "to_room": "missing_room", "kind": "horizontal", "region_name": "missing_region"}
+    ]
+    assert validate_six_room_scene_graph_data(broken_data) == (
+        "connection upper_left->missing_room references unknown to_room missing_room",
+        "connection upper_left->missing_room references unknown region missing_region",
+    )
+    print("PASS six-room graph JSON validation")
 
 
 def test_format_scene_room_info_reports_bounds_and_connections() -> None:
@@ -373,6 +388,25 @@ def test_six_room_scene_cli_prints_graph_json() -> None:
     print("PASS six-room scene CLI graph JSON output")
 
 
+def test_six_room_scene_cli_validates_loaded_graph_json() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+    import json
+
+    with TemporaryDirectory() as temp:
+        graph_json = Path(temp) / "graph.json"
+        graph_json.write_text(json.dumps(six_room_scene_graph_data(build_six_room_scene_graph())), encoding="utf-8")
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--graph-json", str(graph_json), "--validate-graph"])
+        output = stdout.getvalue().splitlines()
+        assert exit_code == 0
+        assert output == ["graph json validation: ok"]
+    print("PASS six-room scene CLI loaded graph JSON validation")
+
+
 def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -405,6 +439,13 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "connections=${connections}" in html
         assert "regions=${regions}" in html
         assert '<script type="application/json" id="scene-graph-data">' in html
+        assert '<svg id="connection-overlay"' in html
+        assert '<line class="connection-line"' in html
+        assert 'data-connection-index="0"' in html
+        assert '<button id="copy-graph-json"' in html
+        assert '<button id="copy-selected-room-json"' in html
+        assert "drawConnectionOverlay" in html
+        assert "copyGraphJson" in html
         assert '<h2>Connections</h2>' in html
         assert '<code>upper_left</code> → <code>upper_middle</code>' in html
         import json
@@ -491,6 +532,7 @@ def main() -> None:
     test_six_room_graph_connection_lookup_lists_room_adjacencies()
     test_validate_six_room_scene_graph_reports_broken_references()
     test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors()
+    test_validate_six_room_scene_graph_data_checks_round_trip_json()
     test_format_scene_room_info_reports_bounds_and_connections()
     test_format_scene_room_summary_reports_compact_bounds()
     test_format_scene_connection_summary_reports_edges()
@@ -502,6 +544,7 @@ def main() -> None:
     test_six_room_scene_cli_lists_connections()
     test_six_room_scene_cli_validates_graph()
     test_six_room_scene_cli_prints_graph_json()
+    test_six_room_scene_cli_validates_loaded_graph_json()
     test_write_six_room_scene_artifacts()
     test_write_six_room_scene_artifacts_uses_supplied_graph_rects()
     test_middle_seam_assembles_from_named_fragments()

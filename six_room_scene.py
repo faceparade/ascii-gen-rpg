@@ -286,6 +286,52 @@ def validate_six_room_scene_graph(graph: SixRoomSceneGraph) -> tuple[str, ...]:
     return tuple(errors)
 
 
+def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ...]:
+    """Return validation errors for exported graph JSON data."""
+    errors: list[str] = []
+    if data.get("schema_version") != 1:
+        errors.append(f"unsupported schema_version {data.get('schema_version')}")
+
+    room_entries = data.get("rooms")
+    region_entries = data.get("regions")
+    connection_entries = data.get("connections")
+    if not isinstance(room_entries, list):
+        errors.append("rooms must be a list")
+        room_entries = []
+    if not isinstance(region_entries, list):
+        errors.append("regions must be a list")
+        region_entries = []
+    if not isinstance(connection_entries, list):
+        errors.append("connections must be a list")
+        connection_entries = []
+
+    room_ids = {
+        room.get("room_id")
+        for room in room_entries
+        if isinstance(room, dict) and isinstance(room.get("room_id"), str)
+    }
+    region_names = {
+        region.get("name")
+        for region in region_entries
+        if isinstance(region, dict) and isinstance(region.get("name"), str)
+    }
+    for connection in connection_entries:
+        if not isinstance(connection, dict):
+            errors.append("connection entry must be an object")
+            continue
+        from_room = connection.get("from_room")
+        to_room = connection.get("to_room")
+        region_name = connection.get("region_name")
+        label = f"connection {from_room}->{to_room}"
+        if from_room not in room_ids:
+            errors.append(f"{label} references unknown from_room {from_room}")
+        if to_room not in room_ids:
+            errors.append(f"{label} references unknown to_room {to_room}")
+        if region_name not in region_names:
+            errors.append(f"{label} references unknown region {region_name}")
+    return tuple(errors)
+
+
 def assemble_six_room_scene_rows() -> list[str]:
     """Rebuild the locked six-room source through the six-room scene graph."""
     return render_six_room_scene_graph(build_six_room_scene_graph())
@@ -478,6 +524,36 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
     """Return HTML review with embedded graph data and a connection legend."""
     base_html = html_review(rows, rects, scene_room_connection_cell_attrs(graph))
     graph_json = json.dumps(six_room_scene_graph_data(graph), indent=2).replace("</", "<\\/")
+    cell_w = 10
+    cell_h = 18
+    line_offset_x = 40
+    line_offset_y = 10
+    width, height = scene_bounds(graph)
+    overlay_lines = "\n".join(
+        (
+            f'<line class="connection-line" data-connection-index="{index}" '
+            f'data-from-room="{escape(connection.from_room, quote=True)}" '
+            f'data-to-room="{escape(connection.to_room, quote=True)}" '
+            f'x1="{_room_center(next(room for room in graph.rooms if room.room_id == connection.from_room))["x"] * cell_w + line_offset_x}" '
+            f'y1="{_room_center(next(room for room in graph.rooms if room.room_id == connection.from_room))["y"] * cell_h + line_offset_y}" '
+            f'x2="{_room_center(next(room for room in graph.rooms if room.room_id == connection.to_room))["x"] * cell_w + line_offset_x}" '
+            f'y2="{_room_center(next(room for room in graph.rooms if room.room_id == connection.to_room))["y"] * cell_h + line_offset_y}" />'
+        )
+        for index, connection in enumerate(graph.connections)
+        if any(room.room_id == connection.from_room for room in graph.rooms)
+        and any(room.room_id == connection.to_room for room in graph.rooms)
+    )
+    overlay_html = (
+        '<div class="review-controls">'
+        '<button id="copy-graph-json" type="button">Copy graph JSON</button> '
+        '<button id="copy-selected-room-json" type="button">Copy selected room JSON</button> '
+        '<span id="graph-copy-status"></span>'
+        '</div>\n'
+        f'<svg id="connection-overlay" viewBox="0 0 {width * cell_w + line_offset_x * 2} {height * cell_h + 24}" '
+        'aria-label="Room connection overlay">'
+        f'{overlay_lines}'
+        '</svg>\n'
+    )
     connection_items = "\n".join(
         "<li>"
         f"<code>{escape(connection.from_room)}</code> → <code>{escape(connection.to_room)}</code> "
@@ -487,9 +563,44 @@ def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoo
     )
     graph_block = (
         f'<script type="application/json" id="scene-graph-data">\n{graph_json}\n</script>\n'
+        f"{overlay_html}"
         f"<h2>Connections</h2><ul>{connection_items}</ul>\n"
     )
-    return base_html.replace("<script>\n", graph_block + "<script>\n", 1)
+    overlay_script = """
+<script>
+const sceneGraphData = JSON.parse(document.getElementById('scene-graph-data').textContent);
+let selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
+function graphStatus(text) { document.getElementById('graph-copy-status').textContent = text; }
+function copyGraphJson() {
+  const text = JSON.stringify(sceneGraphData, null, 2);
+  navigator.clipboard?.writeText(text);
+  graphStatus('copied full graph JSON');
+  return text;
+}
+function copySelectedRoomJson() {
+  const room = sceneGraphData.rooms.find(room => room.room_id === selectedRoomId) || sceneGraphData.rooms[0];
+  const text = JSON.stringify(room, null, 2);
+  navigator.clipboard?.writeText(text);
+  graphStatus(`copied room ${room?.room_id || 'none'}`);
+  return text;
+}
+function drawConnectionOverlay() {
+  document.querySelectorAll('.connection-line').forEach(line => line.addEventListener('click', () => {
+    selectedRoomId = line.dataset.fromRoom;
+    document.getElementById('readout').textContent = `${line.dataset.fromRoom} -> ${line.dataset.toRoom}`;
+  }));
+}
+document.getElementById('copy-graph-json')?.addEventListener('click', copyGraphJson);
+document.getElementById('copy-selected-room-json')?.addEventListener('click', copySelectedRoomJson);
+drawConnectionOverlay();
+</script>
+"""
+    return (
+        base_html
+        .replace("#readout {{", "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.7; cursor:pointer; }\n.connection-line:hover { stroke:#72d6ff; opacity:1; }\n.review-controls { margin:10px 0; }\n.review-controls button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#readout {{", 1)
+        .replace("<script>\n", graph_block + "<script>\n", 1)
+        .replace("</script>\n", "</script>\n" + overlay_script, 1)
+    )
 
 
 def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
@@ -610,7 +721,29 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Print only the machine-readable graph JSON to stdout.",
     )
+    parser.add_argument(
+        "--graph-json",
+        type=Path,
+        help="Load an exported graph JSON file for validation or normalized printing.",
+    )
     args = parser.parse_args(argv)
+
+    if args.graph_json:
+        graph_data = json.loads(args.graph_json.read_text(encoding="utf-8"))
+        if args.print_graph_json:
+            print(json.dumps(graph_data, indent=2))
+            return 0
+        if args.validate_graph:
+            errors = validate_six_room_scene_graph_data(graph_data)
+            if errors:
+                print("graph json validation: failed")
+                for error in errors:
+                    print(f"graph json validation error: {error}")
+                return 1
+            print("graph json validation: ok")
+            return 0
+        print(f"loaded graph json: {args.graph_json.resolve()}")
+        return 0
 
     graph = build_six_room_scene_graph()
     if args.print_graph_json:
