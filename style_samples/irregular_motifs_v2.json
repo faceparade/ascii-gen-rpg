@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "grammar": "Grammar v2 irregular boundary runs",
+  "status": "authoritative",
+  "motifs": {
+    "north_run": {
+      "top": ",— —",
+      "underside_start": "/|__",
+      "underside_repeat": "/___",
+      "underside_end": "/|"
+    },
+    "west_foreground_run": {
+      "start_actor_row": "‘ |",
+      "continuing_actor_row": "| |",
+      "boundary_row": "|/|"
+    },
+    "concave_east_start": {
+      "start_actor_row": "‘ |",
+      "boundary_row": "|/|"
+    },
+    "south_foreground_run": {
+      "rim_span": ",— —",
+      "exterior_face_start": "‘/___",
+      "concave_face_start": "/|__",
+      "east_corner_override": "‘—,"
+    }
+  },
+  "approved_fixture": {
+    "mask": ["###", "##.", "##."],
+    "target": "targets/room-l-shape-v2.txt"
+  }
+}
