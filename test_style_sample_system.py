@@ -31,24 +31,32 @@ def test_outline_contains_source_style_corner_vocabulary() -> None:
     assert "—" in text
 
 
-def test_floor_backticks_mark_interior_grid_vertices() -> None:
-    rows = render_bulk_outline(cells_from_mask(("####", "####", "####")))
-    expected = {
-        (3, 3),
-        (7, 3),
-        (11, 3),
-        (3, 5),
-        (7, 5),
-        (11, 5),
-    }
+def test_one_section_is_five_by_three_with_center_marker() -> None:
+    rows = render_bulk_outline(cells_from_mask(("#",)))
+    assert len(rows) == 3
+    assert max(map(len, rows)) == 5
+    assert rows[1][2] == "`"
+
+
+def test_adjacent_sections_share_outside_edges() -> None:
+    rows = render_bulk_outline(cells_from_mask(("##",)))
+    assert max(map(len, rows)) == 9
+    assert rows[1][2] == "`"
+    assert rows[1][6] == "`"
+
+
+def test_three_by_two_floor_has_six_center_indicators() -> None:
+    rows = render_bulk_outline(cells_from_mask(("###", "###")))
+    expected = {(2, 1), (6, 1), (10, 1), (2, 3), (6, 3), (10, 3)}
     assert all(rows[y][x] == "`" for x, y in expected)
-    assert sum(rows[y].count("`") for y in (3, 5)) == len(expected)
+    assert rows[1].count("`") == 3
+    assert rows[3].count("`") == 3
 
 
-def test_floor_backticks_do_not_fill_voids_or_exposed_notches() -> None:
-    rows = render_bulk_outline(cells_from_mask(("###", "##.", "###")))
-    assert rows[3].count("`") == 1
-    assert rows[5].count("`") == 1
+def test_section_markers_follow_occupied_irregular_cells() -> None:
+    rows = render_bulk_outline(cells_from_mask(("##.", "###")))
+    expected = {(2, 1), (6, 1), (2, 3), (6, 3), (10, 3)}
+    assert all(rows[y][x] == "`" for x, y in expected)
 
 
 def test_irregular_shape_preserves_an_interior_turn() -> None:
