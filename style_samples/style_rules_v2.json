@@ -87,29 +87,95 @@
   "confirmed_fixtures": [
     {
       "id": "unit-section",
-      "mask": ["#"],
+      "mask": [
+        "#"
+      ],
       "purpose": "Actor anchor and zero lattice intersections."
     },
     {
       "id": "two-by-two",
-      "mask": ["##", "##"],
+      "mask": [
+        "##",
+        "##"
+      ],
       "purpose": "One shared lattice intersection."
     },
     {
       "id": "foreground-room-four-by-four",
-      "mask": ["####", "####", "####", "####"],
+      "mask": [
+        "####",
+        "####",
+        "####",
+        "####"
+      ],
       "target": "targets/foreground_occlusion_v2.txt",
       "purpose": "Approved north/east background and south/west foreground projection with occlusion."
     },
     {
       "id": "l-shape-v2",
-      "mask": ["###", "##.", "##."],
-      "purpose": "Concave boundary, incomplete lattice vertices, and directional foreground occlusion."
+      "mask": [
+        "###",
+        "##.",
+        "##."
+      ],
+      "purpose": "Approved concave east/south transitions, west/south foreground projection, and incomplete lattice suppression.",
+      "status": "approved",
+      "target": "targets/room-l-shape-v2.txt"
+    },
+    {
+      "id": "u-shape-v2",
+      "mask": [
+        "##..##",
+        "##..##",
+        "##..##",
+        "######"
+      ],
+      "target": "targets/room-u-shape-v2.txt",
+      "purpose": "Mirrored concave courtyard walls terminating into an interior bridge rim and hanging face."
     }
   ],
   "open_work": [
-    "Approve concave-corner glyph motifs for irregular rooms.",
+    "Approve additional irregular junctions beyond the L-shape and courtyard bridge motifs.",
     "Define door and corridor transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
-  ]
+  ],
+  "irregular_wall_motifs": {
+    "north_run": {
+      "status": "confirmed",
+      "description": "A contiguous exposed north-edge run shares one top rim and one capped underside.",
+      "top_boundary_glyph": ",",
+      "top_span": "— —",
+      "underside_start": "/|__",
+      "underside_repeat": "/___",
+      "underside_end": "/|"
+    },
+    "west_foreground_run": {
+      "status": "confirmed",
+      "description": "A contiguous exposed west-edge run crosses the actor anchor and alternates actor and boundary rows.",
+      "run_start_actor_row": "‘ |",
+      "continuing_actor_row": "| |",
+      "boundary_row": "|/|"
+    },
+    "concave_east_start": {
+      "status": "confirmed",
+      "description": "An east wall beginning below continuous floor uses a curved inner start before continuing as |/|.",
+      "start_actor_row": "‘ |",
+      "boundary_row": "|/|"
+    },
+    "south_foreground_run": {
+      "status": "confirmed",
+      "description": "A contiguous exposed south run crosses actor anchors; its face start depends on whether the run begins at the exterior west edge or at a concave notch.",
+      "rim_span": ",— —",
+      "exterior_face_start": "‘/___",
+      "concave_face_start": "/|__",
+      "east_corner_override": "‘—,"
+    },
+    "courtyard_bridge_junction": {
+      "status": "confirmed",
+      "description": "An interior north run flanked by opposing inner walls repaints its rim above them and hangs one foreground face into the courtyard.",
+      "detection": "Exposed east edge immediately left, exposed west edge immediately right, and empty courtyard cells above the north run.",
+      "hanging_face_start": "‘/___",
+      "side_wall_resolution": "Both inner wall caps terminate into the bridge and are cleared beneath its underside."
+    }
+  }
 }
