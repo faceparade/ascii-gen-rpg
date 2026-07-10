@@ -4,12 +4,23 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 import json
+import re
 from html import escape
 from dataclasses import dataclass
 from pathlib import Path
 
 from connector_specs import SceneFragmentSpec
 from curved_dungeon_grammar import Rect, annotate, html_review, write_text
+from scene_graph import (
+    SceneConnection,
+    SceneGraph,
+    SceneRegionSpec,
+    SceneRoomPlacement,
+    render_scene_graph,
+    validate_scene_graph,
+)
+
+SixRoomSceneGraph = SceneGraph
 
 
 @dataclass(frozen=True)
@@ -36,34 +47,6 @@ class SixRoomLayoutSpec:
 
 
 @dataclass(frozen=True)
-class SceneRegionSpec:
-    """Named contiguous region in the locked six-room scene."""
-
-    name: str
-    start_line: int
-    rows: tuple[str, ...]
-
-    @property
-    def end_line(self) -> int:
-        return self.start_line + len(self.rows) - 1
-
-    @property
-    def widths(self) -> tuple[int, ...]:
-        return tuple(len(row) for row in self.rows)
-
-
-@dataclass(frozen=True)
-class SceneRoomPlacement:
-    """Room bounds in zero-based scene coordinates."""
-
-    room_id: str
-    x: int
-    y: int
-    width: int = 34
-    height: int = 9
-
-
-@dataclass(frozen=True)
 class SceneCellInfo:
     """Debug metadata for one zero-based scene coordinate."""
 
@@ -72,25 +55,6 @@ class SceneCellInfo:
     char: str | None
     regions: tuple[str, ...]
     rooms: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class SceneConnection:
-    """Named adjacency edge in the locked six-room scene."""
-
-    from_room: str
-    to_room: str
-    kind: str
-    region_name: str
-
-
-@dataclass(frozen=True)
-class SixRoomSceneGraph:
-    """Data model for the locked six-room scene assembly."""
-
-    rooms: tuple[SceneRoomPlacement, ...]
-    connections: tuple[SceneConnection, ...]
-    regions: tuple[SceneRegionSpec, ...]
 
 
 ROOM_BOTTOM_RAIL = tuple(SceneFragmentSpec.room_bottom_rail_34().render())
@@ -248,8 +212,8 @@ def build_six_room_scene_graph() -> SixRoomSceneGraph:
 
 
 def render_six_room_scene_graph(graph: SixRoomSceneGraph) -> list[str]:
-    """Render a six-room scene graph from its ordered named source regions."""
-    return [row for region in graph.regions for row in region.rows]
+    """Render any scene graph through the reusable ordered-region pipeline."""
+    return render_scene_graph(graph)
 
 
 def scene_connections_for_room(graph: SixRoomSceneGraph, room_id: str) -> tuple[SceneConnection, ...]:
@@ -271,19 +235,8 @@ def scene_connections_for_room(graph: SixRoomSceneGraph, room_id: str) -> tuple[
 
 
 def validate_six_room_scene_graph(graph: SixRoomSceneGraph) -> tuple[str, ...]:
-    """Return graph reference errors without mutating or rendering the scene."""
-    room_ids = {room.room_id for room in graph.rooms}
-    region_names = {region.name for region in graph.regions}
-    errors: list[str] = []
-    for connection in graph.connections:
-        label = f"connection {connection.from_room}->{connection.to_room}"
-        if connection.from_room not in room_ids:
-            errors.append(f"{label} references unknown from_room {connection.from_room}")
-        if connection.to_room not in room_ids:
-            errors.append(f"{label} references unknown to_room {connection.to_room}")
-        if connection.region_name not in region_names:
-            errors.append(f"{label} references unknown region {connection.region_name}")
-    return tuple(errors)
+    """Return graph integrity errors without mutating or rendering the scene."""
+    return validate_scene_graph(graph)
 
 
 def _is_int(value: object) -> bool:
@@ -588,7 +541,12 @@ def six_room_scene_graph_data(graph: SixRoomSceneGraph) -> dict[str, object]:
     }
 
 
-def six_room_scene_html_review(rows: list[str], rects: list[Rect], graph: SixRoomSceneGraph) -> str:
+def six_room_scene_html_review(
+    rows: list[str],
+    rects: list[Rect],
+    graph: SixRoomSceneGraph,
+    artifact_stem: str = "six_room_scene",
+) -> str:
     """Return HTML review with embedded graph data, overlays, and an inspector."""
     base_html = html_review(rows, rects, scene_room_connection_cell_attrs(graph))
     graph_json = json.dumps(six_room_scene_graph_data(graph), indent=2).replace("</", "<\\/")
@@ -908,7 +866,7 @@ function downloadGraphJson() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'six_room_scene_graph_edited.json';
+  link.download = __GRAPH_DOWNLOAD_FILENAME__;
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -970,6 +928,10 @@ if (document.readyState === 'loading') {
 }
 </script>
 """
+    overlay_script = overlay_script.replace(
+        "__GRAPH_DOWNLOAD_FILENAME__",
+        json.dumps(f"{artifact_stem}_graph_edited.json"),
+    )
     overlay_css = "#connection-overlay { width:100%; height:330px; border:1px solid #5b5130; background:#171611; margin:10px 0; }\n.connection-line { stroke:#f6cf63; stroke-width:3; opacity:.65; cursor:pointer; }\n.connection-line:hover,.connection-line.selected { stroke:#72d6ff; opacity:1; stroke-width:5; }\n.connection-line.related { stroke:#9fd18b; opacity:.95; }\n.room-box { fill:rgba(114,214,255,.08); stroke:#72d6ff; stroke-width:2; stroke-dasharray:7 4; cursor:pointer; }\n.room-box:hover,.room-box.selected { fill:rgba(246,207,99,.16); stroke:#f6cf63; stroke-width:4; }\n.room-box.related { fill:rgba(159,209,139,.12); stroke:#9fd18b; }\n.room-label { fill:#d9d0b0; font:12px monospace; pointer-events:auto; cursor:pointer; }\n.room-label.selected,.room-label.related { fill:#ffd36d; font-weight:bold; }\n.review-controls { margin:10px 0; }\n.review-controls button,.file-load-control { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:6px 8px; cursor:pointer; display:inline-block; }\n.review-controls label { margin-left:10px; color:#d9d0b0; }\n#graph-inspector input { width:80px; background:#211d14; color:#f3e8c2; border:1px solid #5b5130; margin:2px; }\n#graph-inspector button { background:#2a261a; color:#ffd36d; border:1px solid #5b5130; padding:4px 6px; cursor:pointer; }\n#graph-copy-status { margin-left:10px; color:#9fd18b; }\n#graph-inspector { border:1px solid #5b5130; background:#15130d; padding:8px; margin:8px 0; color:#d9d0b0; min-height:54px; }\n#readout {"
     return (
         base_html
@@ -979,22 +941,29 @@ if (document.readyState === 'loading') {
     )
 
 
-def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | None = None) -> list[Path]:
-    """Write generated scene text, coordinate annotations, and HTML review."""
+def write_scene_artifacts(
+    output_dir: Path,
+    graph: SceneGraph,
+    artifact_stem: str,
+) -> list[Path]:
+    """Write scene text, coordinate annotations, graph JSON, and HTML review."""
+    if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", artifact_stem) is None:
+        raise ValueError(
+            "artifact_stem must contain only letters, digits, underscores, and hyphens"
+        )
     output_dir.mkdir(parents=True, exist_ok=True)
-    graph = graph or build_six_room_scene_graph()
     rows = render_six_room_scene_graph(graph)
     rects = scene_review_rects(graph)
 
-    scene_path = output_dir / "six_room_scene_generated.txt"
-    annotated_path = output_dir / "six_room_scene_generated_annotated.txt"
-    html_path = output_dir / "six_room_scene_generated.html"
-    graph_json_path = output_dir / "six_room_scene_graph.json"
+    scene_path = output_dir / f"{artifact_stem}_generated.txt"
+    annotated_path = output_dir / f"{artifact_stem}_generated_annotated.txt"
+    html_path = output_dir / f"{artifact_stem}_generated.html"
+    graph_json_path = output_dir / f"{artifact_stem}_graph.json"
 
     write_text(scene_path, rows)
     annotated_path.write_text(annotate(rows, rects), encoding="utf-8")
     html_path.write_text(
-        six_room_scene_html_review(rows, rects, graph),
+        six_room_scene_html_review(rows, rects, graph, artifact_stem),
         encoding="utf-8",
     )
     graph_json_path.write_text(
@@ -1003,6 +972,19 @@ def write_six_room_scene_artifacts(output_dir: Path, graph: SixRoomSceneGraph | 
     )
 
     return [scene_path, annotated_path, html_path, graph_json_path]
+
+
+def write_six_room_scene_artifacts(
+    output_dir: Path,
+    graph: SixRoomSceneGraph | None = None,
+    artifact_stem: str = "six_room_scene",
+) -> list[Path]:
+    """Write review artifacts for the locked six-room graph or a compatible graph."""
+    return write_scene_artifacts(
+        output_dir,
+        graph or build_six_room_scene_graph(),
+        artifact_stem,
+    )
 
 
 def _parse_cell_arg(value: str) -> tuple[int, int]:
