@@ -23,10 +23,32 @@
       "exterior_face_start": "‘/___",
       "concave_face_start": "/|__",
       "east_corner_override": "‘—,"
+    },
+    "courtyard_bridge_junction": {
+      "detection": "An interior north run with an exposed east wall immediately left, an exposed west wall immediately right, and empty floor cells above the run.",
+      "rim": "Repaint the north run above both side walls and use ‘—, at the right termination.",
+      "hanging_face_start": "‘/___",
+      "hanging_face_repeat": "/___",
+      "side_wall_resolution": "Terminate both inner vertical walls into the bridge and clear their lower cap glyphs beneath the rim."
     }
   },
-  "approved_fixture": {
-    "mask": ["###", "##.", "##."],
-    "target": "targets/room-l-shape-v2.txt"
-  }
+  "approved_fixtures": [
+    {
+      "mask": [
+        "###",
+        "##.",
+        "##."
+      ],
+      "target": "targets/room-l-shape-v2.txt"
+    },
+    {
+      "mask": [
+        "##..##",
+        "##..##",
+        "##..##",
+        "######"
+      ],
+      "target": "targets/room-u-shape-v2.txt"
+    }
+  ]
 }
