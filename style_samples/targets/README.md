@@ -1,13 +1,5 @@
 # Handcrafted targets
 
-Create one UTF-8 text file per reviewed sample using the catalog sample ID:
+Each `<sample-id>.txt` file is an authoritative visual target. Generation must never overwrite these files.
 
-```text
-room-l-shape.txt
-platform-island.txt
-```
-
-The entire file is treated as the intended target render. Do not add metadata
-inside the target. Metadata and review status belong in `../catalog.json`.
-
-The generator reads these files but never modifies them.
+`room-foreground-walls-on.txt` and `room-foreground-south-west-off.txt` are a paired reference: the floor projection remains stable while the south and west foreground faces are toggled.
