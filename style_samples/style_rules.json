@@ -67,10 +67,6 @@
       "center_face": " "
     }
   ],
-  "notes": [
-    "Promote only approved recurring corrections into this file.",
-    "Keep full one-off target artwork in style_samples/targets."
-  ],
   "occlusion_rules": [
     {
       "id": "foreground-wall-entity-occlusion-reference",
@@ -99,5 +95,9 @@
       },
       "open_question": "Confirm whether the provisional south row is walkable and whether wider sprites should be clipped by the west wall face."
     }
+  ],
+  "notes": [
+    "Promote only approved recurring corrections into this file.",
+    "Keep full one-off target artwork in style_samples/targets."
   ]
 }
