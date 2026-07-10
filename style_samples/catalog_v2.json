@@ -5,8 +5,13 @@
       "id": "room-unit-v2",
       "title": "Grammar v2 unit section",
       "category": "room",
-      "mask": ["#"],
-      "tags": ["grammar-v2", "unit"],
+      "mask": [
+        "#"
+      ],
+      "tags": [
+        "grammar-v2",
+        "unit"
+      ],
       "notes": "One logical actor anchor and no interior lattice intersection.",
       "status": "reviewing"
     },
@@ -14,8 +19,14 @@
       "id": "room-two-by-two-v2",
       "title": "Grammar v2 two-by-two room",
       "category": "room",
-      "mask": ["##", "##"],
-      "tags": ["grammar-v2", "lattice"],
+      "mask": [
+        "##",
+        "##"
+      ],
+      "tags": [
+        "grammar-v2",
+        "lattice"
+      ],
       "notes": "Four logical sections surrounding one shared backtick intersection.",
       "status": "reviewing"
     },
@@ -23,8 +34,17 @@
       "id": "room-foreground-four-by-four-v2",
       "title": "Approved foreground-wall room",
       "category": "room",
-      "mask": ["####", "####", "####", "####"],
-      "tags": ["grammar-v2", "foreground", "approved-reference"],
+      "mask": [
+        "####",
+        "####",
+        "####",
+        "####"
+      ],
+      "tags": [
+        "grammar-v2",
+        "foreground",
+        "approved-reference"
+      ],
       "notes": "Exact 4×4 north/east background and south/west foreground wall projection.",
       "status": "approved"
     },
@@ -32,19 +52,39 @@
       "id": "room-l-shape-v2",
       "title": "Approved Grammar v2 L-shaped room",
       "category": "irregular-room",
-      "mask": ["###", "##.", "##."],
-      "tags": ["grammar-v2", "concave-corner", "l-shape", "approved-reference"],
+      "mask": [
+        "###",
+        "##.",
+        "##."
+      ],
+      "tags": [
+        "grammar-v2",
+        "concave-corner",
+        "l-shape",
+        "approved-reference"
+      ],
       "notes": "Approved north run, west foreground run, concave east start, and exterior/concave south-face transitions.",
       "status": "approved"
     },
     {
       "id": "room-u-shape-v2",
-      "title": "Grammar v2 U-shaped courtyard room",
+      "title": "Approved Grammar v2 U-shaped courtyard room",
       "category": "irregular-room",
-      "mask": ["##..##", "##..##", "##..##", "######"],
-      "tags": ["grammar-v2", "u-shape", "two-concave-corners", "courtyard"],
-      "notes": "Review case for two opposing inner wall runs meeting the north wall of a connecting floor bridge.",
-      "status": "reviewing"
+      "mask": [
+        "##..##",
+        "##..##",
+        "##..##",
+        "######"
+      ],
+      "tags": [
+        "grammar-v2",
+        "u-shape",
+        "two-concave-corners",
+        "courtyard",
+        "approved-reference"
+      ],
+      "notes": "Approved mirrored courtyard-bridge junction: opposing inner walls terminate into a capped bridge rim and hanging face.",
+      "status": "approved"
     }
   ]
 }
