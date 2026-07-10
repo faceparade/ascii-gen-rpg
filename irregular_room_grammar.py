@@ -52,6 +52,64 @@ def directional_runs(cells: frozenset[Point], direction: Direction) -> tuple[tup
     )
 
 
+def courtyard_bridge_runs(cells: frozenset[Point]) -> tuple[tuple[int, int, int], ...]:
+    """Return interior north runs flanked by opposing courtyard side walls.
+
+    These are floor bridges at the base of a notch/courtyard. The exposed east
+    edge immediately to the left and exposed west edge immediately to the right
+    terminate into the bridge instead of crossing its rim and underside.
+    """
+    edges = boundary_edges(cells)
+    bridges: list[tuple[int, int, int]] = []
+    for boundary_y, start_x, end_x in directional_runs(cells, "north"):
+        if boundary_y == 0 or start_x == 0:
+            continue
+        left_section = Point(start_x - 1, boundary_y - 1)
+        right_section = Point(end_x + 1, boundary_y - 1)
+        if (
+            BoundaryEdge(left_section, "east") in edges
+            and BoundaryEdge(right_section, "west") in edges
+            and all(Point(x, boundary_y - 1) not in cells for x in range(start_x, end_x + 1))
+        ):
+            bridges.append((boundary_y, start_x, end_x))
+    return tuple(bridges)
+
+
+def _render_courtyard_bridge_junction(
+    canvas: LayeredCanvas,
+    boundary_y: int,
+    start_x: int,
+    end_x: int,
+) -> None:
+    """Resolve opposing inner walls into one bridge rim and hanging face."""
+    layer = "foreground_wall"
+    y = boundary_y * SECTION_STRIDE_Y
+    screen_start = ACTOR_ORIGIN_X + start_x * SECTION_STRIDE_X
+    screen_end = ACTOR_ORIGIN_X + (end_x + 1) * SECTION_STRIDE_X
+
+    # Repaint the rim above both inner wall layers.
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        canvas.put(layer, Point(x, y), ",")
+        canvas.put(layer, Point(x + 1, y), "—")
+        canvas.put(layer, Point(x + 2, y), " ")
+        canvas.put(layer, Point(x + 3, y), "—")
+    canvas.put(layer, Point(screen_end - 2, y), "‘")
+    canvas.put(layer, Point(screen_end, y), ",")
+
+    # The underside hangs into the courtyard. Spaces deliberately clear the
+    # terminated vertical wall glyphs underneath the left and right corners.
+    for screen_x in range(screen_start - 2, screen_end + 1):
+        canvas.put(layer, Point(screen_x, y + 1), " ")
+    canvas.put(layer, Point(screen_start - 2, y + 1), "‘")
+    canvas.put(layer, Point(screen_start - 1, y + 1), "/")
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        for screen_x in range(x, x + 3):
+            canvas.put(layer, Point(screen_x, y + 1), "_")
+        canvas.put(layer, Point(x + 3, y + 1), "/")
+
+
 def _put(canvas: LayeredCanvas, layer: str, x: int, y: int, glyph: str) -> None:
     if glyph != " ":
         canvas.put(layer, Point(x, y), glyph)
@@ -184,5 +242,7 @@ def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
         _render_west_run(canvas, boundary_x, start_y, end_y)
     for boundary_y, start_x, end_x in directional_runs(cells, "south"):
         _render_south_run(canvas, cells, boundary_y, start_x, end_x)
+    for boundary_y, start_x, end_x in courtyard_bridge_runs(cells):
+        _render_courtyard_bridge_junction(canvas, boundary_y, start_x, end_x)
 
     return canvas.compose()
