@@ -31,6 +31,26 @@ def test_outline_contains_source_style_corner_vocabulary() -> None:
     assert "—" in text
 
 
+def test_floor_backticks_mark_interior_grid_vertices() -> None:
+    rows = render_bulk_outline(cells_from_mask(("####", "####", "####")))
+    expected = {
+        (3, 3),
+        (7, 3),
+        (11, 3),
+        (3, 5),
+        (7, 5),
+        (11, 5),
+    }
+    assert all(rows[y][x] == "`" for x, y in expected)
+    assert sum(rows[y].count("`") for y in (3, 5)) == len(expected)
+
+
+def test_floor_backticks_do_not_fill_voids_or_exposed_notches() -> None:
+    rows = render_bulk_outline(cells_from_mask(("###", "##.", "###")))
+    assert rows[3].count("`") == 1
+    assert rows[5].count("`") == 1
+
+
 def test_irregular_shape_preserves_an_interior_turn() -> None:
     rows = render_bulk_outline(cells_from_mask(("##.", "###")))
     text = "\n".join(rows)
