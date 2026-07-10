@@ -31,22 +31,21 @@
   ],
   "grid_rules": [
     {
-      "id": "floor-lattice-backtick",
+      "id": "floor-section-center-backtick",
       "status": "confirmed",
       "glyph": "`",
-      "description": "Backticks mark fully interior intersections of the logical floor grid; they are not randomized decoration.",
-      "cell_width": 4,
-      "cell_height": 2,
-      "glyph_offset_from_vertex": {
-        "x": -1,
+      "description": "Each occupied floor section has one backtick at the center of its inclusive 5x3 glyph footprint. Adjacent sections share their outside edge.",
+      "section_width": 5,
+      "section_height": 3,
+      "section_stride": {
+        "x": 4,
+        "y": 2
+      },
+      "marker_offset": {
+        "x": 2,
         "y": 1
       },
-      "requires_cells": [
-        "north_west",
-        "north_east",
-        "south_west",
-        "south_east"
-      ]
+      "mask_semantics": "Each # is one occupied floor section, not a grid vertex."
     }
   ]
 }
