@@ -1,125 +1,55 @@
 # Structure Sample and Style Review Workflow
 
-This workflow separates bulk geometry generation from handcrafted ASCII styling.
-The generator may be replaced or improved at any time. Approved target art must
-remain stable until it is deliberately edited.
+This workflow separates bulk geometry generation from handcrafted ASCII styling. Generated drafts may be replaced at any time. Approved targets remain stable until deliberately edited.
 
-## Objectives
+## Core loop
 
-1. Generate the bulk silhouette of rooms, corridors, platforms, and voids.
-2. Compare the logical mask, automatic draft, and handcrafted target together.
-3. Record which examples have been reviewed and approved.
-4. Promote recurring corrections into reusable style rules or motifs.
-5. Retain `six_rooms_two_platforms.txt` as a high-level reference and regression fixture.
-
-## Files
-
-- `style_sample_system.py` validates masks and generates review artifacts.
-- `style_samples/catalog.json` is the source catalog of geometry cases.
-- `style_samples/targets/<sample-id>.txt` contains optional handcrafted targets.
-- `style_samples/style_rules.json` is the destination for approved reusable rules.
-- `style_samples/output/sample_sheet.txt` is the terminal-friendly comparison sheet.
-- `style_samples/output/sample_sheet.html` is the visual comparison sheet.
-- `style_samples/output/review_manifest.json` summarizes review state.
-
-Generated output can be overwritten. Files under `style_samples/targets` must not
-be overwritten by the generator.
+1. Define a logical floor-section mask in `style_samples/catalog.json`.
+2. Generate a mask, automatic draft, and optional handcrafted target side by side.
+3. Edit only the target under `style_samples/targets/`.
+4. Mark the sample `approved` when it represents the intended style.
+5. Promote recurring corrections into `style_samples/style_rules.json`.
 
 ## Review states
 
-- `generated`: the geometry case exists and has an automatic draft.
-- `reviewing`: a target is being edited or the sample needs decisions.
-- `approved`: the target is an accepted reference for the current style.
-- `promoted`: the useful correction has been encoded as a reusable rule or motif.
+- `generated`: automatic draft exists.
+- `reviewing`: target is being edited or decisions remain.
+- `approved`: target is accepted as a reference.
+- `promoted`: its reusable rule has been encoded and tested.
 
-Status belongs in `catalog.json`. A target file alone does not imply approval.
+## Floor-section geometry
 
-## Run the generator
+Each `#` represents one usable floor section and one possible character position. A section has an inclusive 5-column by 3-row footprint. Adjacent sections share their outside edge, so origins advance by 4 columns and 2 rows. The backtick sits at the local center `(2, 1)`.
+
+## Rectangular projected room shell
+
+The source room is not a flat outline. For `N` usable floor sections across and `M` down:
+
+- centered indicators begin at glyph `(3, 3)` and repeat every `(4, 2)`;
+- the north rim contains `N + 1` repeated `,— —` spans followed by `,.`;
+- the underside starts with `|__`, repeats `/___`, and ends with `/ |`;
+- the inner east wall is at `4N + 3`;
+- the east face uses `/` on section-boundary rows and a space on center rows;
+- the outer east edge is two glyphs to the right of the inner wall;
+- a final east-wall boundary row appears before the south edge.
+
+This relationship is visible in `six_rooms_two_platforms.txt`: seven floor indicators sit beneath eight north-wall spans.
+
+A 4-by-2 room therefore contains eight possible centered character indicators and five north-wall spans. The fifth span moves the recessed east wall beyond the fourth indicator instead of occupying it.
+
+## Files
+
+- `style_sample_system.py`: mask validation and draft generation.
+- `style_samples/catalog.json`: geometry cases.
+- `style_samples/targets/<id>.txt`: handcrafted targets.
+- `style_samples/style_rules.json`: confirmed reusable rules.
+- `style_samples/output/`: generated review sheets and manifest.
+
+Run:
 
 ```bash
 python style_sample_system.py
-```
-
-The default command reads `style_samples/catalog.json` and writes the three
-files under `style_samples/output`.
-
-Run tests with:
-
-```bash
 pytest -q
 ```
 
-## Add a geometry case
-
-Add one object to `style_samples/catalog.json`:
-
-```json
-{
-  "id": "room-new-shape",
-  "title": "New room shape",
-  "category": "irregular-room",
-  "mask": [
-    "#####...",
-    "########",
-    "...#####"
-  ],
-  "tags": ["concave-corner"],
-  "notes": "What this sample is intended to test.",
-  "status": "generated"
-}
-```
-
-`#` is occupied structure, while `.` or a space is empty. Masks are normalized
-to their occupied upper-left boundary.
-
-## Handcraft a target
-
-Create `style_samples/targets/<sample-id>.txt`. The file contains only the
-intended ASCII rows. It may differ in dimensions from the automatic draft.
-Regenerate the sheet and compare all three columns.
-
-### Confirmed floor-section invariant
-
-Each `#` in a mask represents one occupied floor section. One section occupies
-a 5-column by 3-row glyph footprint, including its outside edges. Adjacent
-sections share that outside edge, so their origins advance by 4 columns and 2
-rows. The backtick is the section indicator and sits at local coordinate `(2,
-1)`, the center of the 5x3 footprint.
-
-For example, a 3-by-2 section mask produces six centered backticks. Structural
-backticks used for corners or raised edges remain a separate glyph role.
-
-Keep edits local to one structural problem when possible. A small, clear target
-is easier to convert into a reusable rule than an entire completed level.
-
-## Promote approved work
-
-Before promoting a target, identify the smallest recurring concept represented
-by the correction:
-
-- glyph preference
-- straight-edge rhythm
-- convex corner
-- concave corner
-- opening cap
-- wall-to-corridor junction
-- raised-platform edge or face
-- multi-cell motif
-
-Record the rule in `style_samples/style_rules.json`, add a test, then mark the
-sample `promoted`. Large one-off structures may remain approved targets without
-becoming rules.
-
-## Development sequence
-
-1. Bulk orthogonal masks and boundary extraction.
-2. Separate semantic wall, floor, void, and platform layers.
-3. Openings, corridors, and routed connections.
-4. Elevated surfaces and visible faces.
-5. Shape-aware glyph profiles based on the chosen monospace font.
-6. Neighbor-aware glyph selection and reusable junction motifs.
-7. Full procedural level generation using approved style rules.
-
-The first generator is intentionally coarse. It proves the review process and
-provides editable bulk shapes before more sophisticated projection and glyph
-selection are added.
+Rectangular rooms now use the confirmed north/east projection. Irregular rooms, connections, and platforms still use the coarse shared-edge footprint renderer until their projection and junction rules are approved.
