@@ -1,8 +1,22 @@
-from irregular_room_grammar import courtyard_bridge_runs, directional_runs
+from irregular_room_grammar import (
+    courtyard_bridge_runs,
+    directional_runs,
+    one_sided_bridge_runs,
+)
 from style_sample_system import Point, cells_from_mask, lattice_points, render_irregular_room
 
 
 ONE_SIDED_MASK = ("##....", "##....", "######")
+APPROVED_TARGET = (
+    "  ,— —,— —,",
+    " /|__/___/|",
+    "‘ |     | |",
+    "|/| `   |/|",
+    "| |     | ,— —,— —,— —,— —,",
+    "|/| `   ‘/___/___/___/___/|",
+    "| ,— —,— —,— —,— —,— —,—‘—,",
+    "‘/___/___/___/___/___/___/",
+)
 
 
 def test_one_sided_bridge_topology_and_boundary_runs_are_stable() -> None:
@@ -18,13 +32,11 @@ def test_one_sided_bridge_has_left_leg_lattice_only() -> None:
     assert lattice_points(cells) == frozenset({Point(4, 3), Point(4, 5)})
 
 
-def test_one_sided_bridge_is_not_misclassified_as_mirrored_courtyard() -> None:
+def test_one_sided_bridge_uses_approved_specific_resolver() -> None:
     cells = cells_from_mask(ONE_SIDED_MASK)
     assert courtyard_bridge_runs(cells) == ()
+    assert one_sided_bridge_runs(cells) == ((2, 2, 5),)
 
 
-def test_one_sided_bridge_review_draft_keeps_notch_open() -> None:
-    rows = render_irregular_room(cells_from_mask(ONE_SIDED_MASK))
-    assert rows[2][11:24].strip() == ""
-    assert rows[4].startswith("| |     |")
-    assert rows[-1] == "‘/___/___/___/___/___/___/"
+def test_one_sided_bridge_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(ONE_SIDED_MASK)) == APPROVED_TARGET
