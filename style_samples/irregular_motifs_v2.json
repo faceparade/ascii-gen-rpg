@@ -37,6 +37,13 @@
       "hanging_face_start": "‘/___",
       "hanging_face_repeat": "/___",
       "side_wall_resolution": "Terminate the single inner east wall into the bridge and clear its lower cap beneath the hanging face."
+    },
+    "mirrored_one_sided_bridge_junction": {
+      "detection": "An interior north run beginning at an exposed west edge, with empty notch cells above and an exposed west wall immediately right.",
+      "rim": "Preserve the ordinary exterior-west rim start and use the approved ‘—, curved termination at the inner west wall.",
+      "underside_start": "/|__",
+      "underside_repeat": "/___",
+      "side_wall_resolution": "Terminate the single inner west wall into the bridge and clear its lower cap beneath the final slash."
     }
   },
   "approved_fixtures": [
@@ -51,6 +58,10 @@
     {
       "mask": ["##....", "##....", "######"],
       "target": "targets/room-one-sided-bridge-v2.txt"
+    },
+    {
+      "mask": ["....##", "....##", "######"],
+      "target": "targets/room-mirrored-one-sided-bridge-v2.txt"
     }
   ]
 }
