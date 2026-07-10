@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "samples": [
+    {
+      "id": "room-rect-small",
+      "title": "Small rectangular room",
+      "category": "room",
+      "mask": [
+        "####",
+        "####",
+        "####"
+      ],
+      "tags": [
+        "rectangle",
+        "baseline"
+      ],
+      "notes": "Minimum comfortable room for checking corners and floor rhythm.",
+      "status": "reviewing"
+    },
+    {
+      "id": "room-rect-source",
+      "title": "Source-proportion room",
+      "category": "room",
+      "mask": [
+        "########",
+        "########",
+        "########",
+        "########",
+        "########"
+      ],
+      "tags": [
+        "rectangle",
+        "source-scale"
+      ],
+      "notes": "Matches the source artwork's eight-section horizontal rhythm."
+    },
+    {
+      "id": "room-wide",
+      "title": "Wide shallow room",
+      "category": "room",
+      "mask": [
+        "############",
+        "############",
+        "############"
+      ],
+      "tags": [
+        "rectangle",
+        "wide"
+      ],
+      "notes": "Tests long edge repetition without locked 34-column fragments."
+    },
+    {
+      "id": "room-tall",
+      "title": "Tall narrow room",
+      "category": "room",
+      "mask": [
+        "#####",
+        "#####",
+        "#####",
+        "#####",
+        "#####",
+        "#####",
+        "#####"
+      ],
+      "tags": [
+        "rectangle",
+        "tall"
+      ],
+      "notes": "Tests vertical repetition and side-wall treatment."
+    },
+    {
+      "id": "room-l-shape",
+      "title": "L-shaped chamber",
+      "category": "irregular-room",
+      "mask": [
+        "######..",
+        "######..",
+        "######..",
+        "########",
+        "########",
+        "....####"
+      ],
+      "tags": [
+        "concave-corner",
+        "l-shape"
+      ],
+      "notes": "Primary concave-corner reference."
+    },
+    {
+      "id": "room-u-shape",
+      "title": "U-shaped chamber",
+      "category": "irregular-room",
+      "mask": [
+        "###....###",
+        "###....###",
+        "###....###",
+        "##########",
+        "##########"
+      ],
+      "tags": [
+        "concave-corner",
+        "u-shape"
+      ],
+      "notes": "Tests two interior corners and a narrow courtyard opening."
+    },
+    {
+      "id": "room-t-shape",
+      "title": "T-shaped chamber",
+      "category": "irregular-room",
+      "mask": [
+        "#########",
+        "#########",
+        "...###...",
+        "...###...",
+        "...###..."
+      ],
+      "tags": [
+        "branch",
+        "t-shape"
+      ],
+      "notes": "Useful for room-to-corridor transitions."
+    },
+    {
+      "id": "room-cross",
+      "title": "Cross-shaped chamber",
+      "category": "irregular-room",
+      "mask": [
+        "...###...",
+        "...###...",
+        "#########",
+        "#########",
+        "...###...",
+        "...###..."
+      ],
+      "tags": [
+        "branch",
+        "cross"
+      ],
+      "notes": "Four-way boundary and symmetry test."
+    },
+    {
+      "id": "room-ring",
+      "title": "Ring chamber",
+      "category": "irregular-room",
+      "mask": [
+        "#########",
+        "#########",
+        "##.....##",
+        "##.....##",
+        "##.....##",
+        "#########",
+        "#########"
+      ],
+      "tags": [
+        "inner-boundary",
+        "ring"
+      ],
+      "notes": "Tests an interior void and independent inner boundary loop."
+    },
+    {
+      "id": "room-stepped",
+      "title": "Stepped chamber",
+      "category": "irregular-room",
+      "mask": [
+        "####......",
+        "######....",
+        "########..",
+        "##########",
+        "..########",
+        "....######"
+      ],
+      "tags": [
+        "stair-step",
+        "asymmetric"
+      ],
+      "notes": "A bulk-shaping stress case with several short edge runs."
+    },
+    {
+      "id": "route-straight",
+      "title": "Straight connector mass",
+      "category": "connection",
+      "mask": [
+        "####.....####",
+        "#############",
+        "####.....####"
+      ],
+      "tags": [
+        "corridor",
+        "straight"
+      ],
+      "notes": "Coarse room-and-corridor union before doorway motifs are applied."
+    },
+    {
+      "id": "route-offset",
+      "title": "Offset connector mass",
+      "category": "connection",
+      "mask": [
+        "#####........",
+        "########.....",
+        "...##########",
+        "........#####"
+      ],
+      "tags": [
+        "corridor",
+        "offset"
+      ],
+      "notes": "Tests a connector that changes vertical alignment."
+    },
+    {
+      "id": "route-bend",
+      "title": "Right-angle connector",
+      "category": "connection",
+      "mask": [
+        "#######",
+        "#######",
+        "....###",
+        "....###",
+        "....###",
+        "....###"
+      ],
+      "tags": [
+        "corridor",
+        "bend"
+      ],
+      "notes": "Basis for later bend and wall-transition motifs."
+    },
+    {
+      "id": "route-branch",
+      "title": "Three-way route mass",
+      "category": "connection",
+      "mask": [
+        "....###....",
+        "....###....",
+        "###########",
+        "###########",
+        "....###...."
+      ],
+      "tags": [
+        "corridor",
+        "branch"
+      ],
+      "notes": "Tests a junction before applying a specialized connector grammar."
+    },
+    {
+      "id": "platform-island",
+      "title": "Central raised island",
+      "category": "platform",
+      "mask": [
+        "..#####..",
+        ".#######.",
+        ".#######.",
+        "..#####.."
+      ],
+      "tags": [
+        "platform",
+        "island"
+      ],
+      "notes": "A rounded-by-steps platform silhouette for handcrafted edge work."
+    },
+    {
+      "id": "platform-l-shape",
+      "title": "L-shaped raised platform",
+      "category": "platform",
+      "mask": [
+        "######..",
+        "######..",
+        "########",
+        "########",
+        "....####"
+      ],
+      "tags": [
+        "platform",
+        "concave-corner"
+      ],
+      "notes": "Tests inner platform corners separately from room walls."
+    },
+    {
+      "id": "platform-split",
+      "title": "Split raised platforms",
+      "category": "platform",
+      "mask": [
+        "####..####",
+        "####..####",
+        "####..####"
+      ],
+      "tags": [
+        "platform",
+        "gap"
+      ],
+      "notes": "Two nearby structures that must remain visually distinct."
+    },
+    {
+      "id": "platform-stepped",
+      "title": "Stepped raised platform",
+      "category": "platform",
+      "mask": [
+        "###.......",
+        "#####.....",
+        "#######...",
+        "#########."
+      ],
+      "tags": [
+        "platform",
+        "stair-step"
+      ],
+      "notes": "Useful for testing diagonal-looking contours built from orthogonal cells."
+    }
+  ]
+}

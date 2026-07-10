@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "style_id": "tristan-curved",
+  "font_profile": null,
+  "allowed_glyphs": [
+    " ",
+    ".",
+    ",",
+    ":",
+    ";",
+    "'",
+    "‘",
+    "’",
+    "`",
+    "-",
+    "_",
+    "—",
+    "/",
+    "\\",
+    "|",
+    "j",
+    "t"
+  ],
+  "edge_patterns": [],
+  "corner_rules": [],
+  "junction_motifs": [],
+  "platform_motifs": [],
+  "notes": [
+    "Promote only approved recurring corrections into this file.",
+    "Keep full one-off target artwork in style_samples/targets."
+  ]
+}
