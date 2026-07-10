@@ -36,6 +36,15 @@
       "tags": ["grammar-v2", "concave-corner", "l-shape", "approved-reference"],
       "notes": "Approved north run, west foreground run, concave east start, and exterior/concave south-face transitions.",
       "status": "approved"
+    },
+    {
+      "id": "room-u-shape-v2",
+      "title": "Grammar v2 U-shaped courtyard room",
+      "category": "irregular-room",
+      "mask": ["##..##", "##..##", "##..##", "######"],
+      "tags": ["grammar-v2", "u-shape", "two-concave-corners", "courtyard"],
+      "notes": "Review case for two opposing inner wall runs meeting the north wall of a connecting floor bridge.",
+      "status": "reviewing"
     }
   ]
 }
