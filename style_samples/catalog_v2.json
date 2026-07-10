@@ -48,12 +48,12 @@
     },
     {
       "id": "room-one-sided-bridge-v2",
-      "title": "Grammar v2 one-sided notch bridge",
+      "title": "Approved Grammar v2 one-sided notch bridge",
       "category": "irregular-room",
       "mask": ["##....", "##....", "######"],
-      "tags": ["grammar-v2", "asymmetric-notch", "one-sided-bridge", "review"],
-      "notes": "Review case for one terminating inner east wall meeting a bridge that continues to the exterior east edge.",
-      "status": "reviewing"
+      "tags": ["grammar-v2", "asymmetric-notch", "one-sided-bridge", "approved-reference"],
+      "notes": "Approved one-sided bridge junction: a terminating inner east wall feeds into a hanging bridge face that retains the exterior east cap.",
+      "status": "approved"
     }
   ]
 }
