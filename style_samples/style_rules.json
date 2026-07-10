@@ -70,5 +70,34 @@
   "notes": [
     "Promote only approved recurring corrections into this file.",
     "Keep full one-off target artwork in style_samples/targets."
+  ],
+  "occlusion_rules": [
+    {
+      "id": "foreground-wall-entity-occlusion-reference",
+      "status": "provisional",
+      "description": "Logical entities remain assigned to floor sections even when a projected foreground wall occupies the same screen character. Opaque mode keeps the wall glyph; x-ray mode replaces it with a dim entity glyph.",
+      "reference_grid": {
+        "columns": 4,
+        "rows": 4,
+        "center_origin": {
+          "x": 4,
+          "y": 3
+        },
+        "center_stride": {
+          "x": 4,
+          "y": 2
+        }
+      },
+      "covered_section_centers": {
+        "east_wall": "column 3",
+        "south_foreground_wall": "row 3",
+        "west_foreground_wall": "none for a one-character centered entity in this fixture"
+      },
+      "composite_modes": {
+        "opaque": "retain wall glyph and mark the entity hidden",
+        "xray": "replace wall glyph with a dim or gray entity glyph while retaining wall metadata"
+      },
+      "open_question": "Confirm whether the provisional south row is walkable and whether wider sprites should be clipped by the west wall face."
+    }
   ]
 }
