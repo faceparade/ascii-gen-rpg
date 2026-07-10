@@ -28,5 +28,25 @@
   "notes": [
     "Promote only approved recurring corrections into this file.",
     "Keep full one-off target artwork in style_samples/targets."
+  ],
+  "grid_rules": [
+    {
+      "id": "floor-lattice-backtick",
+      "status": "confirmed",
+      "glyph": "`",
+      "description": "Backticks mark fully interior intersections of the logical floor grid; they are not randomized decoration.",
+      "cell_width": 4,
+      "cell_height": 2,
+      "glyph_offset_from_vertex": {
+        "x": -1,
+        "y": 1
+      },
+      "requires_cells": [
+        "north_west",
+        "north_east",
+        "south_west",
+        "south_east"
+      ]
+    }
   ]
 }
