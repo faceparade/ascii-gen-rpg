@@ -8,6 +8,7 @@
     "actor_anchors",
     "lattice_intersections",
     "directional_walls",
+    "junction_resolution",
     "entities",
     "foreground_composition"
   ],
@@ -102,10 +103,16 @@
       "mask": ["##....", "##....", "######"],
       "target": "targets/room-one-sided-bridge-v2.txt",
       "purpose": "A single concave inner east wall terminating into a bridge that continues to the exterior east cap."
+    },
+    {
+      "id": "mirrored-one-sided-bridge-v2",
+      "mask": ["....##", "....##", "######"],
+      "target": "targets/room-mirrored-one-sided-bridge-v2.txt",
+      "purpose": "A bridge beginning at the exterior west edge and terminating into one concave inner west wall."
     }
   ],
   "open_work": [
-    "Approve mirrored and multi-level irregular junctions beyond the L-shape, courtyard bridge, and one-sided bridge motifs.",
+    "Approve multi-level and nested irregular junctions beyond the current L-shape and bridge motifs.",
     "Define door and corridor transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
   ],
@@ -153,6 +160,14 @@
       "detection": "Exposed east edge immediately left, empty notch cells above, and an exposed east edge at the run’s rightmost floor section.",
       "hanging_face_start": "‘/___",
       "side_wall_resolution": "The single inner wall cap terminates into the bridge and is cleared beneath its underside."
+    },
+    "mirrored_one_sided_bridge_junction": {
+      "status": "confirmed",
+      "description": "An interior north run beginning at the exterior west edge uses the right half of the courtyard bridge and terminates into one inner west wall.",
+      "detection": "Exposed west edge at the run’s first floor section, empty notch cells above, and an exposed west wall immediately right.",
+      "underside_start": "/|__",
+      "rim_termination": "‘—,",
+      "side_wall_resolution": "The single inner west wall cap terminates into the bridge and is cleared beneath its final slash."
     }
   }
 }
