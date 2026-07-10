@@ -14,8 +14,17 @@ import json
 from pathlib import Path
 from typing import Iterable
 
-CELL_WIDTH = 4
-CELL_HEIGHT = 2
+SECTION_WIDTH = 5
+SECTION_HEIGHT = 3
+SECTION_STRIDE_X = SECTION_WIDTH - 1
+SECTION_STRIDE_Y = SECTION_HEIGHT - 1
+SECTION_CENTER_X = SECTION_WIDTH // 2
+SECTION_CENTER_Y = SECTION_HEIGHT // 2
+
+# Compatibility names for older callers. These are section strides, not the
+# inclusive dimensions of one section.
+CELL_WIDTH = SECTION_STRIDE_X
+CELL_HEIGHT = SECTION_STRIDE_Y
 VALID_STATUS = {"generated", "reviewing", "approved", "promoted"}
 
 
@@ -159,10 +168,12 @@ def render_bulk_outline(cells: frozenset[Point]) -> tuple[str, ...]:
     strokes = StrokeGrid()
 
     for cell in cells:
-        x0 = cell.x * CELL_WIDTH
-        x1 = (cell.x + 1) * CELL_WIDTH
-        y0 = cell.y * CELL_HEIGHT
-        y1 = (cell.y + 1) * CELL_HEIGHT
+        # One logical floor section occupies a 5x3 glyph footprint. Adjacent
+        # sections share their outside edge, so origins advance by 4x2.
+        x0 = cell.x * SECTION_STRIDE_X
+        x1 = x0 + SECTION_WIDTH - 1
+        y0 = cell.y * SECTION_STRIDE_Y
+        y1 = y0 + SECTION_HEIGHT - 1
         if Point(cell.x, cell.y - 1) not in cells:
             strokes.add_horizontal(x0, x1, y0, "north")
         if Point(cell.x, cell.y + 1) not in cells:
@@ -172,31 +183,22 @@ def render_bulk_outline(cells: frozenset[Point]) -> tuple[str, ...]:
         if Point(cell.x + 1, cell.y) not in cells:
             strokes.add_vertical(x1, y0, y1, "east")
 
-    canvas_width = width * CELL_WIDTH + 1
-    canvas_height = height * CELL_HEIGHT + 1
+    canvas_width = (width - 1) * SECTION_STRIDE_X + SECTION_WIDTH
+    canvas_height = (height - 1) * SECTION_STRIDE_Y + SECTION_HEIGHT
     canvas = [[" " for _ in range(canvas_width)] for _ in range(canvas_height)]
 
     for point, directions in strokes.connections.items():
         canvas[point.y][point.x] = _glyph_for(point, directions, strokes.roles.get(point, set()))
 
-    # Backticks are logical grid markers, not decorative floor noise. Place
-    # one immediately west of each fully interior cell-grid vertex. Requiring
-    # all four surrounding cells keeps markers out of voids and exposed corners
-    # while preserving a stable four-column/two-row phase across the structure.
-    for vertex_y in range(1, height):
-        for vertex_x in range(1, width):
-            surrounding = {
-                Point(vertex_x - 1, vertex_y - 1),
-                Point(vertex_x, vertex_y - 1),
-                Point(vertex_x - 1, vertex_y),
-                Point(vertex_x, vertex_y),
-            }
-            if not surrounding.issubset(cells):
-                continue
-            gx = vertex_x * CELL_WIDTH - 1
-            gy = vertex_y * CELL_HEIGHT + 1
-            if canvas[gy][gx] == " ":
-                canvas[gy][gx] = "`"
+    # Backticks are section-center indicators, not decoration and not grid
+    # vertices. Each occupied logical section is an inclusive 5x3 footprint.
+    # Neighboring sections overlap along their outside edge, giving a 4x2
+    # origin stride. The indicator stays at local coordinate (2, 1).
+    for cell in cells:
+        gx = cell.x * SECTION_STRIDE_X + SECTION_CENTER_X
+        gy = cell.y * SECTION_STRIDE_Y + SECTION_CENTER_Y
+        if canvas[gy][gx] == " ":
+            canvas[gy][gx] = "`"
 
     rows = tuple("".join(row).rstrip() for row in canvas)
     while rows and not rows[-1]:
