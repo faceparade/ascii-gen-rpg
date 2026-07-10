@@ -1,4 +1,4 @@
-from irregular_room_grammar import directional_runs
+from irregular_room_grammar import courtyard_bridge_runs, directional_runs
 from style_sample_system import Point, cells_from_mask, lattice_points, render_irregular_room
 
 
@@ -38,3 +38,23 @@ def test_u_shape_draft_keeps_courtyard_void_open() -> None:
     assert rows[2][11:16] == "     "
     assert rows[4][11:16] == "     "
     assert "— —,—" in rows[6]
+
+
+def test_u_shape_detects_one_courtyard_bridge_junction() -> None:
+    cells = cells_from_mask(U_MASK)
+    assert courtyard_bridge_runs(cells) == ((3, 2, 3),)
+
+
+def test_approved_u_shape_matches_mirrored_courtyard_target() -> None:
+    assert render_irregular_room(cells_from_mask(U_MASK)) == (
+        "  ,— —,— —,       ,— —,— —,",
+        " /|__/___/|      /|__/___/|",
+        "‘ |     | |     ‘ |     | |",
+        "|/| `   |/|     |/| `   |/|",
+        "| |     | |     | |     | |",
+        "|/| `   |/|     |/| `   |/|",
+        "| |     | ,— —,—‘—,     | |",
+        "|/| `   ‘/___/___/  `   |/|",
+        "| ,— —,— —,— —,— —,— —,—‘—,",
+        "‘/___/___/___/___/___/___/",
+    )
