@@ -78,13 +78,16 @@ Create `style_samples/targets/<sample-id>.txt`. The file contains only the
 intended ASCII rows. It may differ in dimensions from the automatic draft.
 Regenerate the sheet and compare all three columns.
 
-### Confirmed floor-grid invariant
+### Confirmed floor-section invariant
 
-Backticks on open floor are grid markers, not free decoration. With the current
-projection, logical sections are four columns wide and two rows high. A marker
-is placed one glyph left and one glyph below a fully interior logical grid
-vertex. In a solid 4-by-3 room this yields three markers across on each of two
-interior grid rows. Boundary-corner backticks are separate structural glyphs.
+Each `#` in a mask represents one occupied floor section. One section occupies
+a 5-column by 3-row glyph footprint, including its outside edges. Adjacent
+sections share that outside edge, so their origins advance by 4 columns and 2
+rows. The backtick is the section indicator and sits at local coordinate `(2,
+1)`, the center of the 5x3 footprint.
+
+For example, a 3-by-2 section mask produces six centered backticks. Structural
+backticks used for corners or raised edges remain a separate glyph role.
 
 Keep edits local to one structural problem when possible. A small, clear target
 is easier to convert into a reusable rule than an entire completed level.
