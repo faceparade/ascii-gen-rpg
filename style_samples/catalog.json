@@ -6,14 +6,14 @@
       "title": "Small rectangular room",
       "category": "room",
       "mask": [
-        "###",
-        "###"
+        "####",
+        "####"
       ],
       "tags": [
         "rectangle",
         "baseline"
       ],
-      "notes": "Baseline room with a 3-by-2 field of overlapping 5x3 floor sections; each section has a centered backtick indicator.",
+      "notes": "Baseline projected room with a 4-by-2 field of usable floor sections and centered character indicators.",
       "status": "reviewing"
     },
     {
@@ -21,17 +21,16 @@
       "title": "Source-proportion room",
       "category": "room",
       "mask": [
-        "########",
-        "########",
-        "########",
-        "########",
-        "########"
+        "#######",
+        "#######",
+        "#######",
+        "#######"
       ],
       "tags": [
         "rectangle",
         "source-scale"
       ],
-      "notes": "Matches the source artwork's eight-section horizontal rhythm."
+      "notes": "Matches the source room: seven usable floor sections across, four down, eight north-wall spans, and the recessed east face."
     },
     {
       "id": "room-wide",
@@ -46,7 +45,7 @@
         "rectangle",
         "wide"
       ],
-      "notes": "Tests long edge repetition without locked 34-column fragments."
+      "notes": "Tests long projected edge repetition without locked scene fragments."
     },
     {
       "id": "room-tall",
@@ -65,7 +64,7 @@
         "rectangle",
         "tall"
       ],
-      "notes": "Tests vertical repetition and side-wall treatment."
+      "notes": "Tests projected side-wall repetition over many floor rows."
     },
     {
       "id": "room-l-shape",
@@ -302,7 +301,7 @@
         "platform",
         "stair-step"
       ],
-      "notes": "Useful for testing diagonal-looking contours built from orthogonal cells."
+      "notes": "Useful for testing diagonal-looking contours built from orthogonal sections."
     }
   ]
 }
