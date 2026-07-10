@@ -53,3 +53,19 @@ pytest -q
 ```
 
 Rectangular rooms now use the confirmed north/east projection. Irregular rooms, connections, and platforms still use the coarse shared-edge footprint renderer until their projection and junction rules are approved.
+
+## Foreground-wall and entity diagnostic
+
+The paired targets `room-foreground-walls-on.txt` and
+`room-foreground-south-west-off.txt` establish that floor topology persists
+independently from the projected wall faces. The generator also writes:
+
+- `output/foreground_occlusion_diagnostic.txt`
+- `output/foreground_occlusion_diagnostic.html`
+
+The diagnostic labels a provisional 4-by-4 logical floor with `A` through `P`.
+The east wall covers the fourth logical column, and the south foreground face
+covers the fourth logical row. X-ray mode replaces the wall character with a
+dim entity glyph while retaining semantic wall coverage. The west face overlaps
+the western section footprints, but not their one-character centers in this
+fixture. Wider sprites may still require west-wall clipping.
