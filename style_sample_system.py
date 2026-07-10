@@ -179,13 +179,24 @@ def render_bulk_outline(cells: frozenset[Point]) -> tuple[str, ...]:
     for point, directions in strokes.connections.items():
         canvas[point.y][point.x] = _glyph_for(point, directions, strokes.roles.get(point, set()))
 
-    # A restrained floor guide gives the draft some of the source artwork's
-    # four-column rhythm without pretending to be a finished style decision.
-    for cell in cells:
-        gx = cell.x * CELL_WIDTH + 2
-        gy = cell.y * CELL_HEIGHT + 1
-        if canvas[gy][gx] == " " and (cell.x + cell.y) % 2 == 0:
-            canvas[gy][gx] = "`"
+    # Backticks are logical grid markers, not decorative floor noise. Place
+    # one immediately west of each fully interior cell-grid vertex. Requiring
+    # all four surrounding cells keeps markers out of voids and exposed corners
+    # while preserving a stable four-column/two-row phase across the structure.
+    for vertex_y in range(1, height):
+        for vertex_x in range(1, width):
+            surrounding = {
+                Point(vertex_x - 1, vertex_y - 1),
+                Point(vertex_x, vertex_y - 1),
+                Point(vertex_x - 1, vertex_y),
+                Point(vertex_x, vertex_y),
+            }
+            if not surrounding.issubset(cells):
+                continue
+            gx = vertex_x * CELL_WIDTH - 1
+            gy = vertex_y * CELL_HEIGHT + 1
+            if canvas[gy][gx] == " ":
+                canvas[gy][gx] = "`"
 
     rows = tuple("".join(row).rstrip() for row in canvas)
     while rows and not rows[-1]:
