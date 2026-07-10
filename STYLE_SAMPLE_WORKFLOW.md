@@ -26,13 +26,14 @@ The authoritative machine-readable rules are in `style_samples/style_rules_v2.js
 
 ## Review sequence
 
-The initial Grammar v2 regression set is:
+The current Grammar v2 regression set is:
 
 1. 1×1 section — actor anchor, no lattice marker;
 2. 2×2 block — one lattice intersection;
 3. approved 4×4 room — exact rectangular wall grammar;
 4. approved L-shaped room — one-sided concave edge transitions;
-5. approved U-shaped room — mirrored courtyard walls meeting an interior bridge.
+5. approved U-shaped room — mirrored courtyard walls meeting an interior bridge;
+6. approved one-sided bridge — one terminating inner wall meeting an exterior-ended bridge.
 
 ## Commands
 
@@ -52,4 +53,8 @@ The minimal L-shaped fixture `room-l-shape-v2` is approved. Its north run, west 
 
 The U-shaped fixture `room-u-shape-v2` is approved. Its interior north run is recognized as a courtyard bridge when it is flanked by an exposed east wall on the left and an exposed west wall on the right, with empty courtyard cells above. The bridge rim is repainted above both vertical walls, and its underside uses a hanging `‘/___.../` face that clears the terminated wall caps.
 
-More complex irregular junctions remain reviewable until their handcrafted targets promote reusable motifs.
+## Approved one-sided bridge fixture
+
+The asymmetric fixture `room-one-sided-bridge-v2` is approved. Its interior north run is recognized when an exposed east wall terminates immediately to the left, the notch cells above are empty, and the bridge’s rightmost floor section has an exposed exterior east edge. The renderer applies the approved left half of the courtyard-bridge face and preserves the normal exterior east cap.
+
+More complex mirrored, multi-level, doorway, corridor, and platform junctions remain reviewable until their handcrafted targets promote reusable motifs.
