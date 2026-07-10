@@ -109,11 +109,19 @@
       "mask": ["....##", "....##", "######"],
       "target": "targets/room-mirrored-one-sided-bridge-v2.txt",
       "purpose": "A bridge beginning at the exterior west edge and terminating into one concave inner west wall."
+    },
+    {
+      "id": "horizontal-corridor-v2",
+      "mask": ["###...###", "###...###", "#########", "###...###", "###...###"],
+      "status": "reviewing",
+      "review": "review/room-horizontal-corridor-v2.txt",
+      "purpose": "Two rooms joined by a one-section-high passage with continuous floor through both doorway openings."
     }
   ],
   "open_work": [
+    "Approve the horizontal corridor doorway transitions and south foreground face.",
     "Approve multi-level and nested irregular junctions beyond the current L-shape and bridge motifs.",
-    "Define door and corridor transitions per directional wall layer.",
+    "Define vertical corridor and T-junction transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
   ],
   "irregular_wall_motifs": {
@@ -168,6 +176,13 @@
       "underside_start": "/|__",
       "rim_termination": "‘—,",
       "side_wall_resolution": "The single inner west wall cap terminates into the bridge and is cleared beneath its final slash."
+    },
+    "horizontal_corridor_junction": {
+      "status": "reviewing",
+      "description": "A one-section-high passage between two rooms keeps its north wall in the background and its south wall in the foreground while the floor remains continuous through both openings.",
+      "detection": "An interior north run with matching upper and lower east/west side-wall segments, empty cells above and below the passage span, and a matching exposed south run one logical row below.",
+      "north_wall_resolution": "Retain the joined rim but replace the courtyard hanging face with the ordinary /|__ background underside.",
+      "south_wall_resolution": "Retain the normal foreground south rim and face pending visual approval of the doorway transitions."
     }
   }
 }
