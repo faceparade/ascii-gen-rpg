@@ -40,15 +40,17 @@ A 4-by-2 room therefore contains eight possible centered character indicators an
 ## Files
 
 - `style_sample_system.py`: mask validation and draft generation.
+- `foreground_occlusion.py`: paired wall fixtures and entity/wall compositing diagnostic.
 - `style_samples/catalog.json`: geometry cases.
 - `style_samples/targets/<id>.txt`: handcrafted targets.
 - `style_samples/style_rules.json`: confirmed reusable rules.
-- `style_samples/output/`: generated review sheets and manifest.
+- `style_samples/output/`: generated review sheets and diagnostics.
 
 Run:
 
 ```bash
 python style_sample_system.py
+python foreground_occlusion.py
 pytest -q
 ```
 
@@ -58,7 +60,7 @@ Rectangular rooms now use the confirmed north/east projection. Irregular rooms, 
 
 The paired targets `room-foreground-walls-on.txt` and
 `room-foreground-south-west-off.txt` establish that floor topology persists
-independently from the projected wall faces. The generator also writes:
+independently from the projected wall faces. `foreground_occlusion.py` writes:
 
 - `output/foreground_occlusion_diagnostic.txt`
 - `output/foreground_occlusion_diagnostic.html`
