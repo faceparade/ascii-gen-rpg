@@ -1,0 +1,24 @@
+,— -,— -,— -,— -,— -,— -,— -,— -,— -. 
+,__/___/___/___/___/___/___/___/___/ |
+,                                    /
+,                                     
+,                                    /
+,                                    /
+,                                    /
+,                                    /
+,                                    /
+''''''''''''''''''''''''''''''''''''''
+
+,— -,— -,— -,— -,— -,— -,— -,— -,— -,— -. 
+,__/___/___/___/___/___/___/___/___/___/ |
+,                                        /
+,        ` ,— —,— —,—                    /
+,        /|         |                    /
+,        |           |                   /
+,        '/___/;.;;.;/                   /
+,                                        /
+''''''''''''''''''''''''''''''''''''''''''
+
+ROOM A PORTS: {'north': None, 'south': None, 'east': DoorwaySpec(side='east', offset_sections=2, span_sections=1), 'west': None}
+ROOM B PORTS: {'north': None, 'south': None, 'east': None, 'west': None}
+ROOM B ENCLOSURE PROVENANCE: {'enclosure_2_1_top': ('enclosure_top',), 'enclosure_2_2': ('enclosure_upper',), 'enclosure_2_3': ('enclosure_body',), 'enclosure_2_4_bottom': ('enclosure_bottom',)}

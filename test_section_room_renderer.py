@@ -116,9 +116,8 @@ def test_room_b_with_closed_three_by_four_enclosure() -> None:
     assert enclosure.openings == ()
     assert enclosure.style == "raised_floor"
     assert any(
-        "enclosure" in part
+        "enclosure" in src
         for src in room.provenance.values()
-        for part in src
     )
 
 
