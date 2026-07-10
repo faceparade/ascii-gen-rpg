@@ -31,9 +31,8 @@ The initial Grammar v2 regression set is:
 1. 1×1 section — actor anchor, no lattice marker;
 2. 2×2 block — one lattice intersection;
 3. approved 4×4 room — exact rectangular wall grammar;
-4. L-shaped room — concave edge extraction and incomplete lattice intersections.
-
-For irregular rooms, boundary extraction and occlusion are authoritative now. Concave-corner glyph choices remain reviewable until a handcrafted L-shaped target is approved.
+4. approved L-shaped room — one-sided concave edge transitions;
+5. approved U-shaped room — mirrored courtyard walls meeting an interior bridge.
 
 ## Commands
 
@@ -44,3 +43,13 @@ python foreground_occlusion.py
 ```
 
 Generated output may be overwritten. Files under `style_samples/targets` must not be overwritten by generators.
+
+## Approved irregular-room fixture
+
+The minimal L-shaped fixture `room-l-shape-v2` is approved. Its north run, west foreground run, concave east start, exterior south-face start, and concave south-face start are generated from directional boundary runs.
+
+## Approved courtyard-bridge fixture
+
+The U-shaped fixture `room-u-shape-v2` is approved. Its interior north run is recognized as a courtyard bridge when it is flanked by an exposed east wall on the left and an exposed west wall on the right, with empty courtyard cells above. The bridge rim is repainted above both vertical walls, and its underside uses a hanging `‘/___.../` face that clears the terminated wall caps.
+
+More complex irregular junctions remain reviewable until their handcrafted targets promote reusable motifs.
