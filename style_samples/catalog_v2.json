@@ -63,6 +63,15 @@
       "tags": ["grammar-v2", "asymmetric-notch", "mirrored-one-sided-bridge", "approved-reference"],
       "notes": "Approved mirrored bridge junction: an exterior-west bridge terminates into one inner west wall using the right half of the courtyard-bridge motif.",
       "status": "approved"
+    },
+    {
+      "id": "room-horizontal-corridor-v2",
+      "title": "Grammar v2 two-room horizontal corridor",
+      "category": "corridor",
+      "mask": ["###...###", "###...###", "#########", "###...###", "###...###"],
+      "tags": ["grammar-v2", "doorway", "horizontal-corridor", "review-target"],
+      "notes": "Reviewing fixture for two room openings joined by a one-section-high passage. Matching upper and lower side-wall runs distinguish it from a courtyard bridge.",
+      "status": "reviewing"
     }
   ]
 }
