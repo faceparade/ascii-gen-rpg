@@ -54,6 +54,15 @@
       "tags": ["grammar-v2", "asymmetric-notch", "one-sided-bridge", "approved-reference"],
       "notes": "Approved one-sided bridge junction: a terminating inner east wall feeds into a hanging bridge face that retains the exterior east cap.",
       "status": "approved"
+    },
+    {
+      "id": "room-mirrored-one-sided-bridge-v2",
+      "title": "Approved Grammar v2 mirrored one-sided notch bridge",
+      "category": "irregular-room",
+      "mask": ["....##", "....##", "######"],
+      "tags": ["grammar-v2", "asymmetric-notch", "mirrored-one-sided-bridge", "approved-reference"],
+      "notes": "Approved mirrored bridge junction: an exterior-west bridge terminates into one inner west wall using the right half of the courtyard-bridge motif.",
+      "status": "approved"
     }
   ]
 }
