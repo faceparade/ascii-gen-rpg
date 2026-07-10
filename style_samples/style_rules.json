@@ -25,10 +25,6 @@
   "corner_rules": [],
   "junction_motifs": [],
   "platform_motifs": [],
-  "notes": [
-    "Promote only approved recurring corrections into this file.",
-    "Keep full one-off target artwork in style_samples/targets."
-  ],
   "grid_rules": [
     {
       "id": "floor-section-center-backtick",
@@ -45,7 +41,34 @@
         "x": 2,
         "y": 1
       },
-      "mask_semantics": "Each # is one occupied floor section, not a grid vertex."
+      "mask_semantics": "Each # is one usable floor section and possible character position."
     }
+  ],
+  "room_shell_rules": [
+    {
+      "id": "projected-north-rim",
+      "status": "confirmed",
+      "description": "A rectangular room has one more repeated north-wall span than usable floor-section centers.",
+      "span_repeat": ",— —",
+      "span_count": "floor_columns + 1",
+      "right_cap": ",.",
+      "underside_start": "|__",
+      "underside_repeat": "/___",
+      "underside_end": "/ |"
+    },
+    {
+      "id": "recessed-east-wall",
+      "status": "confirmed",
+      "description": "The east wall is a recessed three-glyph projection: inner |, alternating / or space face, and outer |.",
+      "inner_x": "4 * floor_columns + 3",
+      "face_x": "inner_x + 1",
+      "outer_x": "inner_x + 2",
+      "boundary_face": "/",
+      "center_face": " "
+    }
+  ],
+  "notes": [
+    "Promote only approved recurring corrections into this file.",
+    "Keep full one-off target artwork in style_samples/targets."
   ]
 }
