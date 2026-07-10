@@ -6,15 +6,14 @@
       "title": "Small rectangular room",
       "category": "room",
       "mask": [
-        "####",
-        "####",
-        "####"
+        "###",
+        "###"
       ],
       "tags": [
         "rectangle",
         "baseline"
       ],
-      "notes": "Minimum comfortable room for checking corners and floor rhythm.",
+      "notes": "Baseline room with a 3-by-2 field of overlapping 5x3 floor sections; each section has a centered backtick indicator.",
       "status": "reviewing"
     },
     {
