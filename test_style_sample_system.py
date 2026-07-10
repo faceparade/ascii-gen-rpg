@@ -4,14 +4,21 @@ import json
 import pytest
 
 from style_sample_system import (
+    BoundaryEdge,
     Point,
+    actor_anchor,
     build_renders,
     cells_from_mask,
+    lattice_points,
+    lattice_vertices,
     load_catalog,
+    projection_model,
     render_bulk_outline,
+    render_irregular_room,
     render_mask,
     render_projected_room_shell,
     review_manifest,
+    section_occluders,
 )
 
 
@@ -21,70 +28,87 @@ def test_mask_normalizes_and_renders() -> None:
     assert render_mask(cells) == ("##", "##")
 
 
-def test_outline_contains_source_style_corner_vocabulary() -> None:
-    text = "\n".join(render_bulk_outline(cells_from_mask(("##", "##"))))
-    for glyph in ",.`'|—":
-        assert glyph in text
+def test_one_by_one_has_actor_anchor_but_no_lattice_marker() -> None:
+    cells = cells_from_mask(("#",))
+    model = projection_model(cells)
+    assert model.actor_anchors == ((Point(0, 0), Point(2, 2)),)
+    assert model.lattice_markers == frozenset()
+    assert section_occluders(cells, Point(0, 0)) == frozenset({"west", "south"})
 
 
-def test_one_section_is_five_by_three_with_center_marker() -> None:
-    rows = render_bulk_outline(cells_from_mask(("#",)))
-    assert len(rows) == 3
-    assert max(map(len, rows)) == 5
-    assert rows[1][2] == "`"
+def test_two_by_two_has_one_shared_lattice_intersection() -> None:
+    cells = cells_from_mask(("##", "##"))
+    assert lattice_vertices(cells) == frozenset({Point(1, 1)})
+    assert lattice_points(cells) == frozenset({Point(4, 3)})
+    assert actor_anchor(Point(0, 0)) == Point(2, 2)
+    assert actor_anchor(Point(1, 1)) == Point(6, 4)
 
 
-def test_adjacent_sections_share_outside_edges() -> None:
-    rows = render_bulk_outline(cells_from_mask(("##",)))
-    assert max(map(len, rows)) == 9
-    assert rows[1][2] == "`"
-    assert rows[1][6] == "`"
-
-
-def test_three_by_two_floor_has_six_center_indicators() -> None:
-    rows = render_bulk_outline(cells_from_mask(("###", "###")))
-    expected = {(2, 1), (6, 1), (10, 1), (2, 3), (6, 3), (10, 3)}
-    assert all(rows[y][x] == "`" for x, y in expected)
-
-
-def test_four_by_two_projected_room_has_correct_north_and_east_walls() -> None:
-    assert render_projected_room_shell(4, 2) == (
-        ",— —,— —,— —,— —,— —,.",
-        "|__/___/___/___/___/ |",
-        "|                  |/|",
-        "|  `   `   `   `   | |",
-        "|                  |/|",
-        "|  `   `   `   `   | |",
-        "|                  |/|",
-        "`— — — — — — — — — — '",
+def test_four_by_four_projected_room_matches_approved_wall_fixture() -> None:
+    assert render_projected_room_shell(4, 4) == (
+        "  ,— —,— —,— —,— —,",
+        " /|__/___/___/__ /|",
+        "‘ |             | |",
+        "|/| `   `   `   |/|",
+        "| |             | |",
+        "|/| `   `   `   |/|",
+        "| |             | |",
+        "|/| `   `   `   |/|",
+        "| ,— —,— —,— —,—‘—,",
+        "‘/___/___/___/___/",
     )
 
 
-def test_source_proportion_room_matches_closed_reference_shell() -> None:
-    rows = render_projected_room_shell(7, 4)
-    assert rows[0] == ",— —,— —,— —,— —,— —,— —,— —,— —,."
-    assert rows[1] == "|__/___/___/___/___/___/___/___/ |"
-    assert rows[2] == "|                              |/|"
-    assert rows[3] == "|  `   `   `   `   `   `   `   | |"
-    assert rows[-2] == "|                              |/|"
-    assert rows[-1] == "`— — — — — — — — — — — — — — — — '"
+def test_four_by_four_foreground_removed_matches_floor_reference() -> None:
+    assert render_projected_room_shell(4, 4, foreground=False) == (
+        "  ,— —,— —,— —,— —,",
+        " /___/___/___/__ /|",
+        "‘               | |",
+        "|   `   `   `   |/|",
+        "|               | |",
+        "|   `   `   `   |/|",
+        "|               | |",
+        "|   `   `   `   |/|",
+        "|               | ,",
+        "‘ ___ ___ ___ ___/",
+    )
 
 
-def test_section_markers_follow_occupied_irregular_cells() -> None:
-    rows = render_bulk_outline(cells_from_mask(("##.", "###")))
-    expected = {(2, 1), (6, 1), (2, 3), (6, 3), (10, 3)}
-    assert all(rows[y][x] == "`" for x, y in expected)
+def test_l_shape_has_directional_edges_and_only_complete_lattice_vertices() -> None:
+    cells = cells_from_mask(("###", "##.", "##."))
+    model = projection_model(cells)
+    assert model.lattice_markers == frozenset({Point(4, 3), Point(4, 5)})
+    assert BoundaryEdge(Point(1, 1), "east") in model.east_edges
+    assert BoundaryEdge(Point(2, 0), "south") in model.south_edges
+    assert model.west_occluded_sections == frozenset({Point(0, 0), Point(0, 1), Point(0, 2)})
+    assert model.south_occluded_sections == frozenset({Point(2, 0), Point(0, 2), Point(1, 2)})
+    assert Point(2, 0) in model.foreground_occluded_sections
 
 
-def test_irregular_shape_preserves_an_interior_turn() -> None:
-    rows = render_bulk_outline(cells_from_mask(("##.", "###")))
-    assert "`—" in "\n".join(rows)
-    assert len(rows[2]) > len(rows[0])
+def test_l_shape_renderer_preserves_void_and_concave_turn() -> None:
+    cells = cells_from_mask(("###", "##.", "##."))
+    rows = render_irregular_room(cells)
+    text = "\n".join(rows)
+    assert text.count("`") == 2
+    assert "/" in text
+    assert "," in text
+    assert len(rows) >= 7
+
+
+def test_coarse_fallback_uses_lattice_intersections_not_one_marker_per_cell() -> None:
+    cells = cells_from_mask(("###", "###"))
+    rows = render_bulk_outline(cells)
+    assert rows[1][2] == "`"
+    assert rows[1][6] == "`"
+    assert sum(row.count("`") for row in rows[1:2]) == 2
 
 
 def test_catalog_is_unique_and_complete(tmp_path: Path) -> None:
     catalog = tmp_path / "catalog.json"
-    catalog.write_text(json.dumps({"schema_version": 1, "samples": [{"id": "one", "title": "One", "category": "room", "mask": ["#"]}]}), encoding="utf-8")
+    catalog.write_text(
+        json.dumps({"schema_version": 1, "samples": [{"id": "one", "title": "One", "category": "room", "mask": ["#"]}]}),
+        encoding="utf-8",
+    )
     assert load_catalog(catalog)[0].sample_id == "one"
 
 
@@ -100,7 +124,10 @@ def test_targets_are_loaded_without_modifying_drafts(tmp_path: Path) -> None:
     catalog = tmp_path / "catalog.json"
     targets = tmp_path / "targets"
     targets.mkdir()
-    catalog.write_text(json.dumps({"schema_version": 1, "samples": [{"id": "one", "title": "One", "category": "room", "mask": ["##"]}]}), encoding="utf-8")
+    catalog.write_text(
+        json.dumps({"schema_version": 1, "samples": [{"id": "one", "title": "One", "category": "room", "mask": ["##"]}]}),
+        encoding="utf-8",
+    )
     (targets / "one.txt").write_text("HAND\nEDIT\n", encoding="utf-8")
     render = build_renders(catalog, targets)[0]
     assert render.target_rows == ("HAND", "EDIT")

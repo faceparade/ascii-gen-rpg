@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate reviewable ASCII structure samples from logical floor-section masks.
+"""Generate reviewable ASCII structures from logical floor-section masks.
 
-Generated drafts are disposable. Hand-edited targets are stored separately so
-regeneration never destroys approved style work.
+Grammar v2 keeps logical floor topology, actor anchors, lattice intersections,
+directional wall projection, and final character compositing separate.
+Generated drafts remain disposable; handcrafted targets remain independent.
 """
 from __future__ import annotations
 
@@ -11,23 +12,55 @@ import json
 from dataclasses import dataclass
 from html import escape
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Literal
 
 SECTION_WIDTH = 5
 SECTION_HEIGHT = 3
 SECTION_STRIDE_X = 4
 SECTION_STRIDE_Y = 2
-SECTION_CENTER_X = 2
-SECTION_CENTER_Y = 1
+ACTOR_ORIGIN_X = 2
+ACTOR_ORIGIN_Y = 2
+LATTICE_ORIGIN_X = 4
+LATTICE_ORIGIN_Y = 3
+
+# Compatibility aliases for older callers. In Grammar v2 these identify actor
+# anchors, not backtick locations.
+SECTION_CENTER_X = ACTOR_ORIGIN_X
+SECTION_CENTER_Y = ACTOR_ORIGIN_Y
 CELL_WIDTH = SECTION_STRIDE_X
 CELL_HEIGHT = SECTION_STRIDE_Y
 VALID_STATUS = {"generated", "reviewing", "approved", "promoted"}
+DIRECTIONS = ("north", "east", "south", "west")
+Direction = Literal["north", "east", "south", "west"]
 
 
 @dataclass(frozen=True, order=True)
 class Point:
     x: int
     y: int
+
+
+@dataclass(frozen=True, order=True)
+class BoundaryEdge:
+    section: Point
+    direction: Direction
+
+
+@dataclass(frozen=True)
+class ProjectionModel:
+    cells: frozenset[Point]
+    actor_anchors: tuple[tuple[Point, Point], ...]
+    lattice_markers: frozenset[Point]
+    north_edges: frozenset[BoundaryEdge]
+    east_edges: frozenset[BoundaryEdge]
+    south_edges: frozenset[BoundaryEdge]
+    west_edges: frozenset[BoundaryEdge]
+    west_occluded_sections: frozenset[Point]
+    south_occluded_sections: frozenset[Point]
+
+    @property
+    def foreground_occluded_sections(self) -> frozenset[Point]:
+        return self.west_occluded_sections | self.south_occluded_sections
 
 
 @dataclass(frozen=True)
@@ -58,7 +91,7 @@ class SampleRender:
 
 
 class StrokeGrid:
-    """Sparse orthogonal stroke graph for coarse irregular outlines."""
+    """Sparse orthogonal stroke graph used for coarse non-room silhouettes."""
 
     def __init__(self) -> None:
         self.connections: dict[Point, set[str]] = {}
@@ -84,6 +117,37 @@ class StrokeGrid:
             self.roles.setdefault(bottom, set()).add(role)
 
 
+class LayeredCanvas:
+    """Retain semantic layers until the final character is selected."""
+
+    ORDER = ("floor", "lattice", "background_wall", "entity", "foreground_wall")
+
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
+        self.layers: dict[str, dict[Point, str]] = {name: {} for name in self.ORDER}
+
+    def put(self, layer: str, point: Point, glyph: str) -> None:
+        if layer not in self.layers:
+            raise ValueError(f"unsupported layer: {layer}")
+        if len(glyph) != 1:
+            raise ValueError("glyph must be one character")
+        if 0 <= point.x < self.width and 0 <= point.y < self.height:
+            self.layers[layer][point] = glyph
+
+    def compose(self, *, foreground: bool = True) -> tuple[str, ...]:
+        canvas = [[" " for _ in range(self.width)] for _ in range(self.height)]
+        for layer in self.ORDER:
+            if layer == "foreground_wall" and not foreground:
+                continue
+            for point, glyph in self.layers[layer].items():
+                canvas[point.y][point.x] = glyph
+        rows = tuple("".join(row).rstrip() for row in canvas)
+        while rows and not rows[-1]:
+            rows = rows[:-1]
+        return rows
+
+
 def cells_from_mask(mask: Iterable[str]) -> frozenset[Point]:
     rows = tuple(mask)
     if not rows:
@@ -104,16 +168,16 @@ def cells_from_mask(mask: Iterable[str]) -> frozenset[Point]:
 
 
 def normalize_cells(cells: Iterable[Point]) -> frozenset[Point]:
-    cells = frozenset(cells)
-    if not cells:
-        return cells
-    min_x = min(p.x for p in cells)
-    min_y = min(p.y for p in cells)
-    return frozenset(Point(p.x - min_x, p.y - min_y) for p in cells)
+    materialized = frozenset(cells)
+    if not materialized:
+        return materialized
+    min_x = min(point.x for point in materialized)
+    min_y = min(point.y for point in materialized)
+    return frozenset(Point(point.x - min_x, point.y - min_y) for point in materialized)
 
 
 def cell_bounds(cells: frozenset[Point]) -> tuple[int, int]:
-    return max(p.x for p in cells) + 1, max(p.y for p in cells) + 1
+    return max(point.x for point in cells) + 1, max(point.y for point in cells) + 1
 
 
 def render_mask(cells: frozenset[Point]) -> tuple[str, ...]:
@@ -127,6 +191,93 @@ def render_mask(cells: frozenset[Point]) -> tuple[str, ...]:
 def is_solid_rectangle(cells: frozenset[Point]) -> bool:
     width, height = cell_bounds(cells)
     return cells == frozenset(Point(x, y) for y in range(height) for x in range(width))
+
+
+def actor_anchor(section: Point) -> Point:
+    """Project one logical floor section to its actor/object anchor."""
+    return Point(
+        ACTOR_ORIGIN_X + section.x * SECTION_STRIDE_X,
+        ACTOR_ORIGIN_Y + section.y * SECTION_STRIDE_Y,
+    )
+
+
+def lattice_vertices(cells: frozenset[Point]) -> frozenset[Point]:
+    """Return logical interior vertices surrounded by four floor sections."""
+    width, height = cell_bounds(cells)
+    vertices: set[Point] = set()
+    for vertex_y in range(1, height):
+        for vertex_x in range(1, width):
+            surrounding = {
+                Point(vertex_x - 1, vertex_y - 1),
+                Point(vertex_x, vertex_y - 1),
+                Point(vertex_x - 1, vertex_y),
+                Point(vertex_x, vertex_y),
+            }
+            if surrounding.issubset(cells):
+                vertices.add(Point(vertex_x, vertex_y))
+    return frozenset(vertices)
+
+
+def lattice_point(vertex: Point) -> Point:
+    if vertex.x < 1 or vertex.y < 1:
+        raise ValueError("lattice vertices must be interior logical coordinates")
+    return Point(
+        SECTION_STRIDE_X * vertex.x,
+        1 + SECTION_STRIDE_Y * vertex.y,
+    )
+
+
+def lattice_points(cells: frozenset[Point]) -> frozenset[Point]:
+    return frozenset(lattice_point(vertex) for vertex in lattice_vertices(cells))
+
+
+def boundary_edges(cells: frozenset[Point]) -> frozenset[BoundaryEdge]:
+    offsets: dict[Direction, Point] = {
+        "north": Point(0, -1),
+        "east": Point(1, 0),
+        "south": Point(0, 1),
+        "west": Point(-1, 0),
+    }
+    edges: set[BoundaryEdge] = set()
+    for cell in cells:
+        for direction, offset in offsets.items():
+            neighbor = Point(cell.x + offset.x, cell.y + offset.y)
+            if neighbor not in cells:
+                edges.add(BoundaryEdge(cell, direction))
+    return frozenset(edges)
+
+
+def projection_model(cells: frozenset[Point]) -> ProjectionModel:
+    edges = boundary_edges(cells)
+    by_direction = {
+        direction: frozenset(edge for edge in edges if edge.direction == direction)
+        for direction in DIRECTIONS
+    }
+    west_sections = frozenset(edge.section for edge in by_direction["west"])
+    south_sections = frozenset(edge.section for edge in by_direction["south"])
+    return ProjectionModel(
+        cells=cells,
+        actor_anchors=tuple(sorted((cell, actor_anchor(cell)) for cell in cells)),
+        lattice_markers=lattice_points(cells),
+        north_edges=by_direction["north"],
+        east_edges=by_direction["east"],
+        south_edges=by_direction["south"],
+        west_edges=by_direction["west"],
+        west_occluded_sections=west_sections,
+        south_occluded_sections=south_sections,
+    )
+
+
+def section_occluders(cells: frozenset[Point], section: Point) -> frozenset[str]:
+    if section not in cells:
+        raise ValueError(f"section is not occupied: {section}")
+    model = projection_model(cells)
+    result: set[str] = set()
+    if section in model.west_occluded_sections:
+        result.add("west")
+    if section in model.south_occluded_sections:
+        result.add("south")
+    return frozenset(result)
 
 
 def _glyph_for(point: Point, directions: set[str], roles: set[str]) -> str:
@@ -156,7 +307,7 @@ def _glyph_for(point: Point, directions: set[str], roles: set[str]) -> str:
 
 
 def render_bulk_outline(cells: frozenset[Point]) -> tuple[str, ...]:
-    """Render coarse shared-edge 5x3 footprints for irregular structures."""
+    """Coarse fallback for routes/platforms using Grammar v2 lattice semantics."""
     width, height = cell_bounds(cells)
     strokes = StrokeGrid()
     for cell in cells:
@@ -178,77 +329,172 @@ def render_bulk_outline(cells: frozenset[Point]) -> tuple[str, ...]:
     canvas = [[" " for _ in range(canvas_width)] for _ in range(canvas_height)]
     for point, directions in strokes.connections.items():
         canvas[point.y][point.x] = _glyph_for(point, directions, strokes.roles.get(point, set()))
-    for cell in cells:
-        x = cell.x * SECTION_STRIDE_X + SECTION_CENTER_X
-        y = cell.y * SECTION_STRIDE_Y + SECTION_CENTER_Y
-        if canvas[y][x] == " ":
-            canvas[y][x] = "`"
+    for point in lattice_points(cells):
+        coarse = Point(point.x - 2, point.y - 2)
+        if 0 <= coarse.y < canvas_height and 0 <= coarse.x < canvas_width and canvas[coarse.y][coarse.x] == " ":
+            canvas[coarse.y][coarse.x] = "`"
     rows = tuple("".join(row).rstrip() for row in canvas)
     while rows and not rows[-1]:
         rows = rows[:-1]
     return rows
 
 
-def _north_wall_top(floor_columns: int) -> str:
-    return ",— —" * (floor_columns + 1) + ",."
-
-
-def _north_wall_underside(floor_columns: int) -> str:
-    span_count = floor_columns + 1
-    return "|__" + "/___" * (span_count - 1) + "/ |"
-
-
-def _south_wall(width: int) -> str:
-    row = [" " for _ in range(width)]
-    row[0], row[-1] = "`", "'"
-    for x in range(1, width - 1, 2):
-        row[x] = "—"
-    return "".join(row)
-
-
-def render_projected_room_shell(floor_columns: int, floor_rows: int) -> tuple[str, ...]:
-    """Render the source-style north rim and recessed east wall.
-
-    Dimensions count usable floor sections/possible character indicators. The
-    shell adds one north span beyond those centers and a three-glyph east face.
-    """
+def _render_rectangular_room(floor_columns: int, floor_rows: int, *, foreground: bool, show_lattice: bool) -> tuple[str, ...]:
     if floor_columns < 1 or floor_rows < 1:
         raise ValueError("projected room needs at least one floor section")
 
-    width = floor_columns * SECTION_STRIDE_X + 6
-    east_inner_x = floor_columns * SECTION_STRIDE_X + 3
+    width = floor_columns * SECTION_STRIDE_X + 3
+    height = floor_rows * SECTION_STRIDE_Y + 2
+    rows = [[" " for _ in range(width)] for _ in range(height)]
+    east_inner_x = floor_columns * SECTION_STRIDE_X
     east_face_x = east_inner_x + 1
     east_outer_x = east_inner_x + 2
-    top = _north_wall_top(floor_columns)
-    underside = _north_wall_underside(floor_columns)
-    if len(top) != width or len(underside) != width:
-        raise AssertionError("north wall grammar produced the wrong width")
 
-    rows: list[str] = [top, underside]
-    for section_y in range(floor_rows):
-        boundary = [" " for _ in range(width)]
-        boundary[0] = "|"
-        boundary[east_inner_x] = "|"
-        boundary[east_face_x] = "/"
-        boundary[east_outer_x] = "|"
-        rows.append("".join(boundary))
+    for column in range(floor_columns):
+        start = 2 + column * SECTION_STRIDE_X
+        rows[0][start] = ","
+        rows[0][start + 1] = "—"
+        rows[0][start + 3] = "—"
+    rows[0][2 + floor_columns * SECTION_STRIDE_X] = ","
 
-        center = [" " for _ in range(width)]
-        center[0] = "|"
-        for section_x in range(floor_columns):
-            center[3 + section_x * SECTION_STRIDE_X] = "`"
-        center[east_inner_x] = "|"
-        center[east_outer_x] = "|"
-        rows.append("".join(center))
+    rows[1][1] = "/"
+    if foreground:
+        rows[1][2] = "|"
+        underside_start = 3
+    else:
+        underside_start = 2
+    for x in range(underside_start, east_inner_x):
+        rows[1][x] = "_"
+    for boundary in range(1, floor_columns):
+        rows[1][1 + boundary * SECTION_STRIDE_X] = "/"
+    rows[1][east_inner_x] = " "
+    rows[1][east_face_x] = "/"
+    rows[1][east_outer_x] = "|"
 
-    final_boundary = [" " for _ in range(width)]
-    final_boundary[0] = "|"
-    final_boundary[east_inner_x] = "|"
-    final_boundary[east_face_x] = "/"
-    final_boundary[east_outer_x] = "|"
-    rows.append("".join(final_boundary))
-    rows.append(_south_wall(width))
-    return tuple(rows)
+    for row_index in range(floor_rows):
+        actor_y = ACTOR_ORIGIN_Y + row_index * SECTION_STRIDE_Y
+        rows[actor_y][0] = "‘" if row_index == 0 else "|"
+        if foreground:
+            rows[actor_y][2] = "|"
+        rows[actor_y][east_inner_x] = "|"
+        rows[actor_y][east_outer_x] = "|"
+
+        if row_index < floor_rows - 1:
+            lattice_y = actor_y + 1
+            rows[lattice_y][0] = "|"
+            if foreground:
+                rows[lattice_y][1] = "/"
+                rows[lattice_y][2] = "|"
+            if show_lattice:
+                for vertex_x in range(1, floor_columns):
+                    rows[lattice_y][SECTION_STRIDE_X * vertex_x] = "`"
+            rows[lattice_y][east_inner_x] = "|"
+            rows[lattice_y][east_face_x] = "/"
+            rows[lattice_y][east_outer_x] = "|"
+
+    south_y = floor_rows * SECTION_STRIDE_Y
+    face_y = south_y + 1
+    if foreground:
+        rows[south_y][0] = "|"
+        for column in range(floor_columns):
+            start = 2 + column * SECTION_STRIDE_X
+            rows[south_y][start] = ","
+            rows[south_y][start + 1] = "—"
+            rows[south_y][start + 2] = "‘" if column == floor_columns - 1 else " "
+            rows[south_y][start + 3] = "—"
+        rows[south_y][east_outer_x] = ","
+        rows[face_y][0] = "‘"
+        rows[face_y][1] = "/"
+        for column in range(floor_columns):
+            start = 2 + column * SECTION_STRIDE_X
+            rows[face_y][start] = "_"
+            rows[face_y][start + 1] = "_"
+            rows[face_y][start + 2] = "_"
+            rows[face_y][start + 3] = "/"
+    else:
+        rows[south_y][0] = "|"
+        rows[south_y][east_inner_x] = "|"
+        rows[south_y][east_outer_x] = ","
+        rows[face_y][0] = "‘"
+        for column in range(floor_columns):
+            start = 2 + column * SECTION_STRIDE_X
+            rows[face_y][start] = "_"
+            rows[face_y][start + 1] = "_"
+            rows[face_y][start + 2] = "_"
+            rows[face_y][start + 3] = "/" if column == floor_columns - 1 else " "
+
+    return tuple("".join(row).rstrip() for row in rows)
+
+
+def render_projected_room_shell(
+    floor_columns: int,
+    floor_rows: int,
+    *,
+    foreground: bool = True,
+    show_lattice: bool = True,
+) -> tuple[str, ...]:
+    """Render the approved rectangular Grammar v2 wall projection."""
+    return _render_rectangular_room(
+        floor_columns,
+        floor_rows,
+        foreground=foreground,
+        show_lattice=show_lattice,
+    )
+
+
+def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
+    """Resolve directional Grammar v2 layers for an irregular room.
+
+    This renderer is intentionally conservative. Its semantic edge extraction is
+    authoritative; concave-corner glyph selection remains reviewable artwork.
+    """
+    width_cells, height_cells = cell_bounds(cells)
+    canvas = LayeredCanvas(width_cells * SECTION_STRIDE_X + 3, height_cells * SECTION_STRIDE_Y + 2)
+    model = projection_model(cells)
+
+    for point in model.lattice_markers:
+        canvas.put("lattice", point, "`")
+
+    for edge in model.north_edges:
+        x = 2 + edge.section.x * SECTION_STRIDE_X
+        y = edge.section.y * SECTION_STRIDE_Y
+        motif = ",— —,"
+        for offset, glyph in enumerate(motif):
+            if glyph != " ":
+                canvas.put("background_wall", Point(x + offset, y), glyph)
+        under = "|__/"
+        for offset, glyph in enumerate(under):
+            canvas.put("background_wall", Point(x + offset, y + 1), glyph)
+
+    for edge in model.east_edges:
+        x = (edge.section.x + 1) * SECTION_STRIDE_X
+        y = ACTOR_ORIGIN_Y + edge.section.y * SECTION_STRIDE_Y
+        canvas.put("background_wall", Point(x, y), "|")
+        canvas.put("background_wall", Point(x + 2, y), "|")
+        canvas.put("background_wall", Point(x, y + 1), "|")
+        canvas.put("background_wall", Point(x + 1, y + 1), "/")
+        canvas.put("background_wall", Point(x + 2, y + 1), "|")
+
+    for edge in model.south_edges:
+        x = 2 + edge.section.x * SECTION_STRIDE_X
+        y = ACTOR_ORIGIN_Y + edge.section.y * SECTION_STRIDE_Y
+        motif = ",— —,"
+        for offset, glyph in enumerate(motif):
+            if glyph != " ":
+                canvas.put("foreground_wall", Point(x + offset, y), glyph)
+        for offset, glyph in enumerate("___/"):
+            canvas.put("foreground_wall", Point(x + offset, y + 1), glyph)
+
+    for edge in model.west_edges:
+        x = ACTOR_ORIGIN_X + edge.section.x * SECTION_STRIDE_X
+        y = ACTOR_ORIGIN_Y + edge.section.y * SECTION_STRIDE_Y
+        canvas.put("foreground_wall", Point(x - 2, y), "|")
+        canvas.put("foreground_wall", Point(x, y), "|")
+        canvas.put("foreground_wall", Point(x - 2, y + 1), "|")
+        canvas.put("foreground_wall", Point(x - 1, y + 1), "/")
+        canvas.put("foreground_wall", Point(x, y + 1), "|")
+
+    return canvas.compose()
 
 
 def load_catalog(path: Path) -> tuple[ShapeSample, ...]:
@@ -282,9 +528,11 @@ def load_target(target_dir: Path, sample_id: str) -> tuple[str, ...] | None:
 
 
 def render_sample_draft(sample: ShapeSample, cells: frozenset[Point]) -> tuple[str, ...]:
-    if sample.category == "room" and is_solid_rectangle(cells):
-        width, height = cell_bounds(cells)
-        return render_projected_room_shell(width, height)
+    if sample.category in {"room", "irregular-room"}:
+        if is_solid_rectangle(cells):
+            width, height = cell_bounds(cells)
+            return render_projected_room_shell(width, height)
+        return render_irregular_room(cells)
     return render_bulk_outline(cells)
 
 
@@ -307,13 +555,18 @@ def _side_by_side(columns: tuple[tuple[str, ...], ...], labels: tuple[str, ...],
     widths = [max([len(label), *(len(row) for row in rows)]) for label, rows in zip(labels, columns, strict=True)]
     output = [gap.join(label.ljust(width) for label, width in zip(labels, widths, strict=True)).rstrip()]
     output.append(gap.join(("-" * len(label)).ljust(width) for label, width in zip(labels, widths, strict=True)).rstrip())
-    for y in range(max(map(len, columns), default=0)):
+    height = max((len(rows) for rows in columns), default=0)
+    for y in range(height):
         output.append(gap.join((rows[y] if y < len(rows) else "").ljust(width) for rows, width in zip(columns, widths, strict=True)).rstrip())
     return output
 
 
 def render_text_sheet(renders: tuple[SampleRender, ...]) -> str:
-    lines = ["ASCII STRUCTURE STYLE REVIEW SHEET", "Generated drafts are disposable. Hand-edited targets are preserved separately.", ""]
+    lines = [
+        "ASCII STRUCTURE STYLE REVIEW SHEET — GRAMMAR V2",
+        "Floor topology, actor anchors, lattice, directional walls, and composition are separate.",
+        "",
+    ]
     for render in renders:
         sample = render.sample
         lines.extend([
@@ -348,14 +601,15 @@ def render_html_sheet(renders: tuple[SampleRender, ...]) -> str:
             f"<p>{escape(sample.notes)}</p><div class=columns>{''.join(columns)}</div></article>"
         )
     head = """<!doctype html><html lang=en><head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><title>ASCII structure style review</title>
-<style>body{margin:0;background:#11100d;color:#e8dfc4;font:15px/1.45 system-ui,sans-serif}main{max-width:1500px;margin:auto;padding:28px}article{border:1px solid #514a38;background:#181610;padding:18px;margin:0 0 22px}h1,h2,h3{color:#f3d37a}.columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}section{min-width:0}pre{overflow:auto;min-height:100px;padding:14px;background:#0c0c0b;border:1px solid #383327;color:#f2ead1;font:16px/1.15 "Cascadia Mono",Consolas,monospace}code{color:#8fd3ef}@media(max-width:900px){.columns{grid-template-columns:1fr}}</style></head><body><main><h1>ASCII structure style review</h1><p>Generated drafts provide bulk geometry. Targets are deliberately separate and may be handcrafted.</p>"""
+<meta name=viewport content="width=device-width,initial-scale=1"><title>ASCII Grammar v2 review</title>
+<style>body{margin:0;background:#11100d;color:#e8dfc4;font:15px/1.45 system-ui,sans-serif}main{max-width:1500px;margin:auto;padding:28px}article{border:1px solid #514a38;background:#181610;padding:18px;margin:0 0 22px}h1,h2,h3{color:#f3d37a}.columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}section{min-width:0}pre{overflow:auto;min-height:100px;padding:14px;background:#0c0c0b;border:1px solid #383327;color:#f2ead1;font:16px/1.15 "Cascadia Mono",Consolas,monospace}code{color:#8fd3ef}@media(max-width:900px){.columns{grid-template-columns:1fr}}</style></head><body><main><h1>ASCII structure Grammar v2 review</h1><p>The floorplan is authoritative. Wall art is a directional projection layered over it.</p>"""
     return head + "".join(cards) + "</main></body></html>\n"
 
 
 def review_manifest(renders: tuple[SampleRender, ...]) -> dict[str, object]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
+        "grammar": "floor topology -> actor anchors -> lattice -> directional walls -> composition",
         "workflow": ["generated", "reviewing", "approved", "promoted"],
         "samples": [
             {

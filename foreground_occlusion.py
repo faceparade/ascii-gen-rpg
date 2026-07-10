@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Render the approved foreground-wall and entity-occlusion diagnostic."""
 from __future__ import annotations
 
 import argparse
@@ -7,37 +8,19 @@ from html import escape
 from pathlib import Path
 from typing import Iterable, Literal
 
-from style_sample_system import Point, SECTION_STRIDE_X, SECTION_STRIDE_Y
-
-WALLS_ON = (
-    "  ,— —,— —,— —,— —, ",
-    " /|__/___/___/__ /|",
-    "‘ |             | |",
-    "|/| `   `   `   |/|",
-    "| |             | |",
-    "|/| `   `   `   |/|",
-    "| |             | |",
-    "|/| `   `   `   |/|",
-    "| ,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/ ",
-)
-
-SOUTH_WEST_OFF = (
-    "  ,— —,— —,— —,— —, ",
-    " /___/___/___/__ /|",
-    "‘               | |",
-    "|   `   `   `   |/|",
-    "|               | |",
-    "|   `   `   `   |/|",
-    "|               | |",
-    "|   `   `   `   |/|",
-    "|               | ,",
-    "‘ ___ ___ ___ ___/ ",
+from style_sample_system import (
+    Point,
+    actor_anchor,
+    cells_from_mask,
+    render_projected_room_shell,
+    section_occluders as grammar_section_occluders,
 )
 
 GRID_COLUMNS = 4
 GRID_ROWS = 4
-CENTER_ORIGIN = Point(2, 2)
+GRID_CELLS = cells_from_mask(("####", "####", "####", "####"))
+WALLS_ON = render_projected_room_shell(GRID_COLUMNS, GRID_ROWS)
+SOUTH_WEST_OFF = render_projected_room_shell(GRID_COLUMNS, GRID_ROWS, foreground=False)
 
 
 @dataclass(frozen=True)
@@ -59,12 +42,9 @@ class Projection:
 
 
 def section_center(section: Point) -> Point:
-    if not (0 <= section.x < GRID_COLUMNS and 0 <= section.y < GRID_ROWS):
+    if section not in GRID_CELLS:
         raise ValueError(f"section outside 4x4 diagnostic grid: {section}")
-    return Point(
-        CENTER_ORIGIN.x + section.x * SECTION_STRIDE_X,
-        CENTER_ORIGIN.y + section.y * SECTION_STRIDE_Y,
-    )
+    return actor_anchor(section)
 
 
 def section_occluders(
@@ -74,19 +54,15 @@ def section_occluders(
     east_wall: bool = True,
 ) -> frozenset[str]:
     section_center(section)
-    result: set[str] = set()
-    if south_west_walls and section.x == 0:
-        result.add("west")
-    if south_west_walls and section.y == GRID_ROWS - 1:
-        result.add("south")
+    if not south_west_walls:
+        return frozenset()
     _ = east_wall
-    return frozenset(result)
+    return grammar_section_occluders(GRID_CELLS, section)
 
 
 def floor_only_rows() -> tuple[str, ...]:
     width = max(map(len, WALLS_ON))
-    canvas = [[" " for _ in range(width)] for _ in WALLS_ON]
-    return tuple("".join(row) for row in canvas)
+    return tuple(" " * width for _ in WALLS_ON)
 
 
 def compose(
@@ -113,6 +89,7 @@ def compose(
             for x, glyph in enumerate(row):
                 if glyph == "`":
                     row[x] = " "
+
     used: set[Point] = set()
     gray: set[Point] = set()
     hidden: set[Point] = set()
@@ -128,11 +105,7 @@ def compose(
             south_west_walls=south_west,
             east_wall=east,
         )
-        reference_occluders = section_occluders(
-            entity.section,
-            south_west_walls=True,
-            east_wall=True,
-        )
+        reference_occluders = section_occluders(entity.section)
 
         if occluders and occlusion_mode == "opaque":
             hidden.add(entity.section)
@@ -142,7 +115,6 @@ def compose(
         dimmed = bool(occluders) or reveal_marker
         glyph = entity.glyph.lower() if dimmed and entity.glyph.isalpha() else entity.glyph
         canvas[screen.y][screen.x] = glyph
-
         if occluders:
             gray.add(screen)
         if reveal_marker:
@@ -229,7 +201,7 @@ pre{{overflow:auto;padding:14px;background:#0c0c0b;border:1px solid #383327;colo
 </style></head><body><main><h1>Foreground wall and entity occlusion diagnostic</h1>
 <p>Uppercase letters are unobstructed. Gray lowercase letters are seen through a wall. Muted lowercase letters mark sections revealed by removing the south/west walls.</p>
 <div class="grid">{cards}</div><h2>Confirmed finding</h2>
-<p>West covers A/E/I/M; south covers M/N/O/P; M is covered by both. The retained east wall covers no one-character centers.</p>
+<p>West covers A/E/I/M; south covers M/N/O/P; M is covered by both. The retained east wall covers no centered one-character entities.</p>
 </main></body></html>\n'''
 
 
@@ -243,7 +215,7 @@ def write_outputs(output_dir: Path) -> tuple[Path, Path]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("style_samples/output"))
     args = parser.parse_args()
     for path in write_outputs(args.output):

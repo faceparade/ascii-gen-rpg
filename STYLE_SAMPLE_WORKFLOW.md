@@ -1,73 +1,46 @@
-# Structure Sample and Style Review Workflow
+# Structure Sample and Style Review Workflow — Grammar v2
 
-This workflow separates bulk geometry generation from handcrafted ASCII styling. Generated drafts may be replaced at any time. Approved targets remain stable until deliberately edited.
+The floorplan is authoritative. ASCII wall art is a directional projection layered over that floorplan.
 
-## Core loop
+## Pipeline
 
-1. Define a logical floor-section mask in `style_samples/catalog.json`.
-2. Generate a mask, automatic draft, and optional handcrafted target side by side.
-3. Edit only the target under `style_samples/targets/`.
-4. Mark the sample `approved` when it represents the intended style.
-5. Promote recurring corrections into `style_samples/style_rules.json`.
+1. **Floor topology** — each `#` is one walkable logical section.
+2. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)`.
+3. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
+4. **Directional walls** — north/east are background layers; south/west are foreground layers.
+5. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
+6. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
 
-## Review states
+The authoritative machine-readable rules are in `style_samples/style_rules_v2.json`. The former `style_rules.json` is retained only as a compatibility pointer.
 
-- `generated`: automatic draft exists.
-- `reviewing`: target is being edited or decisions remain.
-- `approved`: target is accepted as a reference.
-- `promoted`: its reusable rule has been encoded and tested.
+## Confirmed reference
 
-## Floor-section geometry
+`style_samples/targets/foreground_occlusion_v2.txt` is the approved 4×4 wall and occlusion fixture. It establishes:
 
-Each `#` represents one usable floor section and one possible character position. A section has an inclusive 5-column by 3-row footprint. Adjacent sections share their outside edge, so origins advance by 4 columns and 2 rows. The backtick sits at the local center `(2, 1)`.
+- actor anchors use a 4×2 stride beginning at screen coordinate `(2, 2)`;
+- backticks are shared interior lattice intersections, not actor anchors;
+- west walls occlude sections with exposed west edges;
+- south walls occlude sections with exposed south edges;
+- east walls sit beyond centered one-character actors;
+- deleting south/west walls reveals the unchanged underlying floorplan.
 
-## Rectangular projected room shell
+## Review sequence
 
-The source room is not a flat outline. For `N` usable floor sections across and `M` down:
+The initial Grammar v2 regression set is:
 
-- centered indicators begin at glyph `(3, 3)` and repeat every `(4, 2)`;
-- the north rim contains `N + 1` repeated `,— —` spans followed by `,.`;
-- the underside starts with `|__`, repeats `/___`, and ends with `/ |`;
-- the inner east wall is at `4N + 3`;
-- the east face uses `/` on section-boundary rows and a space on center rows;
-- the outer east edge is two glyphs to the right of the inner wall;
-- a final east-wall boundary row appears before the south edge.
+1. 1×1 section — actor anchor, no lattice marker;
+2. 2×2 block — one lattice intersection;
+3. approved 4×4 room — exact rectangular wall grammar;
+4. L-shaped room — concave edge extraction and incomplete lattice intersections.
 
-This relationship is visible in `six_rooms_two_platforms.txt`: seven floor indicators sit beneath eight north-wall spans.
+For irregular rooms, boundary extraction and occlusion are authoritative now. Concave-corner glyph choices remain reviewable until a handcrafted L-shaped target is approved.
 
-A 4-by-2 room therefore contains eight possible centered character indicators and five north-wall spans. The fifth span moves the recessed east wall beyond the fourth indicator instead of occupying it.
-
-## Files
-
-- `style_sample_system.py`: mask validation and draft generation.
-- `foreground_occlusion.py`: paired wall fixtures and entity/wall compositing diagnostic.
-- `style_samples/catalog.json`: geometry cases.
-- `style_samples/targets/<id>.txt`: handcrafted targets.
-- `style_samples/style_rules.json`: confirmed reusable rules.
-- `style_samples/output/`: generated review sheets and diagnostics.
-
-Run:
+## Commands
 
 ```bash
+pytest -q
 python style_sample_system.py
 python foreground_occlusion.py
-pytest -q
 ```
 
-Rectangular rooms now use the confirmed north/east projection. Irregular rooms, connections, and platforms still use the coarse shared-edge footprint renderer until their projection and junction rules are approved.
-
-## Foreground-wall and entity diagnostic
-
-The paired targets `room-foreground-walls-on.txt` and
-`room-foreground-south-west-off.txt` establish that floor topology persists
-independently from the projected wall faces. `foreground_occlusion.py` writes:
-
-- `output/foreground_occlusion_diagnostic.txt`
-- `output/foreground_occlusion_diagnostic.html`
-
-The diagnostic labels a provisional 4-by-4 logical floor with `A` through `P`.
-The east wall covers the fourth logical column, and the south foreground face
-covers the fourth logical row. X-ray mode replaces the wall character with a
-dim entity glyph while retaining semantic wall coverage. The west face overlaps
-the western section footprints, but not their one-character centers in this
-fixture. Wider sprites may still require west-wall clipping.
+Generated output may be overwritten. Files under `style_samples/targets` must not be overwritten by generators.

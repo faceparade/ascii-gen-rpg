@@ -1,0 +1,115 @@
+{
+  "schema_version": 2,
+  "style_id": "tristan-curved",
+  "status": "authoritative",
+  "supersedes": "style_rules.json",
+  "grammar_pipeline": [
+    "floor_topology",
+    "actor_anchors",
+    "lattice_intersections",
+    "directional_walls",
+    "entities",
+    "foreground_composition"
+  ],
+  "logical_floor": {
+    "mask_glyph": "#",
+    "meaning": "One walkable logical floor section and one actor/object anchor.",
+    "screen_stride": {
+      "x": 4,
+      "y": 2
+    },
+    "actor_anchor_origin": {
+      "x": 2,
+      "y": 2
+    },
+    "actor_anchor_formula": {
+      "x": "2 + 4 * section_x",
+      "y": "2 + 2 * section_y"
+    }
+  },
+  "lattice": {
+    "glyph": "`",
+    "meaning": "A shared interior intersection surrounded by four occupied floor sections.",
+    "logical_requirement": [
+      "north_west",
+      "north_east",
+      "south_west",
+      "south_east"
+    ],
+    "screen_formula": {
+      "x": "4 * vertex_x",
+      "y": "1 + 2 * vertex_y"
+    },
+    "independent_of_entities": true
+  },
+  "walls": {
+    "north": {
+      "layer": "background_wall",
+      "occludes_actor_anchor": false,
+      "span_count": "floor_columns",
+      "boundary_point_count": "floor_columns + 1",
+      "top_rim_span": ",— —",
+      "notes": "North wall uses a top rim and underside. It is generated from exposed north floor edges."
+    },
+    "east": {
+      "layer": "background_wall",
+      "occludes_actor_anchor": false,
+      "inner_x_for_rectangle": "4 * floor_columns",
+      "face_x": "inner_x + 1",
+      "outer_x": "inner_x + 2",
+      "boundary_face_glyph": "/"
+    },
+    "south": {
+      "layer": "foreground_wall",
+      "occludes_actor_anchor": true,
+      "covered_sections": "Every occupied section with an exposed south edge.",
+      "notes": "The south rim crosses the actor anchor of the exposed floor section."
+    },
+    "west": {
+      "layer": "foreground_wall",
+      "occludes_actor_anchor": true,
+      "covered_sections": "Every occupied section with an exposed west edge.",
+      "notes": "The west inner face crosses the actor anchor of the exposed floor section."
+    }
+  },
+  "composition": {
+    "layer_order": [
+      "floor",
+      "lattice",
+      "background_wall",
+      "entity",
+      "foreground_wall"
+    ],
+    "opaque": "Foreground wall remains visible and the logical entity is marked hidden.",
+    "xray": "Entity glyph replaces the foreground wall glyph using dim or gray styling while wall metadata remains.",
+    "walls_removed": "Removing south/west foreground layers reveals the unchanged floor topology and actor anchors."
+  },
+  "confirmed_fixtures": [
+    {
+      "id": "unit-section",
+      "mask": ["#"],
+      "purpose": "Actor anchor and zero lattice intersections."
+    },
+    {
+      "id": "two-by-two",
+      "mask": ["##", "##"],
+      "purpose": "One shared lattice intersection."
+    },
+    {
+      "id": "foreground-room-four-by-four",
+      "mask": ["####", "####", "####", "####"],
+      "target": "targets/foreground_occlusion_v2.txt",
+      "purpose": "Approved north/east background and south/west foreground projection with occlusion."
+    },
+    {
+      "id": "l-shape-v2",
+      "mask": ["###", "##.", "##."],
+      "purpose": "Concave boundary, incomplete lattice vertices, and directional foreground occlusion."
+    }
+  ],
+  "open_work": [
+    "Approve concave-corner glyph motifs for irregular rooms.",
+    "Define door and corridor transitions per directional wall layer.",
+    "Define raised-platform projection using the same topology/layer pipeline."
+  ]
+}

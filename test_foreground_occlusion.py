@@ -11,7 +11,7 @@ from foreground_occlusion import (
 from style_sample_system import Point
 
 
-def test_reference_art_is_preserved() -> None:
+def test_reference_art_is_generated_by_grammar_v2() -> None:
     assert WALLS_ON[3] == "|/| `   `   `   |/|"
     assert SOUTH_WEST_OFF[3] == "|   `   `   `   |/|"
     assert WALLS_ON[8] == "| ,— —,— —,— —,—‘—,"
@@ -75,6 +75,3 @@ def test_rendered_diagnostic_contains_user_corrected_rows() -> None:
     assert "‘ a   B   C   D | |" in output
     assert "| m— —n— —o— —p—‘—," in output
     assert "| m   n   o   p | ," in output
-    entity_block = output.split("ENTITIES — WALLS ON, OPAQUE", 1)[1]
-    entity_block = entity_block.split("ENTITIES — WALLS ON, X-RAY", 1)[0]
-    assert "`" not in entity_block

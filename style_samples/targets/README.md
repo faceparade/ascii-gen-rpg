@@ -1,5 +1,5 @@
 # Handcrafted targets
 
-Each `<sample-id>.txt` file is an authoritative visual target. Generation must never overwrite these files.
+Targets are approved or reviewing ASCII fixtures and are never overwritten by generators.
 
-`room-foreground-walls-on.txt` and `room-foreground-south-west-off.txt` are a paired reference: the floor projection remains stable while the south and west foreground faces are toggled. `foreground_occlusion.py` uses the pair for entity visibility tests.
+`foreground_occlusion_v2.txt` is the authoritative Grammar v2 rectangular-wall and entity-occlusion reference. Preserve spaces and glyphs exactly when editing it.
