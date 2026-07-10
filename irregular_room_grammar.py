@@ -99,6 +99,29 @@ def one_sided_bridge_runs(cells: frozenset[Point]) -> tuple[tuple[int, int, int]
     return tuple(bridges)
 
 
+def mirrored_one_sided_bridge_runs(cells: frozenset[Point]) -> tuple[tuple[int, int, int], ...]:
+    """Return interior north runs with an exterior west start and one terminating wall.
+
+    This is the horizontal counterpart of ``one_sided_bridge_runs``. The run
+    begins at an exposed west edge, crosses empty notch space, and terminates
+    into an exposed west wall immediately to its right.
+    """
+    edges = boundary_edges(cells)
+    bridges: list[tuple[int, int, int]] = []
+    for boundary_y, start_x, end_x in directional_runs(cells, "north"):
+        if boundary_y == 0:
+            continue
+        left_floor_section = Point(start_x, boundary_y)
+        right_section = Point(end_x + 1, boundary_y - 1)
+        if (
+            BoundaryEdge(left_floor_section, "west") in edges
+            and BoundaryEdge(right_section, "west") in edges
+            and all(Point(x, boundary_y - 1) not in cells for x in range(start_x, end_x + 1))
+        ):
+            bridges.append((boundary_y, start_x, end_x))
+    return tuple(bridges)
+
+
 def _render_courtyard_bridge_junction(
     canvas: LayeredCanvas,
     boundary_y: int,
@@ -163,6 +186,41 @@ def _render_one_sided_bridge_junction(
             canvas.put(layer, Point(screen_x, y + 1), "_")
         canvas.put(layer, Point(x + 3, y + 1), "/")
     canvas.put(layer, Point(screen_end, y + 1), "|")
+
+
+def _render_mirrored_one_sided_bridge_junction(
+    canvas: LayeredCanvas,
+    boundary_y: int,
+    start_x: int,
+    end_x: int,
+) -> None:
+    """Resolve a west-exterior bridge into one terminating inner west wall."""
+    layer = "foreground_wall"
+    y = boundary_y * SECTION_STRIDE_Y
+    screen_start = ACTOR_ORIGIN_X + start_x * SECTION_STRIDE_X
+    screen_end = ACTOR_ORIGIN_X + (end_x + 1) * SECTION_STRIDE_X
+
+    for screen_x in range(screen_start, screen_end + 1):
+        canvas.put(layer, Point(screen_x, y), " ")
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        canvas.put(layer, Point(x, y), ",")
+        canvas.put(layer, Point(x + 1, y), "—")
+        canvas.put(layer, Point(x + 2, y), " ")
+        canvas.put(layer, Point(x + 3, y), "—")
+    canvas.put(layer, Point(screen_end - 2, y), "‘")
+    canvas.put(layer, Point(screen_end, y), ",")
+
+    for screen_x in range(screen_start - 1, screen_end + 1):
+        canvas.put(layer, Point(screen_x, y + 1), " ")
+    canvas.put(layer, Point(screen_start - 1, y + 1), "/")
+    canvas.put(layer, Point(screen_start, y + 1), "|")
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        underscore_start = x + 1 if logical_x == start_x else x
+        for screen_x in range(underscore_start, x + 3):
+            canvas.put(layer, Point(screen_x, y + 1), "_")
+        canvas.put(layer, Point(x + 3, y + 1), "/")
 
 
 def _put(canvas: LayeredCanvas, layer: str, x: int, y: int, glyph: str) -> None:
@@ -301,5 +359,7 @@ def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
         _render_courtyard_bridge_junction(canvas, boundary_y, start_x, end_x)
     for boundary_y, start_x, end_x in one_sided_bridge_runs(cells):
         _render_one_sided_bridge_junction(canvas, boundary_y, start_x, end_x)
+    for boundary_y, start_x, end_x in mirrored_one_sided_bridge_runs(cells):
+        _render_mirrored_one_sided_bridge_junction(canvas, boundary_y, start_x, end_x)
 
     return canvas.compose()
