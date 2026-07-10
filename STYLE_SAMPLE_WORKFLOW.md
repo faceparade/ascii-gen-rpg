@@ -8,9 +8,10 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 2. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)`.
 3. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
 4. **Directional walls** — north/east are background layers; south/west are foreground layers.
-5. **Junction resolution** — approved corner and bridge motifs replace literal wall-layer collisions.
-6. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
-7. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
+5. **Junction classification** — bridge and corridor spans are identified from topology and their left/right terminations.
+6. **Junction resolution** — approved corner and bridge motifs replace literal wall-layer collisions.
+7. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
+8. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
 
 The authoritative machine-readable rules are in `style_samples/style_rules_v2.json`. The former `style_rules.json` is retained only as a compatibility pointer.
 
@@ -23,7 +24,7 @@ The authoritative machine-readable rules are in `style_samples/style_rules_v2.js
 - west walls occlude sections with exposed west edges;
 - south walls occlude sections with exposed south edges;
 - east walls sit beyond centered one-character actors;
-- deleting south/west walls reveals the unchanged underlying floorplan.
+- deleting south/west walls reveals the unchanged floorplan.
 
 ## Review sequence
 
@@ -35,7 +36,8 @@ The current Grammar v2 regression set is:
 4. approved L-shaped room — one-sided concave edge transitions;
 5. approved U-shaped room — mirrored courtyard walls meeting an interior bridge;
 6. approved east-extending one-sided bridge — one terminating inner east wall and an exterior east cap;
-7. approved west-extending one-sided bridge — an exterior west start and one terminating inner west wall.
+7. approved west-extending one-sided bridge — an exterior west start and one terminating inner west wall;
+8. reviewing horizontal corridor — two room openings joined by a one-section-high passage.
 
 ## Commands
 
@@ -45,7 +47,7 @@ python style_sample_system.py
 python foreground_occlusion.py
 ```
 
-Generated output may be overwritten. Files under `style_samples/targets` must not be overwritten by generators.
+Generated output may be overwritten. Files under `style_samples/targets` must not be overwritten by generators. Reviewing fixtures live under `style_samples/review/` until their glyph treatment is approved.
 
 ## Approved irregular-room fixture
 
@@ -63,4 +65,10 @@ The fixture `room-one-sided-bridge-v2` is recognized when an exposed east wall t
 
 The fixture `room-mirrored-one-sided-bridge-v2` is recognized when the bridge begins at an exposed exterior west edge, the notch cells above are empty, and an exposed west wall terminates immediately to its right. The renderer preserves the ordinary `/|__` exterior-west underside, applies the approved curved `‘—,` rim termination, and clears the inner west-wall cap beneath the final slash.
 
-More complex multi-level, nested, doorway, corridor, and platform junctions remain reviewable until their handcrafted targets promote reusable motifs.
+## Reviewing horizontal corridor
+
+The fixture `room-horizontal-corridor-v2` contains two 3×5 rooms connected by a three-section, one-row-high passage. It differs from the U-shaped courtyard because matching side-wall segments continue below both openings. The shared junction classifier records this as `horizontal_corridor` rather than `courtyard_bridge`.
+
+The corridor resolver keeps the joined north rim but restores the normal `/|__.../|` background underside. The south edge remains a foreground wall. The exact doorway transitions and south-face treatment remain reviewable in `style_samples/review/room-horizontal-corridor-v2.txt`.
+
+Multi-level, nested, vertical-corridor, T-junction, doorway, and platform motifs remain reviewable until their handcrafted targets promote reusable rules.
