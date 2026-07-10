@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 from pathlib import Path
-import subprocess
+import subprocess  # nosec B404 -- this local test runner intentionally launches Python files
 import sys
 
 ROOT = Path(__file__).resolve().parent
 SELF = Path(__file__).resolve()
 
 TESTS = sorted(
-    p
-    for p in (
-        set(ROOT.glob("*test*.py"))
-        | set(ROOT.glob("test_*.py"))
-    )
-    if p.is_file() and p.resolve() != SELF
+    {
+        p
+        for pattern in ("test_*.py", "*_test.py", "*_tests.py")
+        for p in ROOT.glob(pattern)
+        if p.is_file() and p.resolve() != SELF
+    }
 )
 
 
@@ -24,7 +24,7 @@ def main() -> int:
     for path in TESTS:
         rel = path.relative_to(ROOT)
         print(f"--- {rel} ---", flush=True)
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 -- executable and paths are local, discovered test files
             [sys.executable, str(path)],
             cwd=ROOT,
             text=True,

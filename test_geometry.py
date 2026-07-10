@@ -14,10 +14,10 @@ def test_wall_span():
     assert ws.start_chunk == 3
     assert ws.length_chunks == 4
     assert ws.end_chunk == 6
-    assert ws.contains(3) == True
-    assert ws.contains(6) == True
-    assert ws.contains(2) == False
-    assert ws.contains(7) == False
+    assert ws.contains(3)
+    assert ws.contains(6)
+    assert not ws.contains(2)
+    assert not ws.contains(7)
     print("WallSpan OK")
 
 def test_port_spec():
@@ -27,11 +27,11 @@ def test_port_spec():
     assert p.end_chunk == 6
     assert p.length_chunks == 4
     p2 = PortSpec(side="north", start_chunk=5, end_chunk=8)
-    assert p.overlaps(p2) == True
+    assert p.overlaps(p2)
     p3 = PortSpec(side="north", start_chunk=1, end_chunk=2)
-    assert p.overlaps(p3) == False
+    assert not p.overlaps(p3)
     p4 = PortSpec(side="south", start_chunk=3, end_chunk=6)
-    assert p.overlaps(p4) == False  # different side
+    assert not p.overlaps(p4)  # different side
     print("PortSpec OK")
 
 def test_chunk_grid():

@@ -291,8 +291,11 @@ def _is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
-def validate_six_room_scene_graph_data(data: dict[str, object]) -> tuple[str, ...]:
+def validate_six_room_scene_graph_data(data: object) -> tuple[str, ...]:
     """Return validation errors for exported graph JSON data."""
+    if not isinstance(data, dict):
+        return ("graph JSON root must be an object",)
+
     errors: list[str] = []
     if data.get("schema_version") != 1:
         errors.append(f"unsupported schema_version {data.get('schema_version')}")
@@ -371,8 +374,8 @@ def six_room_scene_graph_from_data(data: dict[str, object]) -> SixRoomSceneGraph
         raise ValueError("invalid six-room graph JSON: " + "; ".join(errors))
     room_entries = data["rooms"]
     connection_entries = data["connections"]
-    assert isinstance(room_entries, list)
-    assert isinstance(connection_entries, list)
+    if not isinstance(room_entries, list) or not isinstance(connection_entries, list):
+        raise ValueError("invalid six-room graph JSON: rooms and connections must be lists")
     rooms = tuple(
         SceneRoomPlacement(
             str(room["room_id"]),
@@ -662,10 +665,58 @@ let sceneGraphData = structuredClone(originalSceneGraphData);
 let selectedRoomId = sceneGraphData.rooms?.[0]?.room_id || null;
 let selectedConnectionIndex = null;
 function graphStatus(text) { document.getElementById('graph-copy-status').textContent = text; }
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
+}
 function roomById(roomId) { return sceneGraphData.rooms.find(room => room.room_id === roomId); }
 function connectionByIndex(index) { return sceneGraphData.connections[Number(index)]; }
 function connectionSummary(connection) {
   return `${connection.from_room} -> ${connection.to_room} (${connection.kind}, ${connection.region_name})`;
+}
+function validateGraphData(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return ['graph JSON root must be an object'];
+  if (data.schema_version !== 1) errors.push(`unsupported schema_version ${data.schema_version}`);
+  if (!Array.isArray(data.rooms)) errors.push('rooms must be a list');
+  if (!Array.isArray(data.regions)) errors.push('regions must be a list');
+  if (!Array.isArray(data.connections)) errors.push('connections must be a list');
+  if (errors.length) return errors;
+  const roomIds = new Set();
+  data.rooms.forEach((room, index) => {
+    if (!room || typeof room !== 'object' || Array.isArray(room)) { errors.push(`room ${index} must be an object`); return; }
+    if (typeof room.room_id !== 'string' || !room.room_id.trim()) errors.push(`room ${index} room_id must be a non-empty string`);
+    else if (roomIds.has(room.room_id)) errors.push(`room ${room.room_id} is duplicated`);
+    else roomIds.add(room.room_id);
+    ['x', 'y', 'width', 'height'].forEach(field => {
+      if (!Number.isInteger(room[field])) errors.push(`room ${room.room_id || index} ${field} must be an integer`);
+    });
+    if (Number.isInteger(room.width) && room.width <= 0) errors.push(`room ${room.room_id || index} width must be positive`);
+    if (Number.isInteger(room.height) && room.height <= 0) errors.push(`room ${room.room_id || index} height must be positive`);
+  });
+  const regionNames = new Set();
+  data.regions.forEach((region, index) => {
+    if (!region || typeof region !== 'object' || Array.isArray(region)) { errors.push(`region ${index} must be an object`); return; }
+    if (typeof region.name !== 'string' || !region.name.trim()) { errors.push(`region ${index} name must be a non-empty string`); return; }
+    if (regionNames.has(region.name)) errors.push(`region ${region.name} is duplicated`);
+    else regionNames.add(region.name);
+  });
+  data.rooms.forEach((room, index) => {
+    if (!room || typeof room !== 'object' || Array.isArray(room)) return;
+    const label = room.room_id || index;
+    if (!Array.isArray(room.regions)) errors.push(`room ${label} regions must be a list`);
+    else room.regions.forEach(regionName => {
+      if (typeof regionName !== 'string' || !regionNames.has(regionName)) errors.push(`room ${label} references unknown region ${regionName}`);
+    });
+  });
+  data.connections.forEach((connection, index) => {
+    if (!connection || typeof connection !== 'object' || Array.isArray(connection)) { errors.push(`connection ${index} must be an object`); return; }
+    const label = `connection ${connection.from_room}->${connection.to_room}`;
+    if (typeof connection.from_room !== 'string' || !roomIds.has(connection.from_room)) errors.push(`${label} references unknown from_room ${connection.from_room}`);
+    if (typeof connection.to_room !== 'string' || !roomIds.has(connection.to_room)) errors.push(`${label} references unknown to_room ${connection.to_room}`);
+    if (typeof connection.kind !== 'string' || !connection.kind.trim()) errors.push(`${label} kind must be a non-empty string`);
+    if (typeof connection.region_name !== 'string' || !regionNames.has(connection.region_name)) errors.push(`${label} references unknown region ${connection.region_name}`);
+  });
+  return errors;
 }
 function updateLayerToggles() {
   document.getElementById('room-box-layer').style.display = document.getElementById('toggle-room-boxes').checked ? '' : 'none';
@@ -678,28 +729,32 @@ function renderInspector() {
   const inspector = document.getElementById('graph-inspector');
   if (selectedConnectionIndex !== null) {
     const connection = connectionByIndex(selectedConnectionIndex);
-    inspector.innerHTML = `<strong>Connection</strong><br>${connectionSummary(connection)}<br>` +
-      `<label>from <input id="edit-connection-from-room" value="${connection.from_room}"></label> ` +
-      `<label>to <input id="edit-connection-to-room" value="${connection.to_room}"></label> ` +
-      `<label>kind <input id="edit-connection-kind" value="${connection.kind}"></label> ` +
-      `<label>region <input id="edit-connection-region" value="${connection.region_name}"></label> ` +
+    if (!connection) { inspector.textContent = 'Select a room or connection.'; return; }
+    inspector.innerHTML = `<strong>Connection</strong><br>${escapeHtml(connectionSummary(connection))}<br>` +
+      `<label>from <input id="edit-connection-from-room" value="${escapeHtml(connection.from_room)}"></label> ` +
+      `<label>to <input id="edit-connection-to-room" value="${escapeHtml(connection.to_room)}"></label> ` +
+      `<label>kind <input id="edit-connection-kind" value="${escapeHtml(connection.kind)}"></label> ` +
+      `<label>region <input id="edit-connection-region" value="${escapeHtml(connection.region_name)}"></label> ` +
       `<button id="apply-connection-edits" type="button">Apply connection edits</button><br>` +
-      `from_center=${JSON.stringify(connection.from_center)} to_center=${JSON.stringify(connection.to_center)} midpoint=${JSON.stringify(connection.midpoint)}`;
+      `from_center=${escapeHtml(JSON.stringify(connection.from_center))} to_center=${escapeHtml(JSON.stringify(connection.to_center))} midpoint=${escapeHtml(JSON.stringify(connection.midpoint))}`;
     document.getElementById('apply-connection-edits')?.addEventListener('click', applyConnectionInspectorEdits);
     return;
   }
   const room = roomById(selectedRoomId);
   if (!room) { inspector.textContent = 'Select a room or connection.'; return; }
-  inspector.innerHTML = `<strong>Room</strong> ${room.room_id}<br>` +
-    `<label>id <input id="edit-room-id" value="${room.room_id}"></label> ` +
-    `<label>x <input id="edit-room-x" type="number" value="${room.x}"></label> ` +
-    `<label>y <input id="edit-room-y" type="number" value="${room.y}"></label> ` +
-    `<label>w <input id="edit-room-width" type="number" value="${room.width}"></label> ` +
-    `<label>h <input id="edit-room-height" type="number" value="${room.height}"></label> ` +
-    `<label>regions <input id="edit-room-regions" value="${room.regions.join(',')}"></label> ` +
+  const connectionText = room.connections
+    .map(connection => `${connection.to_room}(${connection.kind}:${connection.region_name})`)
+    .join(', ');
+  inspector.innerHTML = `<strong>Room</strong> ${escapeHtml(room.room_id)}<br>` +
+    `<label>id <input id="edit-room-id" value="${escapeHtml(room.room_id)}"></label> ` +
+    `<label>x <input id="edit-room-x" type="number" value="${escapeHtml(room.x)}"></label> ` +
+    `<label>y <input id="edit-room-y" type="number" value="${escapeHtml(room.y)}"></label> ` +
+    `<label>w <input id="edit-room-width" type="number" value="${escapeHtml(room.width)}"></label> ` +
+    `<label>h <input id="edit-room-height" type="number" value="${escapeHtml(room.height)}"></label> ` +
+    `<label>regions <input id="edit-room-regions" value="${escapeHtml(room.regions.join(','))}"></label> ` +
     `<button id="apply-room-edits" type="button">Apply room edits</button><br>` +
     `bounds=x${room.x}..${room.x + room.width - 1} y${room.y}..${room.y + room.height - 1} size=${room.width}x${room.height}<br>` +
-    `connections=${room.connections.map(c => `${c.to_room}(${c.kind}:${c.region_name})`).join(', ')}`;
+    `connections=${escapeHtml(connectionText)}`;
   document.getElementById('apply-room-edits')?.addEventListener('click', applyRoomInspectorEdits);
 }
 function selectRoom(roomId) {
@@ -723,8 +778,11 @@ function selectConnection(index) {
   document.getElementById('readout').textContent = connectionSummary(connection);
   renderInspector();
 }
-function intFromInput(id) { return Number.parseInt(document.getElementById(id).value, 10); }
-function roomCenter(room) { return {x: room.x + Math.floor(room.width / 2) - 1, y: room.y + Math.floor(room.height / 2) - 1}; }
+function intFromInput(id) {
+  const value = document.getElementById(id).value.trim();
+  return value === '' ? Number.NaN : Number(value);
+}
+function roomCenter(room) { return {x: room.x + Math.floor(room.width / 2) - 1, y: room.y + Math.floor(room.height / 2)}; }
 function rebuildRoomConnectionSummaries() {
   sceneGraphData.rooms.forEach(room => { room.connections = []; });
   sceneGraphData.connections.forEach(connection => {
@@ -779,35 +837,42 @@ function updateOverlayFromGraph() {
   });
 }
 function applyRoomInspectorEdits() {
-  const room = roomById(selectedRoomId);
+  const candidate = structuredClone(sceneGraphData);
+  const room = candidate.rooms.find(item => item.room_id === selectedRoomId);
   if (!room) return;
   const oldRoomId = room.room_id;
   const newRoomId = document.getElementById('edit-room-id').value.trim();
-  room.room_id = newRoomId || oldRoomId;
+  room.room_id = newRoomId;
   room.x = intFromInput('edit-room-x');
   room.y = intFromInput('edit-room-y');
   room.width = intFromInput('edit-room-width');
   room.height = intFromInput('edit-room-height');
   room.regions = document.getElementById('edit-room-regions').value.split(',').map(value => value.trim()).filter(Boolean);
   if (room.room_id !== oldRoomId) {
-    sceneGraphData.connections.forEach(connection => {
+    candidate.connections.forEach(connection => {
       if (connection.from_room === oldRoomId) connection.from_room = room.room_id;
       if (connection.to_room === oldRoomId) connection.to_room = room.room_id;
     });
-    document.querySelectorAll(`[data-room-id="${CSS.escape(oldRoomId)}"]`).forEach(node => { node.dataset.roomId = room.room_id; });
-    selectedRoomId = room.room_id;
   }
+  const errors = validateGraphData(candidate);
+  if (errors.length) { graphStatus(`edit rejected: ${errors[0]}`); return; }
+  sceneGraphData = candidate;
+  selectedRoomId = room.room_id;
   updateOverlayFromGraph();
   selectRoom(room.room_id);
   graphStatus(`applied room edits: ${room.room_id}`);
 }
 function applyConnectionInspectorEdits() {
-  const connection = connectionByIndex(selectedConnectionIndex);
+  const candidate = structuredClone(sceneGraphData);
+  const connection = candidate.connections[Number(selectedConnectionIndex)];
   if (!connection) return;
   connection.from_room = document.getElementById('edit-connection-from-room').value.trim();
   connection.to_room = document.getElementById('edit-connection-to-room').value.trim();
   connection.kind = document.getElementById('edit-connection-kind').value.trim();
   connection.region_name = document.getElementById('edit-connection-region').value.trim();
+  const errors = validateGraphData(candidate);
+  if (errors.length) { graphStatus(`edit rejected: ${errors[0]}`); return; }
+  sceneGraphData = candidate;
   updateOverlayFromGraph();
   selectConnection(selectedConnectionIndex);
   graphStatus(`applied connection edits: ${connectionSummary(connection)}`);
@@ -854,10 +919,14 @@ function downloadGraphJson() {
 function graphShapeMatchesOverlay(data) {
   const roomBoxes = document.querySelectorAll('.room-box').length;
   const connectionLines = document.querySelectorAll('.connection-line').length;
-  return data?.schema_version === 1 && Array.isArray(data.rooms) && Array.isArray(data.connections)
-    && data.rooms.length === roomBoxes && data.connections.length === connectionLines;
+  return data.rooms.length === roomBoxes && data.connections.length === connectionLines;
 }
 function loadGraphJsonData(data) {
+  const errors = validateGraphData(data);
+  if (errors.length) {
+    graphStatus(`load failed: ${errors[0]}`);
+    return false;
+  }
   if (!graphShapeMatchesOverlay(data)) {
     graphStatus('load failed: graph must match current room/connection counts');
     return false;
@@ -1038,7 +1107,11 @@ def main(argv: list[str] | None = None) -> int:
     graph = build_six_room_scene_graph()
     loaded_graph_json = False
     if args.graph_json:
-        graph_data = json.loads(args.graph_json.read_text(encoding="utf-8"))
+        try:
+            graph_data = json.loads(args.graph_json.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"graph json load failed: {exc}")
+            return 1
         errors = validate_six_room_scene_graph_data(graph_data)
         if errors:
             print("graph json validation: failed")

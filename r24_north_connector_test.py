@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from curved_dungeon_grammar import OUT_DIR, raised_platform, regular_vertical_pathway
+from curved_dungeon_grammar import OUT_DIR, regular_vertical_pathway
 from latest_r24_style import SOURCE_OF_TRUTH_PATH, r24_new_style_with_room3_platform
 from modular_ascii_parts import Opening, NorthWall, north_wall_top_width, north_wall_underside_width
 from r24_north_connector import (

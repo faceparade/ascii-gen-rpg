@@ -7,7 +7,6 @@ grid and connecting it with the locked horizontal corridor macro.
 """
 from __future__ import annotations
 
-from pathlib import Path
 
 from curved_dungeon_grammar import (
     OUT_DIR,

@@ -169,6 +169,12 @@ def test_six_room_scene_graph_data_exposes_editor_ready_connection_anchors() -> 
     print("PASS six-room graph JSON exposes connection anchors")
 
 
+def test_validate_six_room_scene_graph_data_rejects_non_object_root() -> None:
+    errors = validate_six_room_scene_graph_data([])
+    assert errors == ("graph JSON root must be an object",)
+    print("PASS six-room graph JSON rejects non-object root")
+
+
 def test_validate_six_room_scene_graph_data_checks_round_trip_json() -> None:
     graph_data = six_room_scene_graph_data(build_six_room_scene_graph())
     assert validate_six_room_scene_graph_data(graph_data) == ()
@@ -429,6 +435,43 @@ def test_six_room_scene_cli_validates_loaded_graph_json() -> None:
     print("PASS six-room scene CLI loaded graph JSON validation")
 
 
+def test_six_room_scene_cli_reports_invalid_graph_json_without_traceback() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        graph_json = Path(temp) / "graph.json"
+        graph_json.write_text("[]\n", encoding="utf-8")
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--graph-json", str(graph_json), "--validate-graph"])
+        assert exit_code == 1
+        assert stdout.getvalue().splitlines() == [
+            "graph json validation: failed",
+            "graph json validation error: graph JSON root must be an object",
+        ]
+    print("PASS six-room scene CLI reports invalid root")
+
+
+def test_six_room_scene_cli_reports_malformed_graph_json_without_traceback() -> None:
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp:
+        graph_json = Path(temp) / "graph.json"
+        graph_json.write_text("{not json}\n", encoding="utf-8")
+        stdout = StringIO()
+        with redirect_stdout(stdout):
+            exit_code = six_room_scene_main(["--graph-json", str(graph_json), "--validate-graph"])
+        assert exit_code == 1
+        assert stdout.getvalue().startswith("graph json load failed:")
+    print("PASS six-room scene CLI reports malformed JSON")
+
+
 def test_six_room_scene_cli_regenerates_artifacts_from_loaded_graph_json() -> None:
     from contextlib import redirect_stdout
     from io import StringIO
@@ -523,6 +566,11 @@ def test_write_six_room_scene_artifacts(tmp_dir: str | None = None) -> None:
         assert "applyConnectionInspectorEdits" in html
         assert "resetGraphEdits" in html
         assert "updateOverlayFromGraph" in html
+        assert "function roomCenter(room) { return {x: room.x + Math.floor(room.width / 2) - 1, y: room.y + Math.floor(room.height / 2)}; }" in html
+        assert "function validateGraphData(data)" in html
+        assert "function escapeHtml(value)" in html
+        assert "${escapeHtml(room.room_id)}" in html
+        assert "const errors = validateGraphData(candidate);" in html
         assert "sceneGraphData.rooms[index]" in html
         assert "box.dataset.roomId = room.room_id" in html
         assert "label.dataset.roomId = room.room_id" in html

@@ -14,7 +14,10 @@ from connector_specs import HorizontalConnectorSpec
 from modular_canvas import ModularCanvas, OPAQUE
 from platform_shell import PlatformShell
 from presets import build_shell
-from six_room_scene import build_six_room_scene_graph, render_six_room_scene_graph
+from six_room_scene import (
+    build_six_room_scene_graph as build_six_room_scene_graph,
+    render_six_room_scene_graph as render_six_room_scene_graph,
+)
 from three_room_macro_test import (
     CORRIDOR_OFFSET_X,
     CORRIDOR_Y,

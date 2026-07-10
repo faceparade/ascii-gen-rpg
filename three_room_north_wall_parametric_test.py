@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from curved_dungeon_grammar import OUT_DIR, Rect, _paste, annotate, html_review
+from curved_dungeon_grammar import OUT_DIR, Rect, annotate, html_review
 from modular_ascii_parts import Opening, NorthWall
 from room_shell import close_north_wall_for_middle
 from three_room_macro_test import build_three_room_macro_test

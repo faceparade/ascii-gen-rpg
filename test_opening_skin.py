@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Test opening_skin.py."""
-from opening_skin import OpeningSkin, plain_opening_skin
+from opening_skin import plain_opening_skin
 
 # Gap widths per the north-wall style:
 #   top gap width      = 4 * width_chunks + 1

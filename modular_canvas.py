@@ -105,9 +105,6 @@ class ModularCanvas:
         """
         if not stamp:
             return
-        stamp_height = len(stamp)
-        stamp_width = max(len(row) for row in stamp) if stamp else 0
-
         for dy, row in enumerate(stamp):
             ty = y + dy
             if ty < 0 or ty >= self.height:
@@ -117,7 +114,6 @@ class ModularCanvas:
                 if tx < 0 or tx >= self.width:
                     continue
 
-                target_cell = self.get_cell(tx, ty)
                 if mode == PasteMode.OPAQUE:
                     self.set_cell(tx, ty, Cell(ch=ch, source=source, layer=layer))
                 elif mode == PasteMode.TRANSPARENT_SPACE:

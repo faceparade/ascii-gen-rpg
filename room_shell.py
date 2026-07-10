@@ -58,9 +58,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional
 
-from modular_canvas import ModularCanvas, OPAQUE
-from geometry import RoomSpec, WallSpan, PortSpec, ChunkGrid
-from modular_ascii_parts import NorthWall, CHUNK_GLYPH_W, Opening
+from modular_ascii_parts import NorthWall, Opening
 from caps import VerticalOpening, west_cap_skin, east_cap_skin, render_side_opening_column
 
 

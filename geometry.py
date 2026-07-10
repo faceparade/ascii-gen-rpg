@@ -14,7 +14,6 @@ Rendering happens elsewhere by combining geometry with skins and a canvas.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
 
 
 @dataclass(frozen=True)

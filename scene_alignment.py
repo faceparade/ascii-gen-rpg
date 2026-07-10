@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from connector_specs import RaisedFragmentSpec, SceneFragmentSpec
+from connector_specs import RaisedFragmentSpec
 from curved_dungeon_grammar import raised_floor_section_tall_narrow, raised_platform
 from six_room_scene import (
     LOWER_BAND_GAP_STRIP,
@@ -24,9 +24,6 @@ from six_room_scene import (
     ROOM_BOTTOM_RAIL,
     ROOM_FLOOR_BAND,
     ROOM_TOP_BAND,
-    SCENE_LOWER_CONNECTOR_ROWS,
-    SCENE_MID_CONNECTOR_ROWS,
-    SCENE_TOP_ROWS,
     UPPER_BAND_GAP_STRIP,
     UPPER_BAND_LEFT_ROOM_STRIP,
     UPPER_BAND_MIDDLE_ROOM_STRIP,
