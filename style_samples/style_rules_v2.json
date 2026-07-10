@@ -14,14 +14,8 @@
   "logical_floor": {
     "mask_glyph": "#",
     "meaning": "One walkable logical floor section and one actor/object anchor.",
-    "screen_stride": {
-      "x": 4,
-      "y": 2
-    },
-    "actor_anchor_origin": {
-      "x": 2,
-      "y": 2
-    },
+    "screen_stride": {"x": 4, "y": 2},
+    "actor_anchor_origin": {"x": 2, "y": 2},
     "actor_anchor_formula": {
       "x": "2 + 4 * section_x",
       "y": "2 + 2 * section_y"
@@ -30,12 +24,7 @@
   "lattice": {
     "glyph": "`",
     "meaning": "A shared interior intersection surrounded by four occupied floor sections.",
-    "logical_requirement": [
-      "north_west",
-      "north_east",
-      "south_west",
-      "south_east"
-    ],
+    "logical_requirement": ["north_west", "north_east", "south_west", "south_east"],
     "screen_formula": {
       "x": "4 * vertex_x",
       "y": "1 + 2 * vertex_y"
@@ -73,13 +62,7 @@
     }
   },
   "composition": {
-    "layer_order": [
-      "floor",
-      "lattice",
-      "background_wall",
-      "entity",
-      "foreground_wall"
-    ],
+    "layer_order": ["floor", "lattice", "background_wall", "entity", "foreground_wall"],
     "opaque": "Foreground wall remains visible and the logical entity is marked hidden.",
     "xray": "Entity glyph replaces the foreground wall glyph using dim or gray styling while wall metadata remains.",
     "walls_removed": "Removing south/west foreground layers reveals the unchanged floor topology and actor anchors."
@@ -87,55 +70,42 @@
   "confirmed_fixtures": [
     {
       "id": "unit-section",
-      "mask": [
-        "#"
-      ],
+      "mask": ["#"],
       "purpose": "Actor anchor and zero lattice intersections."
     },
     {
       "id": "two-by-two",
-      "mask": [
-        "##",
-        "##"
-      ],
+      "mask": ["##", "##"],
       "purpose": "One shared lattice intersection."
     },
     {
       "id": "foreground-room-four-by-four",
-      "mask": [
-        "####",
-        "####",
-        "####",
-        "####"
-      ],
+      "mask": ["####", "####", "####", "####"],
       "target": "targets/foreground_occlusion_v2.txt",
       "purpose": "Approved north/east background and south/west foreground projection with occlusion."
     },
     {
       "id": "l-shape-v2",
-      "mask": [
-        "###",
-        "##.",
-        "##."
-      ],
+      "mask": ["###", "##.", "##."],
       "purpose": "Approved concave east/south transitions, west/south foreground projection, and incomplete lattice suppression.",
       "status": "approved",
       "target": "targets/room-l-shape-v2.txt"
     },
     {
       "id": "u-shape-v2",
-      "mask": [
-        "##..##",
-        "##..##",
-        "##..##",
-        "######"
-      ],
+      "mask": ["##..##", "##..##", "##..##", "######"],
       "target": "targets/room-u-shape-v2.txt",
       "purpose": "Mirrored concave courtyard walls terminating into an interior bridge rim and hanging face."
+    },
+    {
+      "id": "one-sided-bridge-v2",
+      "mask": ["##....", "##....", "######"],
+      "target": "targets/room-one-sided-bridge-v2.txt",
+      "purpose": "A single concave inner east wall terminating into a bridge that continues to the exterior east cap."
     }
   ],
   "open_work": [
-    "Approve additional irregular junctions beyond the L-shape and courtyard bridge motifs.",
+    "Approve mirrored and multi-level irregular junctions beyond the L-shape, courtyard bridge, and one-sided bridge motifs.",
     "Define door and corridor transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
   ],
@@ -176,6 +146,13 @@
       "detection": "Exposed east edge immediately left, exposed west edge immediately right, and empty courtyard cells above the north run.",
       "hanging_face_start": "‘/___",
       "side_wall_resolution": "Both inner wall caps terminate into the bridge and are cleared beneath its underside."
+    },
+    "one_sided_bridge_junction": {
+      "status": "confirmed",
+      "description": "An interior north run with one terminating inner east wall uses the left half of the courtyard bridge face and retains the exterior east cap.",
+      "detection": "Exposed east edge immediately left, empty notch cells above, and an exposed east edge at the run’s rightmost floor section.",
+      "hanging_face_start": "‘/___",
+      "side_wall_resolution": "The single inner wall cap terminates into the bridge and is cleared beneath its underside."
     }
   }
 }
