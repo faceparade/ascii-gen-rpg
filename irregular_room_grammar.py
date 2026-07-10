@@ -75,6 +75,30 @@ def courtyard_bridge_runs(cells: frozenset[Point]) -> tuple[tuple[int, int, int]
     return tuple(bridges)
 
 
+def one_sided_bridge_runs(cells: frozenset[Point]) -> tuple[tuple[int, int, int], ...]:
+    """Return interior north runs with one terminating wall and an exterior east end.
+
+    The approved orientation has an exposed east wall immediately to the left
+    of the run, empty notch space above it, and an exposed east edge at the
+    bridge's rightmost floor section. It uses the left half of the mirrored
+    courtyard-bridge treatment while retaining the ordinary exterior east cap.
+    """
+    edges = boundary_edges(cells)
+    bridges: list[tuple[int, int, int]] = []
+    for boundary_y, start_x, end_x in directional_runs(cells, "north"):
+        if boundary_y == 0 or start_x == 0:
+            continue
+        left_section = Point(start_x - 1, boundary_y - 1)
+        right_floor_section = Point(end_x, boundary_y)
+        if (
+            BoundaryEdge(left_section, "east") in edges
+            and BoundaryEdge(right_floor_section, "east") in edges
+            and all(Point(x, boundary_y - 1) not in cells for x in range(start_x, end_x + 1))
+        ):
+            bridges.append((boundary_y, start_x, end_x))
+    return tuple(bridges)
+
+
 def _render_courtyard_bridge_junction(
     canvas: LayeredCanvas,
     boundary_y: int,
@@ -87,7 +111,6 @@ def _render_courtyard_bridge_junction(
     screen_start = ACTOR_ORIGIN_X + start_x * SECTION_STRIDE_X
     screen_end = ACTOR_ORIGIN_X + (end_x + 1) * SECTION_STRIDE_X
 
-    # Repaint the rim above both inner wall layers.
     for logical_x in range(start_x, end_x + 1):
         x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
         canvas.put(layer, Point(x, y), ",")
@@ -97,8 +120,6 @@ def _render_courtyard_bridge_junction(
     canvas.put(layer, Point(screen_end - 2, y), "‘")
     canvas.put(layer, Point(screen_end, y), ",")
 
-    # The underside hangs into the courtyard. Spaces deliberately clear the
-    # terminated vertical wall glyphs underneath the left and right corners.
     for screen_x in range(screen_start - 2, screen_end + 1):
         canvas.put(layer, Point(screen_x, y + 1), " ")
     canvas.put(layer, Point(screen_start - 2, y + 1), "‘")
@@ -108,6 +129,40 @@ def _render_courtyard_bridge_junction(
         for screen_x in range(x, x + 3):
             canvas.put(layer, Point(screen_x, y + 1), "_")
         canvas.put(layer, Point(x + 3, y + 1), "/")
+
+
+def _render_one_sided_bridge_junction(
+    canvas: LayeredCanvas,
+    boundary_y: int,
+    start_x: int,
+    end_x: int,
+) -> None:
+    """Resolve one inner east wall into a bridge that ends at the east exterior."""
+    layer = "foreground_wall"
+    y = boundary_y * SECTION_STRIDE_Y
+    screen_start = ACTOR_ORIGIN_X + start_x * SECTION_STRIDE_X
+    screen_end = ACTOR_ORIGIN_X + (end_x + 1) * SECTION_STRIDE_X
+
+    for screen_x in range(screen_start - 1, screen_end + 1):
+        canvas.put(layer, Point(screen_x, y), " ")
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        canvas.put(layer, Point(x, y), ",")
+        canvas.put(layer, Point(x + 1, y), "—")
+        canvas.put(layer, Point(x + 2, y), " ")
+        canvas.put(layer, Point(x + 3, y), "—")
+    canvas.put(layer, Point(screen_end, y), ",")
+
+    for screen_x in range(screen_start - 2, screen_end + 1):
+        canvas.put(layer, Point(screen_x, y + 1), " ")
+    canvas.put(layer, Point(screen_start - 2, y + 1), "‘")
+    canvas.put(layer, Point(screen_start - 1, y + 1), "/")
+    for logical_x in range(start_x, end_x + 1):
+        x = ACTOR_ORIGIN_X + logical_x * SECTION_STRIDE_X
+        for screen_x in range(x, x + 3):
+            canvas.put(layer, Point(screen_x, y + 1), "_")
+        canvas.put(layer, Point(x + 3, y + 1), "/")
+    canvas.put(layer, Point(screen_end, y + 1), "|")
 
 
 def _put(canvas: LayeredCanvas, layer: str, x: int, y: int, glyph: str) -> None:
@@ -244,5 +299,7 @@ def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
         _render_south_run(canvas, cells, boundary_y, start_x, end_x)
     for boundary_y, start_x, end_x in courtyard_bridge_runs(cells):
         _render_courtyard_bridge_junction(canvas, boundary_y, start_x, end_x)
+    for boundary_y, start_x, end_x in one_sided_bridge_runs(cells):
+        _render_one_sided_bridge_junction(canvas, boundary_y, start_x, end_x)
 
     return canvas.compose()
