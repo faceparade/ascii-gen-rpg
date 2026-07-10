@@ -30,25 +30,27 @@
       "hanging_face_start": "‘/___",
       "hanging_face_repeat": "/___",
       "side_wall_resolution": "Terminate both inner vertical walls into the bridge and clear their lower cap glyphs beneath the rim."
+    },
+    "one_sided_bridge_junction": {
+      "detection": "An interior north run with an exposed east wall immediately left, empty notch cells above, and an exposed east edge at the run’s rightmost floor section.",
+      "rim": "Use the approved left half of the courtyard bridge rim and preserve the ordinary exterior east cap.",
+      "hanging_face_start": "‘/___",
+      "hanging_face_repeat": "/___",
+      "side_wall_resolution": "Terminate the single inner east wall into the bridge and clear its lower cap beneath the hanging face."
     }
   },
   "approved_fixtures": [
     {
-      "mask": [
-        "###",
-        "##.",
-        "##."
-      ],
+      "mask": ["###", "##.", "##."],
       "target": "targets/room-l-shape-v2.txt"
     },
     {
-      "mask": [
-        "##..##",
-        "##..##",
-        "##..##",
-        "######"
-      ],
+      "mask": ["##..##", "##..##", "##..##", "######"],
       "target": "targets/room-u-shape-v2.txt"
+    },
+    {
+      "mask": ["##....", "##....", "######"],
+      "target": "targets/room-one-sided-bridge-v2.txt"
     }
   ]
 }
