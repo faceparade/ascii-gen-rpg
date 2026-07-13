@@ -15,6 +15,29 @@ STAGGERED_MASK = (
     "#######",
 )
 
+LITERAL_DRAFT = (
+    "  ,— —,— —,— —,— —,— —,— —,— —,",
+    " /|__/___/___/___/___/___/__ /|",
+    "‘ |                         | |",
+    "|/| `   `   `   `   `   `   |/|",
+    "| ,— —,   ,— —,— —,— —,— —,—‘—,",
+    "‘/___/   /|__/___/___/___/___/",
+    "    ‘ | ‘ |",
+    "    |/| |/|",
+    "    | | | ,— —,— —,— —,— —,",
+    "    |/| ‘/___/___/___/__ /|",
+    "    | ,— —,— —,— —,— —, | |",
+    "    ‘/___/___/___/___/  |/|",
+    "                    ‘ | | |",
+    "                    |/| |/|",
+    "  ,— —,— —,— —,— —,—‘—, | ,— —,",
+    " /|__/___/___/___/___/  ‘/__ /|",
+    "‘ |                         | |",
+    "|/| `   `   `   `   `   `   |/|",
+    "| ,— —,— —,— —,— —,— —,— —,—‘—,",
+    "‘/___/___/___/___/___/___/___/",
+)
+
 
 def test_staggered_openings_form_one_eastward_dogleg() -> None:
     corridors = staggered_vertical_corridors(cells_from_mask(STAGGERED_MASK))
@@ -54,6 +77,4 @@ def test_solid_room_has_no_staggered_corridor() -> None:
 
 
 def test_staggered_literal_rendering_is_stable_for_review() -> None:
-    rows = render_irregular_room(cells_from_mask(STAGGERED_MASK))
-    assert rows
-    assert len(rows) == 20
+    assert render_irregular_room(cells_from_mask(STAGGERED_MASK)) == LITERAL_DRAFT
