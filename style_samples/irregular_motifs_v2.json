@@ -12,44 +12,33 @@
     "mirrored_one_sided_bridge_junction": {"status": "approved"},
     "horizontal_corridor_junction": {"status": "approved", "scope": "one-section and two-section-wide straight east-west passages"},
     "vertical_corridor_junction": {"status": "approved", "scope": "one-section-thick straight passages; centering and room-shell alignment are not required"},
-    "wide_horizontal_corridor": {
-      "status": "approved",
-      "detection": "A rectangular east-west band whose north and south exposed spans share x bounds and are separated by more than one logical row.",
-      "metadata": "Length, thickness, and top/bottom room-wall margins are recorded independently at both ends."
-    },
-    "offset_vertical_corridor": {
-      "status": "approved",
-      "detection": "A rectangular north-south band with unequal left/right margins in its adjoining room walls.",
-      "metadata": "Approved one-section and two-section-wide west/east offset fixtures."
-    },
-    "shifted_room_straight_corridor": {
-      "status": "approved",
-      "detection": "A straight north-south band whose top and bottom room-wall margin pairs differ while the corridor x span remains constant.",
-      "metadata": "Approved positive and negative room shifts for thickness 1, plus a positive shift for thickness 2."
-    },
-    "staggered_dogleg_corridor": {
-      "status": "approved",
-      "detection": "A one-section orthogonal path with different upper and lower opening x positions, one horizontal bend row, and exact path occupancy inside its bounding box.",
-      "metadata": "Approved eastward and westward mirrors with shift 4 and path length 9."
-    },
-    "wide_vertical_corridor": {
-      "status": "approved",
-      "detection": "A rectangular north-south band whose west and east exposed spans are separated by more than one logical column.",
-      "metadata": "Approved centered margins 3/3, west-offset margins 1/5, east-offset margins 5/1, and shifted-room margins 5/1 to 1/5.",
-      "resolution": "Literal paired wall faces and the interior backtick column are the approved thickness-2 treatment."
-    },
+    "wide_horizontal_corridor": {"status": "approved", "detection": "A rectangular east-west band whose north and south exposed spans share x bounds and are separated by more than one logical row.", "metadata": "Length, thickness, and top/bottom room-wall margins are recorded independently at both ends."},
+    "offset_vertical_corridor": {"status": "approved", "detection": "A rectangular north-south band with unequal left/right margins in its adjoining room walls.", "metadata": "Approved one-section and two-section-wide west/east offset fixtures."},
+    "shifted_room_straight_corridor": {"status": "approved", "detection": "A straight north-south band whose top and bottom room-wall margin pairs differ while the corridor x span remains constant.", "metadata": "Approved positive and negative room shifts for thickness 1, plus a positive shift for thickness 2."},
+    "staggered_dogleg_corridor": {"status": "approved", "detection": "A one-section orthogonal path with different upper and lower opening x positions, one horizontal bend row, and exact path occupancy inside its bounding box.", "metadata": "Approved eastward and westward mirrors with shift 4 and path length 9."},
+    "wide_vertical_corridor": {"status": "approved", "detection": "A rectangular north-south band whose west and east exposed spans are separated by more than one logical column.", "metadata": "Approved centered margins 3/3, west-offset margins 1/5, east-offset margins 5/1, and shifted-room margins 5/1 to 1/5.", "resolution": "Literal paired wall faces and the interior backtick column are the approved thickness-2 treatment."},
     "south_branch_t_junction": {"status": "approved"},
     "four_way_cross_junction": {"status": "approved"},
     "enclosed_rectangular_loop": {"status": "approved", "note": "Exact inner and outer right-angle transitions are locked."},
     "irregular_enclosed_courtyard": {"status": "approved", "detection": "A flood-fill enclosed empty component that does not fill its rectangular bounds.", "note": "The stepped inner-boundary rendering is approved exactly."},
-    "raised_platform": {
+    "sunken_terrain_cut": {
       "status": "reviewing",
-      "paused": false,
+      "primary_model": true,
+      "detection": "A cliff edge is a directed adjacency from an explicitly defined higher terrain surface to an explicitly defined lower terrain surface.",
+      "occupancy": "Terrain surfaces and walkable cells are separate sets; every terrain surface has explicit elevation data.",
+      "boundary_rule": "Absent neighbors do not create cliff faces or closing walls, so the upper plane may continue beyond a crop boundary.",
+      "layering": "North/east-directed cliff faces are background elevation faces; south/west-directed faces are foreground elevation faces.",
+      "reference": "review/sunken-terrain-reference-v2.txt",
+      "first_fixture": "review/sunken-corridor-chamber-v2.txt"
+    },
+    "raised_platform": {
+      "status": "deferred",
+      "primary_model": false,
       "detection": "Cardinally connected occupied sections sharing the same positive elevation.",
       "perimeter": "Directional edges whose neighboring section is not in the same platform component.",
       "layering": "North/east faces are background elevation faces; south/west faces are foreground elevation faces.",
       "projection": "For a solid rectangular footprint, shift a nested Grammar v2 shell to the platform origin.",
-      "note": "Corridor matrix is complete; platform visual review is active."
+      "note": "Retained for later freestanding-platform review after the sunken terrain model is established."
     }
   },
   "approved_fixtures": [
@@ -74,5 +63,6 @@
     "targets/room-enclosed-loop-v2.txt",
     "targets/room-irregular-enclosed-void-v2.txt"
   ],
-  "reviewing_fixtures": ["review/room-raised-platform-v2.txt"]
+  "reviewing_fixtures": ["review/sunken-terrain-reference-v2.txt", "review/sunken-corridor-chamber-v2.txt"],
+  "deferred_fixtures": ["review/room-raised-platform-v2.txt"]
 }
