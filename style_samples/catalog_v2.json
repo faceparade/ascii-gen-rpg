@@ -84,11 +84,20 @@
     },
     {
       "id": "room-t-junction-v2",
-      "title": "Grammar v2 three-room south-branch T-junction",
+      "title": "Approved Grammar v2 three-room south-branch T-junction",
       "category": "corridor",
       "mask": ["###...###", "###...###", "#########", "....#....", "....#....", "....#....", "..#####..", "..#####.."],
-      "tags": ["grammar-v2", "t-junction", "horizontal-corridor", "vertical-corridor", "review-target"],
-      "notes": "Reviewing three-room junction with a south branch at logical section (4,2). The junction center is unobscured; the descending branch is occluded by its west wall only.",
+      "tags": ["grammar-v2", "t-junction", "horizontal-corridor", "vertical-corridor", "approved-reference"],
+      "notes": "Approved literal south-branch T-junction. The junction center is unobscured; the descending branch is occluded by its west wall only.",
+      "status": "approved"
+    },
+    {
+      "id": "room-cross-junction-v2",
+      "title": "Grammar v2 four-way corridor crossing",
+      "category": "corridor",
+      "mask": ["..#####..", "..#####..", "....#....", "....#....", "#########", "....#....", "....#....", "..#####..", "..#####.."],
+      "tags": ["grammar-v2", "cross-junction", "four-way-corridor", "review-target"],
+      "notes": "Reviewing literal four-way crossing centered at logical section (4,4). The center is unobscured; vertical arms use west-wall occlusion and horizontal arms use south-wall occlusion.",
       "status": "reviewing"
     }
   ]
