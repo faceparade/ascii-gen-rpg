@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-offset-vertical-corridor-v2",
+  "candidate_sha256": "c487ddbe160aba9b720b000783ff0c8f0ebc03fbb76e66265ce0081270a5ae87",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:05:14Z",
+  "correction": "corrections/room-offset-vertical-corridor-v2.txt",
+  "correction_sha256": "94f29765d91d437cf4d59330b49b3619c5fbd596c55f6247081469ec926d1106"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-vertical-corridor-v2",
+  "candidate_sha256": "0273986817c317a9d4ed0d2d1c64fbc8c7655fbcdd7d0c6b23975e1667196f19",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:08:34Z",
+  "correction": "corrections/room-vertical-corridor-v2.txt",
+  "correction_sha256": "926afdaa784f3df4402d3ee1edd3f49c30d286e827626efd746220ae5b63293d"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-irregular-enclosed-void-v2",
+  "candidate_sha256": "fd60a722bd6d9e4bb1c9ba2e6f1f94f3d2ffd93f4cd3d01750de15fba08f1b3a",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:09:57Z",
+  "correction": "corrections/room-irregular-enclosed-void-v2.txt",
+  "correction_sha256": "06188d26592aee55bceafdb2a0225c2ece27a52abb1cb98e5e02722ddc522be1"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-u-shape-v2",
+  "candidate_sha256": "07f3c15f5c5c36d2e982e836a6c2dd8793d3c18ef50401e25945d5be61f3ec3b",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:03:06Z",
+  "correction": "corrections/room-u-shape-v2.txt",
+  "correction_sha256": "05b36017892ce7e3984d31410355107f0ff3f4ecfa0b7f5935d3d274155303c9"
+}

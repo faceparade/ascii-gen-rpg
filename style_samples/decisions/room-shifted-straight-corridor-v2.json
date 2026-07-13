@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-shifted-straight-corridor-v2",
+  "candidate_sha256": "f0137e4bcdd8983e5013955cc3c35f16cbc6571c1d323646fc13e1344be87c44",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:07:31Z",
+  "correction": "corrections/room-shifted-straight-corridor-v2.txt",
+  "correction_sha256": "832a794a76f9338c9b3b3027939b770e4fde2d45a9108f72bb0f007ac1ca13d7"
+}

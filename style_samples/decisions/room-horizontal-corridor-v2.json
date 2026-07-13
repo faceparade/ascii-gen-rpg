@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-horizontal-corridor-v2",
+  "candidate_sha256": "c4762489217e56e03f42c833ce15db1a6da5ad0475013167437b03b061819939",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:08:59Z",
+  "correction": "corrections/room-horizontal-corridor-v2.txt",
+  "correction_sha256": "6eef9ff11e2b510b72a2bc63395800cb3d6521122efeab76725944be31484414"
+}

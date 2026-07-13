@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-foreground-four-by-four-v2",
+  "candidate_sha256": "35b1960664ffb00f2014a1b4d752ada8d97207bda41e7468098e97bac561f14b",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:02:49Z",
+  "correction": "corrections/room-foreground-four-by-four-v2.txt",
+  "correction_sha256": "24becfc1032dd096cc583c7e794471f853768d694b3a058786320f88406bdf2e"
+}

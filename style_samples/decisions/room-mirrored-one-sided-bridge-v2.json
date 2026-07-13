@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-mirrored-one-sided-bridge-v2",
+  "candidate_sha256": "e8b929d318f136af7055ad4feaf7aa7b9891e5efc9265f0cbf0cc0ff9e078b3d",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:03:27Z",
+  "correction": "corrections/room-mirrored-one-sided-bridge-v2.txt",
+  "correction_sha256": "0f4f11e1b7b68dce58eb05031afba64885c6eebad9005df3a3dfa2f9893d75d2"
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-cross-junction-v2",
+  "candidate_sha256": "3cbc3770655e99d2a852d1e4112802b952f44f9a3986b90e1d5602f0c39c7a86",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:10:27Z",
+  "correction": "corrections/room-cross-junction-v2.txt",
+  "correction_sha256": "5f1bf33b2b2011c43f3af744c51e5a49e7ea6e11953684ed671536d1ca175c00"
+}

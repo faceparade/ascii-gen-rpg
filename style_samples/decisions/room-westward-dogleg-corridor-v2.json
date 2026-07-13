@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-westward-dogleg-corridor-v2",
+  "candidate_sha256": "0f11ce782c7bb114a530a12b5296ac263ddbf8e218b5a68538365928895c202d",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:04:48Z",
+  "correction": "corrections/room-westward-dogleg-corridor-v2.txt",
+  "correction_sha256": "2974ea982f494bd04e8992677ccd8a75e0ad42c76faa9e79c69c22736ea9373b"
+}

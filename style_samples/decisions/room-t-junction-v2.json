@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-t-junction-v2",
+  "candidate_sha256": "ca44bc1ddd37667152c8b12f10a80fd74cc4e205f55f514e7c76462b5f1a91a8",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:09:34Z",
+  "correction": "corrections/room-t-junction-v2.txt",
+  "correction_sha256": "a933e82302943b36fa235ae894c490e9e24d027bce321b52f6e9853c4d61f278"
+}

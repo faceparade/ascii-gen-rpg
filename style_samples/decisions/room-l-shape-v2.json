@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-l-shape-v2",
+  "candidate_sha256": "11638ee2279096e6ad6ea64e4c2ce6d3295f7a86aa6323c7d7a1ead435a3d353",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:03:39Z",
+  "correction": "corrections/room-l-shape-v2.txt",
+  "correction_sha256": "717d7ca83b11824d678a9c30ee94487ea030fbafe05850682d4e75fd2da7c9f0"
+}

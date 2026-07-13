@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-enclosed-loop-v2",
+  "candidate_sha256": "f5c864fc551748ef139f45dd159f0dbfb31ef8bc7aa1753e2d145e8fae0f2f68",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-13T20:10:52Z",
+  "correction": "corrections/room-enclosed-loop-v2.txt",
+  "correction_sha256": "83e7eed6169a042b57b92399b6f18fb1fd18c2d79846ea798f8b4db756dc24b1"
+}
