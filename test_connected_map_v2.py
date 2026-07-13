@@ -6,7 +6,7 @@ from connected_map_v2 import FEATURES, connected_map_cells, connected_map_mask
 from style_sample_system import Point, render_irregular_room
 
 
-REVIEW = Path("style_samples/review/connected-map-v2.txt")
+TARGET = Path("style_samples/targets/connected-map-v2.txt")
 EXPECTED_RENDER_SHA256 = "51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6"
 
 
@@ -76,13 +76,13 @@ def test_feature_placements_do_not_overlap_each_other() -> None:
         occupied.update(feature.cells)
 
 
-def test_connected_map_has_no_elevation_layer() -> None:
-    review = REVIEW.read_text(encoding="utf-8")
-    assert "Elevation data is intentionally absent." in review
-    assert "manual-review-only" in review
+def test_connected_map_target_records_no_elevation_layer() -> None:
+    target = TARGET.read_text(encoding="utf-8")
+    assert "Elevation data is intentionally absent." in target
+    assert "Approved as the pre-elevation integration target." in target
 
 
-def test_connected_map_rendering_matches_manual_review_digest() -> None:
+def test_connected_map_rendering_matches_approved_digest() -> None:
     rows = render_irregular_room(connected_map_cells())
     assert len(rows) == 138
     assert max(map(len, rows)) == 343
