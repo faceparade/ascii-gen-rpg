@@ -26,48 +26,32 @@ An underside or hanging face that terminates directly into an east wall reserves
 /__ /|
 ```
 
-It must not collapse to:
-
-```text
-/___/|
-```
-
-This rule is shared by rooms, bridges, corridors, junctions, enclosed courtyards, and platform shells. Ordinary south-wall faces remain unchanged.
+It must not collapse to `/___/|`. Ordinary south-wall faces remain unchanged.
 
 ## Corridor semantics
 
-A straight corridor is represented as a rectangular logical band.
+A straight corridor is a rectangular logical band. East-west passages record length, doorway thickness, and top/bottom room-wall margins. North-south passages record length, doorway thickness, and left/right margins.
 
-For an east-west passage, the model records passage length, doorway thickness, and top/bottom room-wall margins at both ends. For a north-south passage, it records passage length, doorway thickness, and left/right margins at both ends. Equal opposing margins indicate a centered opening. Unequal margins indicate a valid offset opening.
+Equal opposing margins indicate a centered opening. Unequal margins are valid. The margin pairs at opposite ends are independent, so a straight corridor may connect horizontally shifted room shells without bending. `room_shift_x` is positive when the lower room starts farther east.
 
-The room-wall margins at the two ends are independent. A straight north-south corridor may remain in one fixed x column while the lower room is horizontally shifted relative to the upper room. `room_shift_x` is positive when the lower room begins farther east.
+A staggered corridor is a one-section-thick orthogonal path. It records the two opening positions, bend row, direction, path length, and all four room-wall margins.
 
-A staggered corridor is represented as a one-section-thick orthogonal path. It records the upper and lower opening positions independently, the bend row, direction of the horizontal shift, path length, and all four room-wall margins.
+## Approved corridor coverage
 
-## Regression sequence
+The exact approved target set now includes:
 
-1. 1×1 section
-2. 2×2 block
-3. approved 4×4 room
-4. approved L-shaped room
-5. approved U-shaped courtyard
-6. approved east-extending bridge
-7. approved west-extending bridge
-8. approved one-section horizontal corridor
-9. approved centered vertical corridor
-10. reviewing two-section-wide horizontal corridor
-11. reviewing west-offset vertical corridor with aligned rooms
-12. reviewing shifted rooms with a straight vertical corridor
-13. reviewing staggered eastward dogleg corridor
-14. approved south-branch T-junction
-15. approved four-way cross-junction
-16. approved enclosed rectangular corridor loop
-17. approved irregular enclosed courtyard
-18. paused centered raised-platform projection
+1. One-section horizontal corridor
+2. One-section centered vertical corridor
+3. Two-section-wide horizontal corridor
+4. West-offset vertical corridor in aligned rooms
+5. Straight vertical corridor between horizontally shifted rooms
+6. Eastward staggered dogleg corridor
+7. South-branch T-junction
+8. Four-way cross-junction
+9. Enclosed rectangular loop
+10. Irregular enclosed courtyard
 
-## Reviewing two-section-wide horizontal corridor
-
-`room-wide-horizontal-corridor-v2` uses:
+### Approved wide horizontal corridor
 
 ```text
 ###...###
@@ -78,11 +62,9 @@ A staggered corridor is represented as a one-section-thick orthogonal path. It r
 ###...###
 ```
 
-Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long and two sections thick. Both ends have equal two-section top and bottom margins. The upper doorway, open interior row, and lower doorway remain review art.
+The passage spans `x=3..5`, `y=2..3`, with length 3, thickness 2, and equal `2/2` margins at both room walls.
 
-## Reviewing offset vertical corridor
-
-`room-offset-vertical-corridor-v2` uses:
+### Approved west-offset vertical corridor
 
 ```text
 #######
@@ -94,11 +76,9 @@ Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long an
 #######
 ```
 
-The passage occupies logical `x=1`, `y=2..4`. Each doorway has west/east margins of `1/5`. The rooms are horizontally aligned and the margin pair is unchanged at both ends. Centering is not required.
+The passage occupies `x=1`, `y=2..4`. Both openings have west/east margins `1/5`.
 
-## Reviewing shifted rooms with a straight corridor
-
-`room-shifted-straight-corridor-v2` uses:
+### Approved shifted rooms with straight corridor
 
 ```text
 #######....
@@ -110,11 +90,9 @@ The passage occupies logical `x=1`, `y=2..4`. Each doorway has west/east margins
 ....#######
 ```
 
-The corridor remains at logical `x=5`, `y=2..4`; it has no bend. Its upper-room opening has west/east margins `5/1`. The lower room begins four logical sections farther east, so the lower opening has margins `1/5`. The model records `room_shift_x=4`, different opening-margin pairs, and one fixed corridor column. The asymmetric upper and lower doorway transitions remain under visual review.
+The corridor stays at `x=5`. The upper opening has margins `5/1`; the lower room shifts four sections east and the lower opening has margins `1/5`. There is no corridor bend.
 
-## Reviewing staggered dogleg corridor
-
-`room-staggered-dogleg-corridor-v2` uses:
+### Approved eastward dogleg
 
 ```text
 #######
@@ -128,15 +106,36 @@ The corridor remains at logical `x=5`, `y=2..4`; it has no bend. Its upper-room 
 #######
 ```
 
-The upper opening is at `x=1` with margins `1/5`; the lower opening is at `x=5` with margins `5/1`. The one-section path bends eastward on logical row `y=4`, shifts four columns, and contains nine logical sections. It is not a rectangular band. The two inside-corner transitions and the long middle passage remain under visual review.
+The path connects an upper `1/5` opening to a lower `5/1` opening through one eastward bend on `y=4`.
 
-## Approved irregular enclosed courtyard
+## Reviewing two-section-wide vertical corridor
 
-`room-irregular-enclosed-void-v2` contains one connected 16-cell enclosed void with bounds `x=1..5`, `y=1..4`, but the component does not fill those rectangular bounds. Its exact 16-row stepped inner-boundary rendering is approved.
+```text
+########
+########
+...##...
+...##...
+...##...
+########
+########
+```
+
+The corridor spans `x=3..4`, `y=2..4`, with length 3, thickness 2, and equal `3/3` margins at both openings. The exact draft is stored at `style_samples/review/room-wide-vertical-corridor-v2.txt`.
+
+Review focus:
+
+- two-section upper doorway
+- paired vertical wall faces
+- interior backtick column
+- two-section lower doorway
+
+## Next corridor case
+
+After the wide-vertical draft is approved or revised, add a corridor that is both multiple sections wide and offset within its adjoining room walls. Then add mirrored shifted-room and westward-dogleg regressions before resuming elevation.
 
 ## Paused centered raised platform
 
-The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until corridor width, offset, shifted-room, and staggered-opening cases are resolved.
+The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until the remaining corridor-width cases are resolved.
 
 ## Commands
 
