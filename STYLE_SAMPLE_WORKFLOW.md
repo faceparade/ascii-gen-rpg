@@ -6,21 +6,20 @@ The logical terrain is authoritative. ASCII wall and cliff art is a directional 
 
 1. **Surface topology** — every rendered terrain surface is explicit.
 2. **Walkable floor topology** — rooms and pathways are a subset of terrain surfaces.
-3. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, room shifts, and wall margins.
+3. **Corridor topology** — bands and orthogonal paths record length, width, bends, room shifts, and wall margins.
 4. **Elevation topology** — every surface cell has an explicit non-negative height.
 5. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` for walkable logical sections.
 6. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
-7. **Cliff detection** — height transitions are directed from the higher surface toward the lower adjacent surface.
-8. **Directional walls and cliff faces** — north/east are background layers; south/west are foreground layers.
-9. **Junction resolution** — approved motifs replace literal layer collisions where needed.
-10. **Entities** — placed from logical section coordinates and elevation.
-11. **Composition** — foreground walls and cliff faces may hide an entity or display it in x-ray styling.
+7. **Cliff detection** — height transitions run from the higher surface toward the lower adjacent surface.
+8. **Directional projection** — north/east faces use background layers; south/west faces use foreground layers.
+9. **Junction resolution** — approved motifs replace literal layer collisions where required.
+10. **Entities and composition** — foreground walls and cliff faces may hide actors or display x-ray styling.
 
-Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
+Approved fixtures live under `style_samples/targets/`. Unapproved elevation concepts remain under `style_samples/review/`.
 
 ## Approved east-cap spacing
 
-An underside or hanging face that terminates directly into an east wall reserves one recessed blank column before the face slash:
+An underside or hanging face that terminates directly into an east wall reserves one recessed blank column:
 
 ```text
 /__ /|
@@ -30,60 +29,48 @@ It must not collapse to `/___/|`. Ordinary south-wall faces remain unchanged.
 
 ## Structural phase complete
 
-Approved exact targets cover rooms, courtyards, bridges, corridor widths and offsets, shifted room shells, mirrored doglegs, T-junctions, four-way crossings, loops, and the organic connected dungeon.
+Exact targets cover rooms, courtyards, bridges, corridor widths and offsets, shifted room shells, mirrored doglegs, T-junctions, crossings, loops, and the organic connected dungeon.
 
-The rectangular corridor topology accepts arbitrary positive thickness, while exact artwork is currently locked for thicknesses one and two.
+The rectangular corridor topology accepts arbitrary positive thickness. Golden artwork currently covers thicknesses one and two.
 
-## Batch approval rule for non-elevation geometry
+Symmetric or parameter-only **non-elevation** variants may be promoted together when their topology, layers, exact targets, and full CI suite agree. Elevation never uses this shortcut.
 
-Symmetric or parameter-only structural variants may be promoted without another visual stop when:
+## Approved organic dungeon
 
-- the topology classifier returns the expected semantic object;
-- only margins, mirror direction, or room origin changes;
-- no new glyph collision or layer type appears;
-- the literal rendering is stored as an exact golden target;
-- the complete CI suite passes.
+`connected_map_v2.py` embeds all 23 approved structural variations in one cardinally connected dungeon.
 
-Elevation never uses this shortcut.
+- Logical bounds: 85 × 68 sections
+- Walkable floor: 966 sections
+- Connected components: one
+- Longest horizontal floor run: 24 sections
+- Projection: 138 rows, maximum width 343
+- Rendering SHA-256: `51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6`
+- Elevation: intentionally absent from this target
 
-## Approved organic integration dungeon
+Metadata is stored at `style_samples/targets/connected-map-v2.txt`.
 
-`connected_map_v2.py` embeds all 23 approved structural variations in one organic cardinally connected dungeon.
+## Primary elevation model
 
-Confirmed properties:
-
-- logical bounds: 85 × 68 sections;
-- walkable floor: 966 sections;
-- connectivity: one cardinal component;
-- longest horizontal floor run: 24 sections;
-- rendered output: 138 rows, maximum width 343;
-- rendering SHA-256: `51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6`;
-- elevation data: deliberately absent.
-
-The approved metadata and digest are stored at `style_samples/targets/connected-map-v2.txt`.
-
-## Primary elevation model: sunken paths in raised terrain
-
-The dungeon’s primary elevation model is no longer a freestanding raised island. Rooms and pathways occupy the lower plane, while the surrounding terrain is an explicit higher plane.
+Rooms and pathways occupy a lower plane cut into an explicit higher terrain plane.
 
 Authoritative rules:
 
 - surface occupancy, elevation, and walkability are separate data;
 - every rendered surface has an explicit elevation;
-- blank ASCII space alone means neither elevated ground nor void;
-- a cliff exists only between two defined cardinally adjacent surfaces of different heights;
-- the cliff is directed from the higher surface toward the lower surface;
-- absent neighbors do not produce an implicit wall or cliff;
-- the elevated plane may therefore continue beyond the south, east, or any other crop boundary without being boxed in;
-- freestanding raised platforms remain a separate later treatment.
+- blank ASCII space alone means neither terrain nor void;
+- a cliff exists only between defined adjacent surfaces of different heights;
+- the cliff descends from the higher surface toward the lower surface;
+- absent neighbors do not create implicit walls;
+- crop continuation is topology, not post-render character deletion;
+- freestanding raised platforms remain a later treatment.
 
-The user-authored visual reference is stored at:
+The user-authored conceptual reference remains at:
 
 `style_samples/review/sunken-terrain-reference-v2.txt`
 
-## Active checkpoint: straight sunken corridor opening into a chamber
+## Approved first terrain-cut fixture
 
-Surface mask:
+Surface:
 
 ```text
 #######
@@ -93,7 +80,7 @@ Surface mask:
 #######
 ```
 
-Elevation map:
+Elevation:
 
 ```text
 1111111
@@ -117,25 +104,54 @@ Confirmed topology:
 
 - 35 explicit terrain surfaces;
 - 12 walkable level-0 cells;
-- 23 level-1 surrounding surfaces;
-- 17 directed cliff edges;
-- no implicit wall at the crop edge;
-- the eastbound corridor may continue beyond the review crop.
+- 23 level-1 surfaces;
+- 17 directed cliff edges.
 
-The topology record is stored at `style_samples/review/sunken-corridor-chamber-v2.txt`. The next manual checkpoint is the rendered cliff artwork for this exact fixture.
+The topology target is:
 
-## Elevation review sequence
+`style_samples/targets/sunken-corridor-chamber-v2.txt`
 
-1. Render and approve the straight sunken corridor/chamber fixture.
-2. Add inside and outside cliff corners.
-3. Add a junction surrounded by elevated terrain.
-4. Apply the approved cliff treatment to a region of the organic dungeon.
-5. Review actors on the lower plane and behind foreground cliff faces.
-6. Review opaque, x-ray, and walls-removed modes.
-7. Review irregular cliff footprints and multiple elevation levels.
-8. Return later to freestanding raised platforms.
+The approved user-authored cliff projection is:
 
-Only one new visual concept is introduced at each checkpoint.
+```text
+  ,— —,— —,— —,— —,— —,— —,— —,
+  |__/___/___/___/___/___/__ /|
+  |   ,— — — — — —.         | |
+  |  /|           | `   `   |/|
+  | ‘ |           '— — — — —'—'
+  | |/|
+  | | |           ,— —,— —,— —,
+  | |/|           |__/___/__ /|
+  | | ,— —,— —,— —,         | |
+  | ‘/___/___/___/  `   `   |/|
+  '— — — — — — — — — — — — — —'
+```
+
+Its golden target is:
+
+`style_samples/targets/sunken-corridor-chamber-cliff-art-v2.txt`
+
+The rejected room-shell-based attempt remains archived under `style_samples/review/` and must not be reused.
+
+## Active elevation checkpoint: cliff corners
+
+Next, derive and manually review a compact corner vocabulary from the approved treatment:
+
+1. Inside corner where the lower cut turns around elevated terrain.
+2. Outside corner where the elevated shelf projects into the lower plane.
+3. Mirrored north/east and south/west layer variants.
+4. Corner joins adjoining an open corridor shoulder.
+
+Only after those corners are approved:
+
+1. Add a sunken T- or cross-junction.
+2. Apply the treatment to a region of the organic dungeon.
+3. Review actors on lower and upper planes and behind foreground cliffs.
+4. Review opaque, x-ray, and walls-removed modes.
+5. Review irregular footprints and multiple levels.
+6. Return to freestanding platforms.
+
+Only one new elevation concept is introduced at each checkpoint.
 
 ## Commands
 
