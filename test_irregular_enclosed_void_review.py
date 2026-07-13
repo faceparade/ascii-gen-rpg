@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from enclosed_loop_grammar_v2 import enclosed_voids, rectangular_corridor_loops
 from style_sample_system import Point, cells_from_mask, render_irregular_room
 
@@ -12,24 +14,10 @@ IRREGULAR_VOID_MASK = (
     "#######",
 )
 
-LITERAL_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/___/__ /|",
-    "‘ |   ,— —,— —,— —,         | |",
-    "|/|  /|__/___/___/  `   `   |/|",
-    "| | ‘ |         ‘ |         | |",
-    "|/| |/|         |/| `   `   |/|",
-    "| | | |         | ,— —,— —, | |",
-    "|/| |/|         ‘/___/___/  |/|",
-    "| | | |                 ‘ | | |",
-    "|/| |/|                 |/| |/|",
-    "| | | ,— —,— —,— —,— —,—‘—, | |",
-    "|/| ‘/___/___/___/___/___/  |/|",
-    "| |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,— —,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/___/___/",
-)
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-irregular-enclosed-void-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_irregular_void_is_enclosed_and_non_rectangular() -> None:
@@ -51,5 +39,5 @@ def test_irregular_void_is_not_rectangular_loop() -> None:
     assert rectangular_corridor_loops(cells_from_mask(IRREGULAR_VOID_MASK)) == ()
 
 
-def test_irregular_void_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(IRREGULAR_VOID_MASK)) == LITERAL_DRAFT
+def test_irregular_void_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(IRREGULAR_VOID_MASK)) == approved_target()
