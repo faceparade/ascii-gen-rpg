@@ -1,4 +1,5 @@
 from collections import deque
+import hashlib
 from pathlib import Path
 
 from connected_map_v2 import FEATURES, connected_map_cells, connected_map_mask
@@ -6,6 +7,7 @@ from style_sample_system import Point, render_irregular_room
 
 
 REVIEW = Path("style_samples/review/connected-map-v2.txt")
+EXPECTED_RENDER_SHA256 = "51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6"
 
 
 def _component(cells: frozenset[Point], start: Point) -> frozenset[Point]:
@@ -36,6 +38,12 @@ def _longest_horizontal_run(mask: tuple[str, ...]) -> int:
             else:
                 current = 0
     return longest
+
+
+def _render_digest() -> str:
+    rows = render_irregular_room(connected_map_cells())
+    payload = ("\n".join(rows) + "\n").encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def test_connected_map_is_one_walkable_component() -> None:
@@ -69,10 +77,13 @@ def test_feature_placements_do_not_overlap_each_other() -> None:
 
 
 def test_connected_map_has_no_elevation_layer() -> None:
-    assert "Elevation data is intentionally absent." in REVIEW.read_text(encoding="utf-8")
+    review = REVIEW.read_text(encoding="utf-8")
+    assert "Elevation data is intentionally absent." in review
+    assert "manual-review-only" in review
 
 
-def test_connected_map_renderer_handles_complete_dungeon() -> None:
+def test_connected_map_rendering_matches_manual_review_digest() -> None:
     rows = render_irregular_room(connected_map_cells())
     assert len(rows) == 138
     assert max(map(len, rows)) == 343
+    assert _render_digest() == EXPECTED_RENDER_SHA256
