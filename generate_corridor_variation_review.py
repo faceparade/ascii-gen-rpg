@@ -1,4 +1,4 @@
-"""Generate literal review output for wide, offset, and staggered corridors."""
+"""Generate literal review output for wide, offset, shifted-room, and staggered corridors."""
 from pathlib import Path
 
 from corridor_variations_v2 import horizontal_corridor_bands, vertical_corridor_bands
@@ -28,6 +28,19 @@ CASES = (
             ".#.....",
             "#######",
             "#######",
+        ),
+        vertical_corridor_bands,
+    ),
+    (
+        "SHIFTED ROOMS WITH STRAIGHT CORRIDOR",
+        (
+            "#######....",
+            "#######....",
+            ".....#.....",
+            ".....#.....",
+            ".....#.....",
+            "....#######",
+            "....#######",
         ),
         vertical_corridor_bands,
     ),
