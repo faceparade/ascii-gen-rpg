@@ -77,6 +77,25 @@ SHIFTED_ROOM_STRAIGHT_MASK = (
     "....#######",
 )
 
+SHIFTED_ROOM_STRAIGHT_DRAFT = (
+    "  ,— —,— —,— —,— —,— —,— —,— —,",
+    " /|__/___/___/___/___/___/__ /|",
+    "‘ |                         | |",
+    "|/| `   `   `   `   `   `   |/|",
+    "| ,— —,— —,— —,— —,— —,   ,—‘—,",
+    "‘/___/___/___/___/___/   /|__/",
+    "                    ‘ | ‘ |",
+    "                    |/| |/|",
+    "                    | | | |",
+    "                    |/| |/|",
+    "                  ,—‘—, | ,— —,— —,— —,— —,— —,",
+    "                 /|__/  ‘/___/___/___/___/__ /|",
+    "                ‘ |                         | |",
+    "                |/| `   `   `   `   `   `   |/|",
+    "                | ,— —,— —,— —,— —,— —,— —,—‘—,",
+    "                ‘/___/___/___/___/___/___/___/",
+)
+
 CENTERED_VERTICAL_MASK = (
     "#####",
     "#####",
@@ -118,6 +137,8 @@ def test_offset_vertical_opening_records_unequal_wall_margins() -> None:
     assert band.length == 3
     assert band.is_offset
     assert not band.is_centered
+    assert band.rooms_are_horizontally_aligned
+    assert band.opening_margins_match
 
 
 def test_existing_vertical_classifier_accepts_offset_opening() -> None:
@@ -142,6 +163,9 @@ def test_shifted_rooms_keep_one_straight_corridor_column() -> None:
     assert band.start_x == band.end_x == 5
     assert (band.top_left_margin, band.top_right_margin) == (5, 1)
     assert (band.bottom_left_margin, band.bottom_right_margin) == (1, 5)
+    assert band.room_shift_x == 4
+    assert not band.rooms_are_horizontally_aligned
+    assert not band.opening_margins_match
     assert band.is_offset
 
 
@@ -150,6 +174,10 @@ def test_existing_vertical_classifier_accepts_shifted_rooms() -> None:
     assert len(junctions) == 1
     assert junctions[0].boundary_x == 5
     assert (junctions[0].start_y, junctions[0].end_y) == (2, 4)
+
+
+def test_shifted_room_straight_literal_rendering_is_stable_for_review() -> None:
+    assert render_irregular_room(cells_from_mask(SHIFTED_ROOM_STRAIGHT_MASK)) == SHIFTED_ROOM_STRAIGHT_DRAFT
 
 
 def test_centered_vertical_corridor_remains_centered() -> None:
