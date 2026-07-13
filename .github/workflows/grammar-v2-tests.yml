@@ -1,37 +1,49 @@
 name: Grammar v2 tests
 
 on:
-  push:
-    branches:
-      - feature/style-sample-workflow
   pull_request:
     branches:
       - phase-2-layout-generation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grammar-v2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install test dependency
-        run: python -m pip install --upgrade pytest
+        run: python -m pip install --disable-pip-version-check "pytest>=8,<9"
+
       - name: Compile Grammar v2 modules
         run: python -m compileall -q .
+
       - name: Run complete test suite
         id: pytest
         shell: bash
         run: |
-          set +e
-          python -m pytest -q --tb=short > pytest.log 2>&1
-          status=$?
-          cat pytest.log
-          exit $status
-      - name: Upload pytest log
-        if: always()
+          set -o pipefail
+          python -m pytest -q --tb=short 2>&1 | tee pytest.log
+
+      - name: Upload pytest log after failure
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-log
+          name: pytest-log-${{ github.run_id }}
           path: pytest.log
+          if-no-files-found: ignore
+          retention-days: 7
