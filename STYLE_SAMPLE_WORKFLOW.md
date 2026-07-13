@@ -44,15 +44,16 @@ This is a renderer-level rule shared by rectangular rooms, irregular rooms, brid
 9. approved vertical corridor
 10. approved south-branch T-junction
 11. approved four-way cross-junction
-12. reviewing enclosed rectangular corridor loop
+12. approved enclosed rectangular corridor loop
+13. reviewing irregular enclosed courtyard
 
-## Approved four-way cross-junction
+## Approved enclosed corridor loop
 
-`room-cross-junction-v2` is detected when one occupied center has all four cardinal neighbors and no occupied diagonal neighbors. The corrected 20-row projection is approved exactly. The center is unobscured, vertical arms use west-wall occlusion, and horizontal arms use south-wall occlusion.
+`room-enclosed-loop-v2` is a one-section-thick occupied ring around one rectangular enclosed void. Flood fill confirms the void cannot reach the exterior. The exact 16-row projection is approved, including all repeated inner/outer right-angle transitions and the recessed east-cap terminal motif.
 
-## Reviewing enclosed corridor loop
+## Reviewing irregular enclosed courtyard
 
-`room-enclosed-loop-v2` is a one-section-thick occupied ring around one rectangular enclosed void. The void is found by flood fill: an empty component qualifies only when it cannot reach the floorplan exterior. Its east-cap spacing now follows the shared terminal rule; the remaining four-corner and inner-courtyard transitions remain under review.
+`room-irregular-enclosed-void-v2` contains one connected enclosed void whose cells do not fill their rectangular bounds. It verifies that flood-fill detection generalizes beyond rectangular loops while leaving the stepped inner-boundary glyph transitions reviewable.
 
 ## Commands
 
