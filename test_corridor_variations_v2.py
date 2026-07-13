@@ -4,7 +4,11 @@ from corridor_variations_v2 import (
     horizontal_corridor_bands,
     vertical_corridor_bands,
 )
-from junction_grammar_v2 import corridor_junctions, vertical_corridor_junctions
+from junction_grammar_v2 import (
+    corridor_junctions,
+    horizontal_junctions,
+    vertical_corridor_junctions,
+)
 from style_sample_system import Point, cells_from_mask, render_irregular_room
 
 
@@ -85,8 +89,10 @@ def test_two_section_wide_horizontal_corridor_band() -> None:
     assert not band.is_offset
 
 
-def test_wide_corridor_is_not_repainted_as_one_row_corridor() -> None:
-    assert corridor_junctions(cells_from_mask(WIDE_HORIZONTAL_MASK)) == ()
+def test_wide_corridor_bypasses_one_row_corridor_and_bridge_resolvers() -> None:
+    cells = cells_from_mask(WIDE_HORIZONTAL_MASK)
+    assert corridor_junctions(cells) == ()
+    assert horizontal_junctions(cells) == ()
 
 
 def test_wide_corridor_literal_rendering_is_stable_for_review() -> None:
