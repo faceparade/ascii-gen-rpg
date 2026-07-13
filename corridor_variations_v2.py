@@ -1,8 +1,9 @@
 """Generalized corridor-band topology for Grammar v2.
 
 The promoted one-section corridor junctions remain valid. This module adds the
-geometry needed to describe passages that are wider than one logical section
-and openings that are not centered in the adjoining room walls.
+geometry needed to describe passages that are wider than one logical section,
+openings that are not centered in the adjoining room walls, and straight
+passages whose adjoining rooms have different horizontal or vertical origins.
 """
 from __future__ import annotations
 
@@ -76,6 +77,27 @@ class VerticalCorridorBand:
     @property
     def is_offset(self) -> bool:
         return not self.is_centered
+
+    @property
+    def room_shift_x(self) -> int:
+        """Horizontal shift of the lower room relative to the upper room.
+
+        Positive values mean the lower room begins farther east. A straight
+        corridor may therefore occupy one fixed x column while having different
+        relative opening positions in the two room walls.
+        """
+        return self.top_left_margin - self.bottom_left_margin
+
+    @property
+    def rooms_are_horizontally_aligned(self) -> bool:
+        return self.room_shift_x == 0
+
+    @property
+    def opening_margins_match(self) -> bool:
+        return (
+            self.top_left_margin == self.bottom_left_margin
+            and self.top_right_margin == self.bottom_right_margin
+        )
 
 
 def _vertical_extent(cells: frozenset[Point], x: int, start_y: int, end_y: int) -> tuple[int, int]:
@@ -158,7 +180,7 @@ def horizontal_corridor_bands(cells: frozenset[Point]) -> tuple[HorizontalCorrid
 
 
 def vertical_corridor_bands(cells: frozenset[Point]) -> tuple[VerticalCorridorBand, ...]:
-    """Return rectangular north-south passages, including offset openings."""
+    """Return rectangular north-south passages, including shifted-room openings."""
     east_runs = tuple(directional_runs(cells, "east"))
     result: list[VerticalCorridorBand] = []
 
