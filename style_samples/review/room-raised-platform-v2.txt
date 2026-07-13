@@ -1,0 +1,37 @@
+GRAMMAR V2 CENTERED RAISED PLATFORM — REVIEWING
+
+FLOOR MASK
+----------
+#####
+#####
+#####
+#####
+#####
+
+ELEVATION MAP
+-------------
+00000
+01110
+01110
+01110
+00000
+
+CONFIRMED TOPOLOGY
+------------------
+- all 25 sections remain walkable floor
+- the centered 3×3 footprint is one connected platform
+- platform elevation is 1
+- the platform has 12 exposed directional perimeter edges
+- actor anchors remain at the ordinary section coordinates
+- elevation is stored separately from occupancy
+
+LAYER CONTRACT
+--------------
+- north/east platform faces are background elevation faces
+- south/west platform faces are foreground elevation faces
+- foreground platform faces may occlude actors on the lower floor
+- actors standing on the platform remain anchored to their logical sections
+
+REVIEW QUESTION
+---------------
+Choose the one-level platform rim and face glyphs before adding projection output.
