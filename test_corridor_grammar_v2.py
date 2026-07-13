@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from junction_grammar_v2 import HorizontalJunction, horizontal_junctions
 from style_sample_system import cells_from_mask, render_irregular_room
 
@@ -11,20 +13,11 @@ CORRIDOR_MASK = (
     "###...###",
     "###...###",
 )
-APPROVED_CORRIDOR = (
-    "  ,— —,— —,— —,           ,— —,— —,— —,",
-    " /|__/___/___/|          /|__/___/___/|",
-    "‘ |         | |         ‘ |         | |",
-    "|/| `   `   |/|         |/| `   `   |/|",
-    "| |         | ,— —,— —,—‘—,         | |",
-    "|/| `   `   ‘/___/___/___/  `   `   |/|",
-    "| |           ,— —,— —,— —,         | |",
-    "|/| `   `    /|__/___/___/  `   `   |/|",
-    "| |         ‘ |         ‘ |         | |",
-    "|/| `   `   |/|         |/| `   `   |/|",
-    "| ,— —,— —,—‘—,         | ,— —,— —,—‘—,",
-    "‘/___/___/___/          ‘/___/___/___/",
-)
+
+
+def approved_corridor() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-horizontal-corridor-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_shared_classifier_keeps_promoted_junction_kinds_distinct() -> None:
@@ -60,4 +53,4 @@ def test_corridor_uses_approved_hanging_north_face() -> None:
 
 
 def test_corridor_matches_approved_target_exactly() -> None:
-    assert render_irregular_room(cells_from_mask(CORRIDOR_MASK)) == APPROVED_CORRIDOR
+    assert render_irregular_room(cells_from_mask(CORRIDOR_MASK)) == approved_corridor()
