@@ -1,0 +1,52 @@
+GRAMMAR V2 STAGGERED DOGLEG CORRIDOR — REVIEWING
+
+MASK
+----
+#######
+#######
+.#.....
+.#.....
+.#####.
+.....#.
+.....#.
+#######
+#######
+
+CONFIRMED TOPOLOGY
+------------------
+- upper opening is at logical x=1 with west/east margins 1/5
+- lower opening is at logical x=5 with west/east margins 5/1
+- the path is one logical section thick
+- the path bends eastward on logical row y=4
+- the path contains nine logical sections
+- the geometry is a dogleg, not a rectangular corridor band
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,— —,— —,— —,— —,
+ /|__/___/___/___/___/___/__ /|
+‘ |                         | |
+|/| `   `   `   `   `   `   |/|
+| ,— —,   ,— —,— —,— —,— —,—‘—,
+‘/___/   /|__/___/___/___/___/
+    ‘ | ‘ |
+    |/| |/|
+    | | | ,— —,— —,— —,— —,
+    |/| ‘/___/___/___/__ /|
+    | ,— —,— —,— —,— —, | |
+    ‘/___/___/___/___/  |/|
+                    ‘ | | |
+                    |/| |/|
+  ,— —,— —,— —,— —,—‘—, | ,— —,
+ /|__/___/___/___/___/  ‘/__ /|
+‘ |                         | |
+|/| `   `   `   `   `   `   |/|
+| ,— —,— —,— —,— —,— —,— —,—‘—,
+‘/___/___/___/___/___/___/___/
+
+REVIEW FOCUS
+------------
+- upper stem into eastward bend
+- eastward passage into lower stem
+- foreground layering at both inside corners
+- whether the long middle passage should retain the current hanging-face treatment
