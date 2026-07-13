@@ -1,4 +1,4 @@
-"""Generate literal review output for approved and reviewing corridor variants."""
+"""Generate literal review output for the complete Grammar v2 corridor matrix."""
 from pathlib import Path
 
 from corridor_variations_v2 import horizontal_corridor_bands, vertical_corridor_bands
@@ -19,7 +19,7 @@ CASES = (
         horizontal_corridor_bands,
     ),
     (
-        "OFFSET VERTICAL CORRIDOR",
+        "WEST-OFFSET VERTICAL CORRIDOR",
         (
             "#######",
             "#######",
@@ -45,7 +45,20 @@ CASES = (
         vertical_corridor_bands,
     ),
     (
-        "STAGGERED DOGLEG CORRIDOR",
+        "MIRRORED SHIFTED ROOMS WITH STRAIGHT CORRIDOR",
+        (
+            "....#######",
+            "....#######",
+            ".....#.....",
+            ".....#.....",
+            ".....#.....",
+            "#######....",
+            "#######....",
+        ),
+        vertical_corridor_bands,
+    ),
+    (
+        "EASTWARD DOGLEG CORRIDOR",
         (
             "#######",
             "#######",
@@ -60,7 +73,22 @@ CASES = (
         staggered_vertical_corridors,
     ),
     (
-        "TWO-SECTION-WIDE VERTICAL CORRIDOR",
+        "WESTWARD DOGLEG CORRIDOR",
+        (
+            "#######",
+            "#######",
+            ".....#.",
+            ".....#.",
+            ".#####.",
+            ".#.....",
+            ".#.....",
+            "#######",
+            "#######",
+        ),
+        staggered_vertical_corridors,
+    ),
+    (
+        "CENTERED TWO-SECTION-WIDE VERTICAL CORRIDOR",
         (
             "########",
             "########",
@@ -73,7 +101,7 @@ CASES = (
         vertical_corridor_bands,
     ),
     (
-        "TWO-SECTION-WIDE OFFSET VERTICAL CORRIDOR",
+        "WEST-OFFSET TWO-SECTION-WIDE VERTICAL CORRIDOR",
         (
             "########",
             "########",
@@ -85,11 +113,37 @@ CASES = (
         ),
         vertical_corridor_bands,
     ),
+    (
+        "EAST-OFFSET TWO-SECTION-WIDE VERTICAL CORRIDOR",
+        (
+            "########",
+            "########",
+            ".....##.",
+            ".....##.",
+            ".....##.",
+            "########",
+            "########",
+        ),
+        vertical_corridor_bands,
+    ),
+    (
+        "TWO-SECTION-WIDE CORRIDOR BETWEEN SHIFTED ROOMS",
+        (
+            "########....",
+            "########....",
+            ".....##.....",
+            ".....##.....",
+            ".....##.....",
+            "....########",
+            "....########",
+        ),
+        vertical_corridor_bands,
+    ),
 )
 
 
 def main() -> None:
-    lines: list[str] = ["GRAMMAR V2 CORRIDOR VARIATIONS — AUTOMATIC REVIEW", ""]
+    lines: list[str] = ["GRAMMAR V2 CORRIDOR MATRIX — AUTOMATIC REVIEW", ""]
     for title, mask, classifier in CASES:
         cells = cells_from_mask(mask)
         lines.extend((title, "=" * len(title), "", "MASK", "----", *mask, ""))
@@ -98,7 +152,7 @@ def main() -> None:
         for band in classifier(cells):
             lines.append(repr(band))
         lines.extend(("", "AUTOMATIC DRAFT", "---------------", *render_irregular_room(cells), "", ""))
-    Path("corridor-variations-review.txt").write_text("\n".join(lines), encoding="utf-8")
+    Path("corridor-matrix-review.txt").write_text("\n".join(lines), encoding="utf-8")
 
 
 if __name__ == "__main__":
