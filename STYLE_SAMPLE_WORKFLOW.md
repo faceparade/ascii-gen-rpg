@@ -32,137 +32,51 @@ It must not collapse to `/___/|`. Ordinary south-wall faces remain unchanged.
 
 A straight corridor is a rectangular logical band. East-west passages record length, doorway thickness, and top/bottom room-wall margins. North-south passages record length, doorway thickness, and left/right margins.
 
-Equal opposing margins indicate a centered opening. Unequal margins are valid. The margin pairs at opposite ends are independent, so a straight corridor may connect horizontally shifted room shells without bending. `room_shift_x` is positive when the lower room starts farther east.
+Equal opposing margins indicate a centered opening. Unequal margins are valid. Margin pairs at opposite ends are independent, so a straight corridor may connect shifted room shells without bending. `room_shift_x` is positive when the lower room starts farther east.
 
-A staggered corridor is a one-section-thick orthogonal path. It records the two opening positions, bend row, direction, path length, and all four room-wall margins.
+A staggered corridor is a one-section-thick orthogonal path. It records both opening positions, bend row, direction, path length, and all four room-wall margins.
 
-## Approved corridor coverage
+## Corridor phase complete
 
-The exact approved target set includes:
+The exact approved target matrix now covers:
 
-1. One-section horizontal corridor
-2. One-section centered vertical corridor
-3. Two-section-wide horizontal corridor
-4. West-offset vertical corridor in aligned rooms
-5. Straight vertical corridor between horizontally shifted rooms
-6. Eastward staggered dogleg corridor
-7. South-branch T-junction
-8. Four-way cross-junction
-9. Enclosed rectangular loop
-10. Irregular enclosed courtyard
+1. One-section horizontal and centered vertical corridors.
+2. Two-section-wide horizontal corridor.
+3. One-section west-offset vertical corridor.
+4. One-section straight corridor between rooms shifted east.
+5. Mirrored one-section straight corridor between rooms shifted west.
+6. Eastward and westward dogleg corridors.
+7. Centered two-section-wide vertical corridor.
+8. West-offset and east-offset two-section-wide vertical corridors.
+9. Two-section-wide straight corridor between shifted room shells.
+10. T-junction, four-way crossing, enclosed loop, and irregular enclosed courtyard.
 
-### Approved wide horizontal corridor
+The wide-vertical family uses one approved treatment across centered, offset, and shifted-room placements: paired side faces with an interior backtick column. The rectangular-band classifier remains generic for thicknesses greater than two, but exact golden art currently covers thicknesses one and two.
 
-```text
-###...###
-###...###
-#########
-#########
-###...###
-###...###
-```
+## Batch approval rule
 
-The passage spans `x=3..5`, `y=2..3`, with length 3, thickness 2, and equal `2/2` margins at both room walls.
+Symmetric or parameter-only variants no longer require separate manual review when all of the following hold:
 
-### Approved west-offset vertical corridor
+- the topology classifier returns the expected semantic object;
+- the variant changes only margins, mirror direction, or room origin;
+- no new glyph collision or layer type appears;
+- the literal rendering is stored as an exact golden target;
+- the complete CI suite passes.
 
-```text
-#######
-#######
-.#.....
-.#.....
-.#.....
-#######
-#######
-```
+A case returns to visual review only when it introduces a new wall transition, layer interaction, or unresolved glyph collision. This keeps the workflow from repeating one-case-at-a-time approval for mechanically equivalent geometry.
 
-The passage occupies `x=1`, `y=2..4`. Both openings have west/east margins `1/5`.
+## Active phase: centered raised platform
 
-### Approved shifted rooms with straight corridor
+The centered 3×3 platform topology and executable nested-shell draft are regression-tested. Corridor work is no longer blocking elevation.
 
-```text
-#######....
-#######....
-.....#.....
-.....#.....
-.....#.....
-....#######
-....#######
-```
+Next elevation steps:
 
-The corridor stays at `x=5`. The upper opening has margins `5/1`; the lower room shifts four sections east and the lower opening has margins `1/5`. There is no corridor bend.
-
-### Approved eastward dogleg
-
-```text
-#######
-#######
-.#.....
-.#.....
-.#####.
-.....#.
-.....#.
-#######
-#######
-```
-
-The path connects an upper `1/5` opening to a lower `5/1` opening through one eastward bend on `y=4`.
-
-## Reviewing centered two-section-wide vertical corridor
-
-```text
-########
-########
-...##...
-...##...
-...##...
-########
-########
-```
-
-The corridor spans `x=3..4`, `y=2..4`, with length 3, thickness 2, and equal `3/3` margins at both openings. The exact draft is stored at `style_samples/review/room-wide-vertical-corridor-v2.txt`.
-
-Review focus:
-
-- two-section upper doorway
-- paired vertical wall faces
-- interior backtick column
-- two-section lower doorway
-
-## Reviewing two-section-wide offset vertical corridor
-
-```text
-########
-########
-.##.....
-.##.....
-.##.....
-########
-########
-```
-
-The corridor spans `x=1..2`, `y=2..4`, with length 3, thickness 2, and west/east margins `1/5` at both openings. The rooms remain horizontally aligned; only the doorway band is offset. The exact draft is stored at `style_samples/review/room-wide-offset-vertical-corridor-v2.txt`.
-
-Review focus:
-
-- short west wall segment at both openings
-- long east wall segment at both openings
-- paired vertical wall faces
-- interior backtick column
-- whether offset placement changes either doorway terminal
-
-## Next corridor cases
-
-After the two wide-vertical drafts are approved or revised:
-
-1. Add the mirrored east-offset wide corridor.
-2. Add a wide corridor between shifted room shells.
-3. Add mirrored shifted-room and westward-dogleg regressions.
-4. Resume elevation review.
-
-## Paused centered raised platform
-
-The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until the remaining corridor-width cases are resolved.
+1. Approve or revise the centered platform shell.
+2. Test an actor standing on the platform.
+3. Test lower-floor actors behind south and west platform faces.
+4. Verify opaque, x-ray, and walls-removed visibility modes.
+5. Generalize projection to irregular platform footprints.
+6. Add multiple elevation levels.
 
 ## Commands
 
