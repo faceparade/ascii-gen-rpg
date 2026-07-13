@@ -38,7 +38,7 @@ The current Grammar v2 regression set is:
 6. approved east-extending one-sided bridge — one terminating inner east wall and an exterior east cap;
 7. approved west-extending one-sided bridge — an exterior west start and one terminating inner west wall;
 8. approved horizontal corridor — two room openings joined by a one-section-high passage;
-9. reviewing vertical corridor — upper and lower rooms joined by a one-section-wide passage.
+9. approved vertical corridor — upper and lower rooms joined by a one-section-wide passage.
 
 ## Commands
 
@@ -72,10 +72,10 @@ The fixture `room-horizontal-corridor-v2` contains two 3×5 rooms connected by a
 
 Its approved visual treatment intentionally preserves the literal hanging `‘/___.../` upper doorway face. The lower corridor edge retains the ordinary foreground south-wall rim and face. Semantic classification therefore remains distinct even though the upper glyph motif is shared with the courtyard bridge.
 
-## Reviewing vertical corridor
+## Approved vertical corridor
 
 The fixture `room-vertical-corridor-v2` contains two 5×2 rooms connected by a one-section-wide, three-section-long passage. Paired exposed west/east runs define the passage, while continuous floor at its top and bottom connects it to both rooms.
 
-The west passage wall is a foreground layer and crosses the actor anchor in every corridor section. The east passage wall is a background layer. The current literal doorway and wall transitions are preserved in `style_samples/review/room-vertical-corridor-v2.txt` until visually approved.
+Its literal upper doorway, lower doorway, and paired wall transitions are approved exactly. The west passage wall is foreground and crosses every corridor actor anchor; the east passage wall remains background. The exact rendering is locked at `style_samples/targets/room-vertical-corridor-v2.txt`.
 
 Multi-level, nested, T-junction, doorway, and platform motifs remain future Grammar v2 work.
