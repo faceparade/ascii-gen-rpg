@@ -119,10 +119,17 @@ def test_completed_references_are_inferred_from_golden_targets(project: Path) ->
     assert structural["candidate"] == "MASK\n##\n"
     assert structural["reference"] == "completed structural target  \n"
     assert structural["reference_source"] == "targets/structural-v2.txt"
+    assert structural["editable_output"] == "completed structural target  \n"
+    assert structural["editable_source"] == "targets/structural-v2.txt"
 
     room_draft = state.sample_detail("room-draft-v2")
     assert room_draft["reference"] == "completed room style reference\n"
     assert room_draft["reference_source"] == "targets/room-foreground-walls-on.txt"
+    assert room_draft["editable_output"] == "completed room style reference\n"
+
+    generated = state.sample_detail("sample-v2")
+    assert generated["editable_output"] == CANDIDATE_ART
+    assert generated["editable_source"] == "review/sample-v2.txt"
 
 
 def test_correction_preserves_exact_spaces_and_newline(project: Path) -> None:

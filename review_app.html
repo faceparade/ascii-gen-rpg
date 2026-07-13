@@ -303,7 +303,7 @@ pre.art {
       <button id="referenceButton">Completed reference</button>
       <button id="diffButton">Difference</button>
       <button id="topologyButton">Topology</button>
-      <button id="editButton">Edit correction</button>
+      <button id="editButton">Edit output</button>
       <label><input id="spacesToggle" type="checkbox"> Show spaces</label>
       <label><input id="rulerToggle" type="checkbox"> Rulers</label>
       <span class="spacer"></span>
@@ -333,15 +333,15 @@ pre.art {
       </div>
 
       <div class="panel" id="editorPanel">
-        <h2><span>Exact correction editor</span><span class="source">UTF-8, no wrapping</span></h2>
+        <h2><span>Edit output copy</span><span class="source" id="editorSource">UTF-8, no wrapping</span></h2>
         <textarea id="editor" wrap="off" spellcheck="false"></textarea>
         <div class="editor-meta">
           <span id="cursorInfo">row 1, column 1</span>
           <span id="editorDimensions"></span>
           <span id="raggedWarning"></span>
           <span class="spacer"></span>
-          <button id="resetEditorButton">Reset to candidate</button>
-          <button id="saveCorrectionButton" class="primary">Save correction</button>
+          <button id="resetEditorButton">Reset to output</button>
+          <button id="saveCorrectionButton" class="primary">Save corrected output</button>
         </div>
       </div>
     </section>
@@ -584,7 +584,10 @@ function updateEditorMeta() {
 function enterEditMode() {
   if (!state.detail) return;
   $("editorPanel").style.display = "block";
-  $("editor").value = state.detail.correction || state.detail.candidate;
+  $("editor").value = state.detail.correction || state.detail.editable_output;
+  $("editorSource").textContent = state.detail.correction
+    ? "saved correction"
+    : `copy of ${state.detail.editable_source || "candidate"}`;
   updateEditorMeta();
   $("editor").focus();
 }
@@ -712,7 +715,8 @@ function bindEvents() {
   $("editor").addEventListener("keyup", updateEditorMeta);
   $("resetEditorButton").addEventListener("click", () => {
     if (!state.detail) return;
-    $("editor").value = state.detail.candidate;
+    $("editor").value = state.detail.editable_output;
+    $("editorSource").textContent = `copy of ${state.detail.editable_source || "candidate"}`;
     updateEditorMeta();
   });
   $("saveCorrectionButton").addEventListener("click", () => saveCorrection().catch(showError));

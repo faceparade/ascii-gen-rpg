@@ -354,6 +354,12 @@ class ReviewState:
         previous_text, previous_source = self._previous_for(sample)
         correction = self.read_correction(sample_id)
         decision = self.read_decision(sample_id)
+        if candidate.source == "catalog topology" and reference_text:
+            editable_output = reference_text
+            editable_source = reference_source
+        else:
+            editable_output = candidate.text
+            editable_source = candidate.source
         return {
             "sample": sample,
             "candidate": candidate.text,
@@ -362,6 +368,9 @@ class ReviewState:
             "candidate_row_lengths": row_lengths(candidate.text),
             "reference": reference_text,
             "reference_source": reference_source,
+            "editable_output": editable_output,
+            "editable_source": editable_source,
+            "editable_sha256": sha256_text(editable_output),
             "previous": previous_text,
             "previous_source": previous_source,
             "correction": correction,
