@@ -1,0 +1,39 @@
+GRAMMAR V2 SUNKEN TERRAIN / RAISED EXTERIOR REFERENCE — MANUAL
+
+STATUS
+------
+User-authored visual reference. This replaces the freestanding raised-island shell as the primary dungeon elevation model.
+
+REFERENCE PROJECTION
+--------------------
+                   ,— —,— —,— —,— —,— —,— —,— —,
+                   |__/___/___/___/___/___/__ /|
+                   |   ,— — — — — —.         | |
+                   |  /|           | `   `   |/|
+                   | ‘ |           |         | |
+                   | |/|           | `   `   |/|
+                   | | |           '— — — —. | |
+                   | |/|                   | |/|
+   ,— —,— —,— —,— —' | |                   | | ,— —,— —,— —,
+   |__/___/___/___/  |/|                   | ‘/___/___/__ /|
+   |   ,— — — — — —. | ,— —,— —,— —,— —,— —,   ,— — — —. | |
+   |  /|           | ‘/___/___/___/___/___/   /|       | |/|
+   | ‘ |           |                         ‘ |       | | |
+   | |/|           | `   `   `   `   `   `   |/|       | |/|
+   | | |           '— — — — — — — — — — — — —'—'       | | |
+   | |/|                                               | |/|
+   | | |                                               | | |
+
+AUTHORITATIVE INTERPRETATION
+----------------------------
+- rooms and pathways are the lower elevation plane
+- surrounding terrain is an explicit higher plane
+- walls are cliff faces at height transitions, not automatic closures around floor masks
+- the higher plane may continue beyond a crop boundary without a south/east closing wall
+- blank ASCII space alone never implies either elevated terrain or void; logical terrain data is explicit
+- cliff faces descend toward the lower side
+- freestanding raised platforms remain a separate later treatment
+
+NEXT IMPLEMENTATION FIXTURE
+---------------------------
+Create a small straight sunken corridor opening into a chamber, surrounded by explicit elevation-1 terrain, and derive its cliff edges from terrain topology before generalizing this treatment to the approved dungeon.
