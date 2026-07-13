@@ -81,6 +81,15 @@
       "tags": ["grammar-v2", "doorway", "vertical-corridor", "approved-reference"],
       "notes": "Approved upper/lower room corridor. The literal doorway transitions are retained; the west passage wall is foreground and the east wall is background.",
       "status": "approved"
+    },
+    {
+      "id": "room-t-junction-v2",
+      "title": "Grammar v2 three-room south-branch T-junction",
+      "category": "corridor",
+      "mask": ["###...###", "###...###", "#########", "....#....", "....#....", "....#....", "..#####..", "..#####.."],
+      "tags": ["grammar-v2", "t-junction", "horizontal-corridor", "vertical-corridor", "review-target"],
+      "notes": "Reviewing three-room junction with a south branch at logical section (4,2). The junction center is unobscured; the descending branch is occluded by its west wall only.",
+      "status": "reviewing"
     }
   ]
 }
