@@ -18,7 +18,7 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 
 Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
 
-## East-cap terminal spacing
+## Approved east-cap spacing
 
 An underside or hanging face that terminates directly into an east wall reserves one recessed blank column before the face slash:
 
@@ -28,73 +28,90 @@ An underside or hanging face that terminates directly into an east wall reserves
 
 It must not collapse to `/___/|`. Ordinary south-wall faces remain unchanged.
 
-## Corridor semantics
-
-A straight corridor is a rectangular logical band. East-west passages record length, doorway thickness, and top/bottom room-wall margins. North-south passages record length, doorway thickness, and left/right margins.
-
-Equal opposing margins indicate a centered opening. Unequal margins are valid. Margin pairs at opposite ends are independent, so a straight corridor may connect shifted room shells without bending. `room_shift_x` is positive when the lower room starts farther east.
-
-A staggered corridor is a one-section-thick orthogonal path. It records both opening positions, bend row, direction, path length, and all four room-wall margins.
-
 ## Corridor phase complete
 
-The exact approved target matrix covers:
+Approved exact targets cover:
 
-1. One-section horizontal and centered vertical corridors.
-2. Two-section-wide horizontal corridor.
-3. One-section west-offset vertical corridor.
-4. One-section straight corridors between rooms shifted east and west.
-5. Eastward and westward dogleg corridors.
-6. Centered two-section-wide vertical corridor.
-7. West-offset and east-offset two-section-wide vertical corridors.
-8. Two-section-wide straight corridor between shifted room shells.
-9. T-junction, four-way crossing, enclosed loop, and irregular enclosed courtyard.
+- one-section horizontal and vertical corridors;
+- centered and offset openings;
+- rooms shifted east and west around a straight corridor;
+- eastward and westward doglegs;
+- two-section-wide horizontal and vertical corridors;
+- centered, west-offset, east-offset, and shifted-room wide vertical corridors;
+- T-junction, four-way crossing, enclosed loop, and irregular enclosed courtyard.
 
-The wide-vertical family uses one approved treatment across centered, offset, and shifted-room placements: paired side faces with an interior backtick column. The rectangular-band classifier remains generic for thicknesses greater than two, but exact golden art currently covers thicknesses one and two.
+The rectangular-band topology accepts arbitrary positive thickness, while exact artwork is currently locked for thicknesses one and two.
 
-## Batch approval rule
+## Batch approval rule for non-elevation geometry
 
-Symmetric or parameter-only variants no longer require separate manual review when all of the following hold:
+Symmetric or parameter-only variants may be promoted without an additional visual stop when:
 
 - the topology classifier returns the expected semantic object;
-- the variant changes only margins, mirror direction, or room origin;
+- only margins, mirror direction, or room origin changes;
 - no new glyph collision or layer type appears;
 - the literal rendering is stored as an exact golden target;
 - the complete CI suite passes.
 
-A case returns to visual review only when it introduces a new wall transition, layer interaction, or unresolved glyph collision.
+A case returns to manual review when it introduces a new wall transition, layer interaction, or unresolved glyph collision.
 
-## Single connected pre-elevation integration map
+## Approved organic integration dungeon
 
-`connected_map_v2.py` embeds 23 approved structural variations in one cardinally connected logical map. Three horizontal gallery spines and one vertical backbone join the translated feature masks without overlapping them.
+`connected_map_v2.py` embeds all 23 approved structural variations in one organic cardinally connected dungeon.
 
 Confirmed properties:
 
-- logical bounds: 140 × 54 sections;
-- walkable floor: 1,258 sections;
+- logical bounds: 85 × 68 sections;
+- walkable floor: 966 sections;
 - connectivity: one cardinal component;
-- rendered output: 110 rows, maximum width 563;
-- rendering SHA-256: `12da9aed6fd7264a297baa6a3d18cda0996b8d1b72e0eb894d889b91c27603b3`;
+- longest horizontal floor run: 24 sections;
+- rendered output: 138 rows, maximum width 343;
+- rendering SHA-256: `51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6`;
 - elevation data: deliberately absent.
 
-The map metadata and logical mask are stored at `style_samples/review/connected-map-v2.txt`. Generate the full projection with:
+The approved metadata and digest are stored at `style_samples/targets/connected-map-v2.txt`. Generate the full projection with:
 
 ```bash
 python generate_connected_map_review.py
 ```
 
-This connected map requires manual visual approval before elevation work resumes.
-
 ## Elevation review policy
 
-Elevation is not eligible for automatic batch approval. Every new elevation treatment must be shown for manual review before it becomes an approved target, including:
+Elevation is not eligible for automatic batch approval. Every new elevation treatment must be shown and explicitly approved before promotion.
 
-- centered platform shell artwork;
-- actors standing on elevated floor;
-- lower-floor actors behind south and west elevation faces;
-- opaque, x-ray, and walls-removed visibility modes;
-- irregular platform footprints;
-- multiple elevation levels.
+Review sequence:
+
+1. Centered rectangular platform shell.
+2. Actor standing on elevated floor.
+3. Lower-floor actors behind south and west elevation faces.
+4. Opaque, x-ray, and walls-removed visibility modes.
+5. Irregular platform footprints.
+6. Multiple elevation levels.
+
+Only one new visual concept should be introduced at each checkpoint.
+
+## Active checkpoint: centered 3×3 platform shell
+
+Floor mask:
+
+```text
+#####
+#####
+#####
+#####
+#####
+```
+
+Elevation map:
+
+```text
+00000
+01110
+01110
+01110
+00000
+```
+
+The topology is confirmed. Manual review is limited to the nested top rim, north/east background faces, south/west foreground faces, and platform-top lattice spacing. Actor rendering and multiple levels are not part of this checkpoint.
 
 ## Commands
 
