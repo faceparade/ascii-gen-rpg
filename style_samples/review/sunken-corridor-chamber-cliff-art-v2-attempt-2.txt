@@ -1,0 +1,42 @@
+GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — ATTEMPT 2
+
+APPROVED TOPOLOGY
+-----------------
+Elevation:
+1111111
+1000111
+1000000
+1000111
+1111111
+
+Walkable lower plane:
+.......
+.###...
+.######
+.###...
+.......
+
+AUTOMATIC DRAFT
+---------------
+                    `   `
+      ,— — — — — —.
+     /|           |
+    ‘ |           | '— — — — —
+    |/| `   `   |/|
+    | |           | ,— — — — —
+    |/| `   `   |/|
+    | '— — — — — —'
+     ‘/___/___/___/
+                    `   `
+
+WHAT CHANGED
+------------
+- traces the connected lower chamber/corridor cut instead of the upper-cell footprint
+- aggregates the chamber rim into continuous runs
+- uses two uncapped corridor shoulders at the east crop boundary
+- separates upper-plane lattice from lower-floor lattice
+- keeps the earlier rejected draft archived separately
+
+STATUS
+------
+Manual artwork review required. Do not promote without explicit approval.
