@@ -211,4 +211,7 @@ def render_sunken_terrain(
         _bottom_face(cut.width),
     )
 
-    return canvas.compose()
+    rows = canvas.compose()
+    while rows and not rows[0]:
+        rows = rows[1:]
+    return rows
