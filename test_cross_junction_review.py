@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from cross_junction_grammar_v2 import CrossJunction, cross_junctions
 from style_sample_system import (
     Point,
@@ -19,28 +21,10 @@ CROSS_MASK = (
     "..#####..",
 )
 
-LITERAL_DRAFT = (
-    "          ,— —,— —,— —,— —,— —,",
-    "         /|__/___/___/___/___/|",
-    "        ‘ |                 | |",
-    "        |/| `   `   `   `   |/|",
-    "        | ,— —,— —,   ,— —,—‘—,",
-    "        ‘/___/___/   /|__/___/",
-    "                ‘ | ‘ |",
-    "                |/| |/|",
-    "  ,— —,— —,— —,—‘—, | ,— —,— —,— —,— —,",
-    " /|__/___/___/___/  ‘/___/___/___/___/|",
-    "‘ ,— —,— —,— —,— —,   ,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/   /|__/___/___/___/",
-    "                ‘ | ‘ |",
-    "                |/| |/|",
-    "          ,— —,—‘—, | ,— —,— —,",
-    "         /|__/___/  ‘/___/___/|",
-    "        ‘ |                 | |",
-    "        |/| `   `   `   `   |/|",
-    "        | ,— —,— —,— —,— —,—‘—,",
-    "        ‘/___/___/___/___/___/",
-)
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-cross-junction-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_cross_is_classified_from_local_topology() -> None:
@@ -63,5 +47,5 @@ def test_cross_center_and_arm_occlusion_are_stable() -> None:
     assert section_occluders(cells, Point(0, 4)) == frozenset({"south", "west"})
 
 
-def test_cross_literal_draft_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(CROSS_MASK)) == LITERAL_DRAFT
+def test_cross_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(CROSS_MASK)) == approved_target()
