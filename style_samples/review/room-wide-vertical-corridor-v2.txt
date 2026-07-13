@@ -1,0 +1,43 @@
+GRAMMAR V2 TWO-SECTION-WIDE VERTICAL CORRIDOR — REVIEWING
+
+MASK
+----
+########
+########
+...##...
+...##...
+...##...
+########
+########
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,— —,— —,— —,— —,— —,
+ /|__/___/___/___/___/___/___/__ /|
+‘ |                             | |
+|/| `   `   `   `   `   `   `   |/|
+| ,— —,— —,— —,       ,— —,— —,—‘—,
+‘/___/___/___/  `    /|__/___/___/
+            ‘ |     ‘ |
+            |/| `   |/|
+            | |     | |
+            |/| `   |/|
+  ,— —,— —,—‘—,     | ,— —,— —,— —,
+ /|__/___/___/  `   ‘/___/___/__ /|
+‘ |                             | |
+|/| `   `   `   `   `   `   `   |/|
+| ,— —,— —,— —,— —,— —,— —,— —,—‘—,
+‘/___/___/___/___/___/___/___/___/
+
+CONFIRMED STRUCTURE
+-------------------
+- the corridor spans logical x=3..4 and y=2..4
+- corridor thickness is 2 logical sections
+- corridor length is 3 logical sections
+- upper and lower openings each have west/east margins 3/3
+- the corridor is centered in both room walls
+- the one-section vertical resolver is not applied
+
+REVIEW QUESTION
+---------------
+Confirm or edit the two-section doorway transitions, the interior backtick column, and the paired vertical wall faces before promotion.
