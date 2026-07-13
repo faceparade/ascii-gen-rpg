@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from irregular_room_grammar import (
     courtyard_bridge_runs,
     mirrored_one_sided_bridge_runs,
@@ -7,16 +9,11 @@ from style_sample_system import Point, cells_from_mask, lattice_points, render_i
 
 
 MIRRORED_MASK = ("....##", "....##", "######")
-APPROVED_TARGET = (
-    "                  ,— —,— —,",
-    "                 /|__/___/|",
-    "                ‘ |     | |",
-    "                |/| `   |/|",
-    "  ,— —,— —,— —,—‘—,     | |",
-    " /|__/___/___/___/  `   |/|",
-    "‘ ,— —,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/___/",
-)
+
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-mirrored-one-sided-bridge-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_mirrored_one_sided_bridge_topology_is_stable() -> None:
@@ -39,4 +36,4 @@ def test_mirrored_bridge_retains_exterior_west_start() -> None:
 
 
 def test_mirrored_bridge_matches_approved_target_exactly() -> None:
-    assert render_irregular_room(cells_from_mask(MIRRORED_MASK)) == APPROVED_TARGET
+    assert render_irregular_room(cells_from_mask(MIRRORED_MASK)) == approved_target()
