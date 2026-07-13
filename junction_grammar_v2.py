@@ -1,4 +1,9 @@
-"""Shared topology descriptions for Grammar v2 horizontal and vertical wall junctions."""
+"""Shared topology descriptions for Grammar v2 wall junctions.
+
+One-section corridor and bridge motifs are classified here. Multi-section-wide
+corridor bands are classified separately in ``corridor_variations_v2`` and must
+not fall through to the courtyard-bridge resolver.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -62,7 +67,7 @@ def _edge(edges: frozenset[BoundaryEdge], section: Point, direction: str) -> boo
 
 
 def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, ...]:
-    """Classify promoted bridges, corridors, and south-branch T junctions."""
+    """Classify promoted one-row bridges, corridors, and south-branch T junctions."""
     edges = boundary_edges(cells)
     south_runs = set(directional_runs(cells, "south"))
     result: list[HorizontalJunction] = []
@@ -147,7 +152,7 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
                     branch_columns[0],
                 )
             )
-        elif left_upper and right_upper:
+        elif left_upper and right_upper and below_empty:
             result.append(
                 HorizontalJunction(
                     "courtyard_bridge",
@@ -158,7 +163,7 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
                     "inner_west_wall",
                 )
             )
-        elif left_upper and right_exterior:
+        elif left_upper and right_exterior and below_empty:
             result.append(
                 HorizontalJunction(
                     "east_extending_bridge",
@@ -169,7 +174,7 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
                     "exterior_east",
                 )
             )
-        elif left_exterior and right_upper:
+        elif left_exterior and right_upper and below_empty:
             result.append(
                 HorizontalJunction(
                     "west_extending_bridge",
