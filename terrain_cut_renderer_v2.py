@@ -1,16 +1,17 @@
-"""Manual-review renderer for sunken rooms cut into higher terrain.
+"""Manual-review renderer for the first sunken chamber/corridor treatment.
 
-The terrain rim is derived from the connected lower floor. A rendered boundary
-exists only where a lower surface touches an explicitly higher surface. Missing
-neighbors remain open by topology, so corridor exits at the edge of a crop are
-never erased after rendering.
+This checkpoint deliberately supports one visual concept: a rectangular lower
+chamber whose center row continues east as an open corridor. The compositor
+traces that connected lower cut as one rim. It does not render the surrounding
+upper cells as separate room shells, and it never closes the corridor at the
+crop edge.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Mapping
 
 from style_sample_system_v2_base import (
-    ACTOR_ORIGIN_X,
     ACTOR_ORIGIN_Y,
     SECTION_STRIDE_X,
     SECTION_STRIDE_Y,
@@ -18,110 +19,97 @@ from style_sample_system_v2_base import (
     Point,
     cell_bounds,
     lattice_points,
+    lattice_vertices,
 )
-from terrain_cut_grammar_v2 import Direction, validate_terrain_scene
-
-_OFFSETS: dict[Direction, tuple[int, int]] = {
-    "north": (0, -1),
-    "east": (1, 0),
-    "south": (0, 1),
-    "west": (-1, 0),
-}
+from terrain_cut_grammar_v2 import validate_terrain_scene
 
 
-def _lower_cliff_boundaries(
+@dataclass(frozen=True)
+class ChamberCorridorCut:
+    min_x: int
+    max_x: int
+    min_y: int
+    max_y: int
+    corridor_y: int
+    corridor_end_x: int
+
+    @property
+    def width(self) -> int:
+        return self.max_x - self.min_x + 1
+
+    @property
+    def height(self) -> int:
+        return self.max_y - self.min_y + 1
+
+
+def _classify_chamber_corridor(
     surface_cells: frozenset[Point],
-    elevations: Mapping[Point, int],
     lower_cells: frozenset[Point],
-) -> dict[Direction, frozenset[Point]]:
-    """Return lower cells whose named side touches explicit higher terrain."""
+) -> ChamberCorridorCut:
+    """Recognize the first approved 3-row chamber with an eastbound corridor."""
 
-    result: dict[Direction, set[Point]] = {direction: set() for direction in _OFFSETS}
-    for lower in lower_cells:
-        lower_height = elevations[lower]
-        for direction, (dx, dy) in _OFFSETS.items():
-            neighbor = Point(lower.x + dx, lower.y + dy)
-            if neighbor in surface_cells and elevations[neighbor] > lower_height:
-                result[direction].add(lower)
-    return {direction: frozenset(points) for direction, points in result.items()}
+    min_x = min(point.x for point in lower_cells)
+    min_y = min(point.y for point in lower_cells)
+    max_y = max(point.y for point in lower_cells)
+    if max_y - min_y + 1 != 3:
+        raise NotImplementedError("initial cliff artwork requires a three-row chamber")
+
+    row_bounds: dict[int, tuple[int, int]] = {}
+    for y in range(min_y, max_y + 1):
+        xs = sorted(point.x for point in lower_cells if point.y == y)
+        if not xs or xs != list(range(xs[0], xs[-1] + 1)):
+            raise NotImplementedError("initial cliff artwork requires contiguous lower rows")
+        row_bounds[y] = (xs[0], xs[-1])
+
+    corridor_y = min_y + 1
+    top_bounds = row_bounds[min_y]
+    middle_bounds = row_bounds[corridor_y]
+    bottom_bounds = row_bounds[max_y]
+    if top_bounds != bottom_bounds:
+        raise NotImplementedError("initial cliff artwork requires matching chamber top and bottom rows")
+    if top_bounds[0] != min_x or middle_bounds[0] != min_x:
+        raise NotImplementedError("initial cliff artwork requires a shared west chamber wall")
+
+    max_x = top_bounds[1]
+    corridor_end_x = middle_bounds[1]
+    if corridor_end_x <= max_x:
+        raise NotImplementedError("initial cliff artwork requires an eastbound corridor")
+
+    chamber = frozenset(
+        Point(x, y)
+        for y in range(min_y, max_y + 1)
+        for x in range(min_x, max_x + 1)
+    )
+    corridor = frozenset(Point(x, corridor_y) for x in range(max_x + 1, corridor_end_x + 1))
+    if lower_cells != chamber | corridor:
+        raise NotImplementedError("lower topology is not the initial chamber/corridor fixture")
+
+    surface_width, _ = cell_bounds(surface_cells)
+    if corridor_end_x != surface_width - 1:
+        raise NotImplementedError("initial corridor must remain open at the east crop boundary")
+
+    return ChamberCorridorCut(min_x, max_x, min_y, max_y, corridor_y, corridor_end_x)
 
 
-def _draw_upper_crop_frame(canvas: LayeredCanvas, width_cells: int, height_cells: int) -> None:
-    """Frame only the north and west edges of the continuing upper plane."""
-
-    for column in range(width_cells):
-        x = 2 + column * SECTION_STRIDE_X
-        for offset, glyph in enumerate(",— —"):
-            if glyph != " ":
-                canvas.put("background_wall", Point(x + offset, 0), glyph)
-    canvas.put("background_wall", Point(2 + width_cells * SECTION_STRIDE_X, 0), ",")
-
-    canvas.put("background_wall", Point(1, 1), "/")
-    canvas.put("background_wall", Point(2, 1), "|")
-    for x in range(3, 2 + width_cells * SECTION_STRIDE_X):
-        canvas.put("background_wall", Point(x, 1), "/" if (x - 1) % SECTION_STRIDE_X == 0 else "_")
-
-    for row in range(height_cells):
-        actor_y = ACTOR_ORIGIN_Y + row * SECTION_STRIDE_Y
-        canvas.put("background_wall", Point(0, actor_y), "‘" if row == 0 else "|")
-        canvas.put("background_wall", Point(2, actor_y), "|")
-        if row < height_cells - 1:
-            canvas.put("background_wall", Point(0, actor_y + 1), "|")
-            canvas.put("background_wall", Point(1, actor_y + 1), "/")
-            canvas.put("background_wall", Point(2, actor_y + 1), "|")
+def _put_text(canvas: LayeredCanvas, layer: str, x: int, y: int, text: str) -> None:
+    for offset, glyph in enumerate(text):
+        if glyph != " ":
+            canvas.put(layer, Point(x + offset, y), glyph)
 
 
-def _draw_cliff_boundaries(
-    canvas: LayeredCanvas,
-    boundaries: dict[Direction, frozenset[Point]],
-    surface_cells: frozenset[Point],
-) -> None:
-    """Project one continuous lower-floor rim using directional cliff faces."""
+def _continuous_rim(width: int, start: str, end: str | None) -> str:
+    chars = [" " for _ in range(width + 1)]
+    chars[0] = start
+    for index in range(1, width):
+        if index % 2 == 1:
+            chars[index] = "—"
+    if end is not None:
+        chars[width] = end
+    return "".join(chars)
 
-    for cell in boundaries["north"]:
-        x = 2 + cell.x * SECTION_STRIDE_X
-        y = cell.y * SECTION_STRIDE_Y
-        east_open = Point(cell.x + 1, cell.y) not in surface_cells
-        motif = ",— — " if east_open else ",— —,"
-        underside = "/|__ " if east_open else "/|__/"
-        for offset, glyph in enumerate(motif):
-            if glyph != " ":
-                canvas.put("background_wall", Point(x + offset, y), glyph)
-        for offset, glyph in enumerate(underside):
-            if glyph != " ":
-                canvas.put("background_wall", Point(x - 1 + offset, y + 1), glyph)
 
-    for cell in boundaries["east"]:
-        x = (cell.x + 1) * SECTION_STRIDE_X
-        y = ACTOR_ORIGIN_Y + cell.y * SECTION_STRIDE_Y
-        canvas.put("background_wall", Point(x, y), "|")
-        canvas.put("background_wall", Point(x + 2, y), "|")
-        canvas.put("background_wall", Point(x, y + 1), "|")
-        canvas.put("background_wall", Point(x + 1, y + 1), "/")
-        canvas.put("background_wall", Point(x + 2, y + 1), "|")
-
-    for cell in boundaries["south"]:
-        x = 2 + cell.x * SECTION_STRIDE_X
-        y = ACTOR_ORIGIN_Y + cell.y * SECTION_STRIDE_Y
-        east_open = Point(cell.x + 1, cell.y) not in surface_cells
-        motif = ",— — " if east_open else ",— —,"
-        face = "___ " if east_open else "___/"
-        for offset, glyph in enumerate(motif):
-            if glyph != " ":
-                canvas.put("foreground_wall", Point(x + offset, y), glyph)
-        for offset, glyph in enumerate(face):
-            if glyph != " ":
-                canvas.put("foreground_wall", Point(x + offset, y + 1), glyph)
-
-    west_top = min((point.y for point in boundaries["west"]), default=None)
-    for cell in boundaries["west"]:
-        x = ACTOR_ORIGIN_X + cell.x * SECTION_STRIDE_X
-        y = ACTOR_ORIGIN_Y + cell.y * SECTION_STRIDE_Y
-        canvas.put("foreground_wall", Point(x - 2, y), "‘" if cell.y == west_top else "|")
-        canvas.put("foreground_wall", Point(x, y), "|")
-        canvas.put("foreground_wall", Point(x - 2, y + 1), "|")
-        canvas.put("foreground_wall", Point(x - 1, y + 1), "/")
-        canvas.put("foreground_wall", Point(x, y + 1), "|")
+def _bottom_face(section_count: int) -> str:
+    return "‘/" + "___/" * section_count
 
 
 def render_sunken_terrain(
@@ -129,7 +117,7 @@ def render_sunken_terrain(
     elevations: Mapping[Point, int],
     walkable_cells: frozenset[Point],
 ) -> tuple[str, ...]:
-    """Render the initial level-1 terrain / level-0 recessed-floor treatment."""
+    """Render the manually reviewed level-1 exterior / level-0 cut fixture."""
 
     validate_terrain_scene(surface_cells, elevations, walkable_cells)
     heights = frozenset(elevations.values())
@@ -142,18 +130,85 @@ def render_sunken_terrain(
     if not upper_cells or not walkable_cells:
         raise ValueError("terrain-cut projection requires both upper and lower surfaces")
 
-    width_cells, height_cells = cell_bounds(surface_cells)
-    width = width_cells * SECTION_STRIDE_X + 3
-    height = height_cells * SECTION_STRIDE_Y + 2
-    canvas = LayeredCanvas(width, height)
+    cut = _classify_chamber_corridor(surface_cells, walkable_cells)
+    surface_width, _ = cell_bounds(surface_cells)
+    canvas = LayeredCanvas(surface_width * SECTION_STRIDE_X + 7, 13)
 
-    _draw_upper_crop_frame(canvas, width_cells, height_cells)
+    chamber_left = 2 + cut.min_x * SECTION_STRIDE_X
+    chamber_right = 2 + (cut.max_x + 1) * SECTION_STRIDE_X
+    corridor_end = 2 + (cut.corridor_end_x + 1) * SECTION_STRIDE_X
+    chamber_screen_width = chamber_right - chamber_left
+    corridor_screen_width = corridor_end - chamber_right
 
-    # Both planes retain their own lattice. Cliff layers overwrite a marker only
-    # where a height transition physically occupies the same projected position.
-    for marker in lattice_points(upper_cells) | lattice_points(walkable_cells):
+    top_rim_y = cut.min_y * SECTION_STRIDE_Y
+    corridor_top_y = ACTOR_ORIGIN_Y + cut.min_y * SECTION_STRIDE_Y
+    corridor_bottom_y = ACTOR_ORIGIN_Y + cut.corridor_y * SECTION_STRIDE_Y
+    bottom_rim_y = ACTOR_ORIGIN_Y + cut.max_y * SECTION_STRIDE_Y
+
+    # Upper-plane lattice appears above and below the corridor strips. Its
+    # placement is intentionally separated from the lower-floor lattice.
+    for vertex in lattice_vertices(upper_cells):
+        x = vertex.x * SECTION_STRIDE_X
+        y = top_rim_y - 1 if vertex.y <= cut.corridor_y else bottom_rim_y + 2
+        canvas.put("lattice", Point(x, y), "`")
+
+    for marker in lattice_points(walkable_cells):
         canvas.put("lattice", marker, "`")
 
-    boundaries = _lower_cliff_boundaries(surface_cells, elevations, walkable_cells)
-    _draw_cliff_boundaries(canvas, boundaries, surface_cells)
+    # Chamber north rim and its recessed face.
+    _put_text(
+        canvas,
+        "background_wall",
+        chamber_left,
+        top_rim_y,
+        _continuous_rim(chamber_screen_width, ",", "."),
+    )
+    _put_text(canvas, "background_wall", chamber_left - 1, top_rim_y + 1, "/|")
+    canvas.put("background_wall", Point(chamber_right, top_rim_y + 1), "|")
+
+    # West foreground cliff, one continuous run through all chamber rows.
+    for row_index, logical_y in enumerate(range(cut.min_y, cut.max_y + 1)):
+        actor_y = ACTOR_ORIGIN_Y + logical_y * SECTION_STRIDE_Y
+        _put_text(canvas, "foreground_wall", chamber_left - 2, actor_y, "‘ |" if row_index == 0 else "| |")
+        if logical_y < cut.max_y:
+            _put_text(canvas, "foreground_wall", chamber_left - 2, actor_y + 1, "|/|")
+
+    # The chamber's east step creates the two corridor shoulders. Both runs are
+    # intentionally open at the right edge; there is no terminal cap glyph.
+    _put_text(canvas, "background_wall", chamber_right - 2, corridor_top_y + 1, "|/|")
+    canvas.put("foreground_wall", Point(chamber_right, corridor_top_y), "|")
+    _put_text(
+        canvas,
+        "foreground_wall",
+        chamber_right + 2,
+        corridor_top_y,
+        _continuous_rim(corridor_screen_width - 2, "'", None),
+    )
+
+    _put_text(canvas, "foreground_wall", chamber_right - 2, corridor_bottom_y + 1, "|/|")
+    canvas.put("foreground_wall", Point(chamber_right, corridor_bottom_y), "|")
+    _put_text(
+        canvas,
+        "foreground_wall",
+        chamber_right + 2,
+        corridor_bottom_y,
+        _continuous_rim(corridor_screen_width - 2, ",", None),
+    )
+
+    # Chamber south rim and one continuous hanging face.
+    _put_text(
+        canvas,
+        "foreground_wall",
+        chamber_left,
+        bottom_rim_y,
+        _continuous_rim(chamber_screen_width, "'", "'"),
+    )
+    _put_text(
+        canvas,
+        "foreground_wall",
+        chamber_left - 1,
+        bottom_rim_y + 1,
+        _bottom_face(cut.width),
+    )
+
     return canvas.compose()
