@@ -9,10 +9,11 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 3. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` and remain tied to logical sections.
 4. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
 5. **Directional walls** — north/east are background layers; south/west are foreground layers.
-6. **Junction classification** — bridge, corridor, T, cross, and enclosed-loop structures are identified from topology.
-7. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
-8. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
-9. **Composition** — foreground walls and elevation faces may hide an entity or display it in x-ray styling.
+6. **Elevation projection** — positive-height components are projected over the floor using directional background and foreground faces.
+7. **Junction classification** — bridge, corridor, T, cross, and enclosed-loop structures are identified from topology.
+8. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
+9. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
+10. **Composition** — foreground walls and elevation faces may hide an entity or display it in x-ray styling.
 
 Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
 
@@ -30,7 +31,7 @@ It must not collapse to:
 /___/|
 ```
 
-This is a renderer-level rule shared by rooms, bridges, corridors, junctions, and enclosed courtyards. Ordinary south-wall faces remain unchanged.
+This is a renderer-level rule shared by rooms, bridges, corridors, junctions, enclosed courtyards, and platform shells. Ordinary south-wall faces remain unchanged.
 
 ## Regression sequence
 
@@ -65,7 +66,26 @@ This is a renderer-level rule shared by rooms, bridges, corridors, junctions, an
 00000
 ```
 
-The centered 3×3 platform is one connected elevation-1 component with 12 exposed directional perimeter edges. Actor anchors remain unchanged. North/east platform faces are background; south/west faces are foreground. These topology rules are regression-tested. Rim and face glyphs remain under review.
+The centered 3×3 platform is one connected elevation-1 component with 12 exposed directional perimeter edges. Actor anchors remain unchanged.
+
+The executable projection draft treats the platform as a nested Grammar v2 shell:
+
+```text
+  ,— —,— —,— —,— —,— —,
+ /|__/___/___/___/__ /|
+‘ |   ,— —,— —,— —, | |
+|/|  /|__/___/__ /| |/|
+| | ‘ |         | | | |
+|/| |/| `   `   |/| |/|
+| | | |         | | | |
+|/| |/| `   `   |/| |/|
+| | | ,— —,— —,—‘—, | |
+|/| ‘/___/___/___/  |/|
+| ,— —,— —,— —,— —,—‘—,
+‘/___/___/___/___/___/
+```
+
+North/east platform faces are background; south/west platform faces are foreground. The north underside and south hanging face clear lower-floor lattice marks beneath them. The platform top retains its own interior lattice markers. The glyph treatment remains under review.
 
 ## Commands
 
