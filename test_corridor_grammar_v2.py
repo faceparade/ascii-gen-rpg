@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from corridor_grammar import _apply_east_cap_spacing
 from junction_grammar_v2 import HorizontalJunction, horizontal_junctions
 from style_sample_system import cells_from_mask, render_irregular_room
 
@@ -18,6 +19,20 @@ CORRIDOR_MASK = (
 def approved_corridor() -> tuple[str, ...]:
     path = Path(__file__).parent / "style_samples" / "targets" / "room-horizontal-corridor-v2.txt"
     return tuple(path.read_text(encoding="utf-8").splitlines())
+
+
+def test_east_cap_reserves_recessed_column_without_changing_south_faces() -> None:
+    assert _apply_east_cap_spacing(
+        (
+            " /|__/___/|",
+            "‘/___/___/|",
+            "‘/___/___/",
+        )
+    ) == (
+        " /|__/__ /|",
+        "‘/___/__ /|",
+        "‘/___/___/",
+    )
 
 
 def test_shared_classifier_keeps_promoted_junction_kinds_distinct() -> None:
