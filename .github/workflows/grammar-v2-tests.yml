@@ -32,22 +32,12 @@ jobs:
       - name: Compile Grammar v2 modules
         run: python -m compileall -q .
 
-      - name: Generate revised sunken terrain review
-        run: python generate_sunken_terrain_review.py
-
       - name: Run complete test suite
         id: pytest
         shell: bash
         run: |
           set -o pipefail
           python -m pytest -q --tb=short 2>&1 | tee pytest.log
-
-      - name: Upload revised sunken terrain review
-        uses: actions/upload-artifact@v4
-        with:
-          name: revised-sunken-terrain-review-${{ github.run_id }}
-          path: sunken-terrain-art-review.txt
-          retention-days: 7
 
       - name: Upload pytest log after failure
         if: failure()
