@@ -1,4 +1,4 @@
-"""Compatibility entry point with promoted irregular-room and corridor motifs."""
+"""Compatibility entry point with approved irregular-room and corridor motifs."""
 from __future__ import annotations
 
 import style_sample_system_v2_base as _base
