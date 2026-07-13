@@ -35,6 +35,13 @@ The rectangular corridor topology accepts arbitrary positive thickness. Golden a
 
 Symmetric or parameter-only **non-elevation** variants may be promoted together when their topology, layers, exact targets, and full CI suite agree. Elevation never uses this shortcut.
 
+## Reviewed correction promotion complete
+
+- 21 approved correction files are reproduced exactly by shared renderers and promoted golden targets.
+- Legacy catalog outcomes have review decision sidecars; no decisions are stale.
+- `room-two-by-two-v2` is the only `needs_changes` sample. Its former mislabeled 4 × 4 draft was replaced with topology-correct 2 × 2 output, but it remains unapproved.
+- The exact-output regression suite and GitHub Actions are green.
+
 ## Approved organic dungeon
 
 `connected_map_v2.py` embeds all 23 approved structural variations in one cardinally connected dungeon.
@@ -44,7 +51,7 @@ Symmetric or parameter-only **non-elevation** variants may be promoted together 
 - Connected components: one
 - Longest horizontal floor run: 24 sections
 - Projection: 138 rows, maximum width 343
-- Rendering SHA-256: `51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6`
+- Rendering SHA-256: `a1384a9e0167bda6e834eff6f8332ad61e600d9daa1fbfec5df92f8fb9eff819`
 - Elevation: intentionally absent from this target
 
 Metadata is stored at `style_samples/targets/connected-map-v2.txt`.
@@ -134,6 +141,8 @@ Its golden target is:
 The rejected room-shell-based attempt remains archived under `style_samples/review/` and must not be reused.
 
 ## Active elevation checkpoint: cliff corners
+
+**Pause/resume point:** structural work and review-state cleanup are complete. On resume, either approve/revise the isolated 2 × 2 proposal or begin the first new elevation concept: the inside cliff corner. No other sample is waiting on review.
 
 Next, derive and manually review a compact corner vocabulary from the approved treatment:
 
