@@ -1,4 +1,4 @@
-GRAMMAR V2 CENTERED RAISED PLATFORM — REVIEWING
+GRAMMAR V2 CENTERED RAISED PLATFORM — MANUAL REVIEW
 
 FLOOR MASK
 ----------
@@ -47,12 +47,18 @@ PROJECTION CONTRACT
 - the platform top retains its own two-by-two interior lattice markers
 - foreground platform faces may occlude actors standing on the lower floor
 
-VALIDATION
-----------
-- Grammar v2 module compilation passed in GitHub Actions
-- the complete repository suite passed: 167 tests in 1.34 seconds
-- the exact 12-row draft is regression-locked while under review
+MANUAL REVIEW SCOPE
+-------------------
+Review only the base platform artwork in this checkpoint:
+- nested top rim
+- recessed north/background face
+- east background face
+- south foreground face
+- west foreground face
+- platform-top lattice spacing
 
-REVIEW QUESTION
----------------
-Confirm or edit the nested rim, recessed north face, and foreground south/west faces before promotion.
+Actor placement, x-ray visibility, irregular platforms, and multiple levels are separate later checkpoints.
+
+STATUS
+------
+Manual approval required before this projection becomes an approved target.
