@@ -32,23 +32,12 @@ jobs:
       - name: Compile Grammar v2 modules
         run: python -m compileall -q .
 
-      - name: Generate organic connected dungeon review
-        run: python generate_connected_map_review.py
-
       - name: Run complete test suite
         id: pytest
         shell: bash
         run: |
           set -o pipefail
           python -m pytest -q --tb=short 2>&1 | tee pytest.log
-
-      - name: Upload connected dungeon review
-        uses: actions/upload-artifact@v4
-        with:
-          name: connected-dungeon-review-${{ github.run_id }}
-          path: connected-map-review.txt
-          if-no-files-found: error
-          retention-days: 7
 
       - name: Upload pytest log after failure
         if: failure()
