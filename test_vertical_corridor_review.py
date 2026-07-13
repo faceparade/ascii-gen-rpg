@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from irregular_room_grammar import directional_runs
 from junction_grammar_v2 import VerticalJunction, vertical_junctions
 from style_sample_system import (
@@ -17,24 +19,11 @@ VERTICAL_CORRIDOR_MASK = (
     "#####",
     "#####",
 )
-APPROVED_TARGET = (
-    "  ,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/|",
-    "‘ |                 | |",
-    "|/| `   `   `   `   |/|",
-    "| ,— —,— —,   ,— —,—‘—,",
-    "‘/___/___/   /|__/___/",
-    "        ‘ | ‘ |",
-    "        |/| |/|",
-    "        | | | |",
-    "        |/| |/|",
-    "  ,— —,—‘—, | ,— —,— —,",
-    " /|__/___/  ‘/___/___/|",
-    "‘ |                 | |",
-    "|/| `   `   `   `   |/|",
-    "| ,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/",
-)
+
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-vertical-corridor-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_vertical_room_passage_is_classified_from_topology() -> None:
@@ -71,4 +60,4 @@ def test_vertical_corridor_west_wall_is_the_only_actor_occluder() -> None:
 
 
 def test_vertical_corridor_matches_approved_target_exactly() -> None:
-    assert render_irregular_room(cells_from_mask(VERTICAL_CORRIDOR_MASK)) == APPROVED_TARGET
+    assert render_irregular_room(cells_from_mask(VERTICAL_CORRIDOR_MASK)) == approved_target()
