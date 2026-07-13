@@ -8,7 +8,7 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 2. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)`.
 3. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
 4. **Directional walls** — north/east are background layers; south/west are foreground layers.
-5. **Junction classification** — bridge and corridor spans are identified from topology and their directional terminations.
+5. **Junction classification** — bridge, corridor, and T-junction spans are identified from topology and their directional terminations.
 6. **Junction resolution** — approved corner, bridge, and corridor motifs replace literal wall-layer collisions.
 7. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
 8. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
@@ -38,7 +38,8 @@ The current Grammar v2 regression set is:
 6. approved east-extending one-sided bridge — one terminating inner east wall and an exterior east cap;
 7. approved west-extending one-sided bridge — an exterior west start and one terminating inner west wall;
 8. approved horizontal corridor — two room openings joined by a one-section-high passage;
-9. approved vertical corridor — upper and lower rooms joined by a one-section-wide passage.
+9. approved vertical corridor — upper and lower rooms joined by a one-section-wide passage;
+10. reviewing south-branch T-junction — left/right rooms joined horizontally with one descending branch.
 
 ## Commands
 
@@ -78,4 +79,10 @@ The fixture `room-vertical-corridor-v2` contains two 5×2 rooms connected by a o
 
 Its literal upper doorway, lower doorway, and paired wall transitions are approved exactly. The west passage wall is foreground and crosses every corridor actor anchor; the east passage wall remains background. The exact rendering is locked at `style_samples/targets/room-vertical-corridor-v2.txt`.
 
-Multi-level, nested, T-junction, doorway, and platform motifs remain future Grammar v2 work.
+## Reviewing south-branch T-junction
+
+The fixture `room-t-junction-v2` joins left and right rooms through a three-section horizontal span, then continues south from the center section into a three-section vertical branch and lower room.
+
+The classifier records `south_branch_t_junction` with `branch_x=4`. The vertical branch reports `top_termination=t_junction` and `bottom_termination=lower_room`. The center junction section has no foreground occluder; all three descending branch sections are occluded by their west wall only. The literal center and lower doorway transitions remain under review in `style_samples/review/room-t-junction-v2.txt`.
+
+Multi-level, nested, doorway, and platform motifs remain future Grammar v2 work.
