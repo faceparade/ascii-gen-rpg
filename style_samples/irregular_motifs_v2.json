@@ -46,11 +46,14 @@
       "side_wall_resolution": "Terminate the single inner west wall into the bridge and clear its lower cap beneath the final slash."
     },
     "horizontal_corridor_junction": {
-      "status": "reviewing",
+      "status": "approved",
       "detection": "An interior north run with matching upper and lower east/west room walls, empty cells above and below the span, and a matching south run one row below.",
+      "semantic_kind": "horizontal_corridor",
       "north_rim": "Join the two upper doorway walls using the approved curved right termination.",
-      "north_underside": "Use the ordinary background /|__.../| wall face instead of the courtyard hanging face.",
-      "south_face": "Keep the ordinary foreground south-wall treatment pending visual approval of both doorway transitions."
+      "north_hanging_face_start": "‘/___",
+      "north_hanging_face_repeat": "/___",
+      "south_face": "Keep the ordinary foreground south-wall treatment.",
+      "note": "The corridor is topologically distinct from a courtyard even though the approved visual junction reuses the same hanging face motif."
     }
   },
   "approved_fixtures": [
@@ -69,12 +72,11 @@
     {
       "mask": ["....##", "....##", "######"],
       "target": "targets/room-mirrored-one-sided-bridge-v2.txt"
-    }
-  ],
-  "reviewing_fixtures": [
+    },
     {
       "mask": ["###...###", "###...###", "#########", "###...###", "###...###"],
-      "review": "review/room-horizontal-corridor-v2.txt"
+      "target": "targets/room-horizontal-corridor-v2.txt"
     }
-  ]
+  ],
+  "reviewing_fixtures": []
 }
