@@ -39,7 +39,7 @@
       "span_count": "floor_columns",
       "boundary_point_count": "floor_columns + 1",
       "top_rim_span": ",— —",
-      "notes": "North wall uses a top rim and underside. It is generated from exposed north floor edges."
+      "notes": "North wall uses a top rim and underside. It is generated from exposed north floor edges. Junction resolution may promote a hanging face over doorway spans."
     },
     "east": {
       "layer": "background_wall",
@@ -113,14 +113,13 @@
     {
       "id": "horizontal-corridor-v2",
       "mask": ["###...###", "###...###", "#########", "###...###", "###...###"],
-      "status": "reviewing",
-      "review": "review/room-horizontal-corridor-v2.txt",
-      "purpose": "Two rooms joined by a one-section-high passage with continuous floor through both doorway openings."
+      "status": "approved",
+      "target": "targets/room-horizontal-corridor-v2.txt",
+      "purpose": "Two rooms joined by continuous walkable floor. The upper doorway span intentionally uses the approved hanging junction face while the lower corridor edge retains its foreground wall."
     }
   ],
   "open_work": [
-    "Approve the horizontal corridor doorway transitions and south foreground face.",
-    "Approve multi-level and nested irregular junctions beyond the current L-shape and bridge motifs.",
+    "Approve multi-level and nested irregular junctions beyond the current L-shape, bridge, and corridor motifs.",
     "Define vertical corridor and T-junction transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
   ],
@@ -178,11 +177,11 @@
       "side_wall_resolution": "The single inner west wall cap terminates into the bridge and is cleared beneath its final slash."
     },
     "horizontal_corridor_junction": {
-      "status": "reviewing",
-      "description": "A one-section-high passage between two rooms keeps its north wall in the background and its south wall in the foreground while the floor remains continuous through both openings.",
+      "status": "confirmed",
+      "description": "A one-section-high passage between two rooms remains semantically distinct from a courtyard but intentionally reuses the hanging upper junction face.",
       "detection": "An interior north run with matching upper and lower east/west side-wall segments, empty cells above and below the passage span, and a matching exposed south run one logical row below.",
-      "north_wall_resolution": "Retain the joined rim but replace the courtyard hanging face with the ordinary /|__ background underside.",
-      "south_wall_resolution": "Retain the normal foreground south rim and face pending visual approval of the doorway transitions."
+      "north_wall_resolution": "Join the upper doorway walls with the curved rim and the hanging ‘/___.../ face.",
+      "south_wall_resolution": "Retain the ordinary foreground south rim and face."
     }
   }
 }
