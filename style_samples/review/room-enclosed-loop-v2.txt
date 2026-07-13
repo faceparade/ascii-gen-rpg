@@ -13,10 +13,10 @@ MASK
 AUTOMATIC DRAFT
 ---------------
   ,— —,— —,— —,— —,— —,— —,— —,
- /|__/___/___/___/___/___/___/|
+ /|__/___/___/___/___/___/__ /|
 ‘ |   ,— —,— —,— —,— —,— —, | |
-|/|  /|__/___/___/___/___/  |/|
-| | ‘ |                 ‘ | | |
+|/|  /|__/___/___/___/__ /  |/|
+| | ‘ |                 | | | |
 |/| |/|                 |/| |/|
 | | | |                 | | | |
 |/| |/|                 |/| |/|
@@ -36,7 +36,8 @@ CONFIRMED STRUCTURE
 - the void is detected by flood fill and cannot reach the exterior
 - top and bottom arms expose foreground south edges
 - left and right vertical arms expose foreground west edges on opposite sides of the loop
-- no visual override has been applied
+- east-facing north-wall caps reserve one blank recessed column before the slash
+- no other visual override has been applied
 
 REVIEW QUESTION
 ---------------
