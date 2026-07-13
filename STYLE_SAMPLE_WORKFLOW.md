@@ -5,13 +5,13 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 ## Pipeline
 
 1. **Floor topology** — each `#` is one walkable logical section.
-2. **Corridor-band topology** — passage length, thickness, and room-wall margins are measured independently.
+2. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, and room-wall margins.
 3. **Elevation topology** — optional non-negative height is stored separately for each floor section.
 4. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` and remain tied to logical sections.
 5. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
 6. **Directional walls** — north/east are background layers; south/west are foreground layers.
 7. **Elevation projection** — positive-height components are projected over the floor using directional background and foreground faces.
-8. **Junction classification** — bridge, corridor, T, cross, and enclosed-loop structures are identified from topology.
+8. **Junction classification** — bridge, corridor, T, cross, enclosed-loop, and dogleg structures are identified from topology.
 9. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
 10. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
 11. **Composition** — foreground walls and elevation faces may hide an entity or display it in x-ray styling.
@@ -34,23 +34,13 @@ It must not collapse to:
 
 This rule is shared by rooms, bridges, corridors, junctions, enclosed courtyards, and platform shells. Ordinary south-wall faces remain unchanged.
 
-## Corridor-band semantics
+## Corridor semantics
 
-A corridor is represented as a rectangular logical band rather than assuming a one-section opening.
+A straight corridor is represented as a rectangular logical band.
 
-For an east-west passage, the model records:
+For an east-west passage, the model records passage length, doorway thickness, and top/bottom room-wall margins at both ends. For a north-south passage, it records passage length, doorway thickness, and left/right margins at both ends. Equal opposing margins indicate a centered opening. Unequal margins indicate a valid offset opening.
 
-- `start_x..end_x`: passage length
-- `start_y..end_y`: doorway thickness
-- top and bottom room-wall margins at both ends
-
-For a north-south passage, the model records:
-
-- `start_y..end_y`: passage length
-- `start_x..end_x`: doorway thickness
-- left and right room-wall margins at both ends
-
-Equal opposing margins indicate a centered opening. Unequal margins indicate an offset opening. Centering is descriptive metadata, not a validity requirement.
+A staggered corridor is represented as a one-section-thick orthogonal path. It records the upper and lower opening positions independently, the bend row, direction of the horizontal shift, path length, and all four room-wall margins.
 
 ## Regression sequence
 
@@ -64,16 +54,17 @@ Equal opposing margins indicate a centered opening. Unequal margins indicate an 
 8. approved one-section horizontal corridor
 9. approved centered vertical corridor
 10. reviewing two-section-wide horizontal corridor
-11. reviewing offset vertical corridor
-12. approved south-branch T-junction
-13. approved four-way cross-junction
-14. approved enclosed rectangular corridor loop
-15. approved irregular enclosed courtyard
-16. paused centered raised-platform projection
+11. reviewing west-offset vertical corridor
+12. reviewing staggered eastward dogleg corridor
+13. approved south-branch T-junction
+14. approved four-way cross-junction
+15. approved enclosed rectangular corridor loop
+16. approved irregular enclosed courtyard
+17. paused centered raised-platform projection
 
 ## Reviewing two-section-wide horizontal corridor
 
-`room-wide-horizontal-corridor-v2` uses this mask:
+`room-wide-horizontal-corridor-v2` uses:
 
 ```text
 ###...###
@@ -84,11 +75,11 @@ Equal opposing margins indicate a centered opening. Unequal margins indicate an 
 ###...###
 ```
 
-Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long and two sections thick. Both ends have equal two-section top and bottom margins, so the opening is centered. The literal projection is regression-locked for review, but the upper doorway, open interior row, and lower doorway are not yet approved art.
+Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long and two sections thick. Both ends have equal two-section top and bottom margins. The upper doorway, open interior row, and lower doorway remain review art.
 
 ## Reviewing offset vertical corridor
 
-`room-offset-vertical-corridor-v2` uses this mask:
+`room-offset-vertical-corridor-v2` uses:
 
 ```text
 #######
@@ -100,7 +91,25 @@ Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long an
 #######
 ```
 
-The one-section passage occupies logical `x=1`, `y=2..4`. Each doorway has a one-section west margin and a five-section east margin. The existing vertical corridor logic accepts the opening without requiring it to be centered. The short-west/long-east doorway transitions remain under visual review.
+The passage occupies logical `x=1`, `y=2..4`. Each doorway has west/east margins of `1/5`. Centering is not required.
+
+## Reviewing staggered dogleg corridor
+
+`room-staggered-dogleg-corridor-v2` uses:
+
+```text
+#######
+#######
+.#.....
+.#.....
+.#####.
+.....#.
+.....#.
+#######
+#######
+```
+
+The upper opening is at `x=1` with margins `1/5`; the lower opening is at `x=5` with margins `5/1`. The one-section path bends eastward on logical row `y=4`, shifts four columns, and contains nine logical sections. It is not a rectangular band. The two inside-corner transitions and the long middle passage remain under visual review.
 
 ## Approved irregular enclosed courtyard
 
@@ -108,7 +117,7 @@ The one-section passage occupies logical `x=1`, `y=2..4`. Each doorway has a one
 
 ## Paused centered raised platform
 
-The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until wide and offset corridor openings are resolved.
+The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until corridor width, offset, and staggered-opening cases are resolved.
 
 ## Commands
 
