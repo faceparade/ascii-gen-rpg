@@ -8,7 +8,7 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 2. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)`.
 3. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
 4. **Directional walls** — north/east are background layers; south/west are foreground layers.
-5. **Junction classification** — bridge and corridor spans are identified from topology and their left/right terminations.
+5. **Junction classification** — bridge and corridor spans are identified from topology and their directional terminations.
 6. **Junction resolution** — approved corner, bridge, and corridor motifs replace literal wall-layer collisions.
 7. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
 8. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
@@ -37,7 +37,8 @@ The current Grammar v2 regression set is:
 5. approved U-shaped room — mirrored courtyard walls meeting an interior bridge;
 6. approved east-extending one-sided bridge — one terminating inner east wall and an exterior east cap;
 7. approved west-extending one-sided bridge — an exterior west start and one terminating inner west wall;
-8. approved horizontal corridor — two room openings joined by a one-section-high passage.
+8. approved horizontal corridor — two room openings joined by a one-section-high passage;
+9. reviewing vertical corridor — upper and lower rooms joined by a one-section-wide passage.
 
 ## Commands
 
@@ -47,7 +48,7 @@ python style_sample_system.py
 python foreground_occlusion.py
 ```
 
-Generated output may be overwritten. Approved fixtures live under `style_samples/targets/` and must not be overwritten by generators.
+Generated output may be overwritten. Approved fixtures live under `style_samples/targets/` and must not be overwritten by generators. Unapproved visual cases remain under `style_samples/review/`.
 
 ## Approved irregular-room fixture
 
@@ -71,4 +72,10 @@ The fixture `room-horizontal-corridor-v2` contains two 3×5 rooms connected by a
 
 Its approved visual treatment intentionally preserves the literal hanging `‘/___.../` upper doorway face. The lower corridor edge retains the ordinary foreground south-wall rim and face. Semantic classification therefore remains distinct even though the upper glyph motif is shared with the courtyard bridge.
 
-Multi-level, nested, vertical-corridor, T-junction, doorway, and platform motifs remain future Grammar v2 work.
+## Reviewing vertical corridor
+
+The fixture `room-vertical-corridor-v2` contains two 5×2 rooms connected by a one-section-wide, three-section-long passage. Paired exposed west/east runs define the passage, while continuous floor at its top and bottom connects it to both rooms.
+
+The west passage wall is a foreground layer and crosses the actor anchor in every corridor section. The east passage wall is a background layer. The current literal doorway and wall transitions are preserved in `style_samples/review/room-vertical-corridor-v2.txt` until visually approved.
+
+Multi-level, nested, T-junction, doorway, and platform motifs remain future Grammar v2 work.
