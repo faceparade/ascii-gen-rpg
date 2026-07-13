@@ -97,6 +97,13 @@ def render_sunken_terrain(
         if 0 <= marker.y < height and 0 <= marker.x < width and canvas[marker.y][marker.x] == " ":
             canvas[marker.y][marker.x] = "`"
 
+    # When the entire bottom logical row is continuing upper terrain, the last
+    # two screen rows contain only the crop's discarded south cap. Remove them
+    # rather than leaving an isolated west-pipe tail below an open plane.
+    bottom_y = height_cells - 1
+    if all(Point(x, bottom_y) in upper_cells for x in range(width_cells)):
+        canvas = canvas[: height - 2]
+
     rows = tuple("".join(row).rstrip() for row in canvas)
     while rows and not rows[-1]:
         rows = rows[:-1]
