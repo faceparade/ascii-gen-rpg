@@ -72,6 +72,19 @@ CASES = (
         ),
         vertical_corridor_bands,
     ),
+    (
+        "TWO-SECTION-WIDE OFFSET VERTICAL CORRIDOR",
+        (
+            "########",
+            "########",
+            ".##.....",
+            ".##.....",
+            ".##.....",
+            "########",
+            "########",
+        ),
+        vertical_corridor_bands,
+    ),
 )
 
 
