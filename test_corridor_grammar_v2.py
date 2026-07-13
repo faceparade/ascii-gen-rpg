@@ -11,6 +11,20 @@ CORRIDOR_MASK = (
     "###...###",
     "###...###",
 )
+APPROVED_CORRIDOR = (
+    "  ,— —,— —,— —,           ,— —,— —,— —,",
+    " /|__/___/___/|          /|__/___/___/|",
+    "‘ |         | |         ‘ |         | |",
+    "|/| `   `   |/|         |/| `   `   |/|",
+    "| |         | ,— —,— —,—‘—,         | |",
+    "|/| `   `   ‘/___/___/___/  `   `   |/|",
+    "| |           ,— —,— —,— —,         | |",
+    "|/| `   `    /|__/___/___/  `   `   |/|",
+    "| |         ‘ |         ‘ |         | |",
+    "|/| `   `   |/|         |/| `   `   |/|",
+    "| ,— —,— —,—‘—,         | ,— —,— —,—‘—,",
+    "‘/___/___/___/          ‘/___/___/___/",
+)
 
 
 def test_shared_classifier_keeps_promoted_junction_kinds_distinct() -> None:
@@ -39,15 +53,11 @@ def test_two_room_passage_is_classified_as_corridor_not_bridge() -> None:
     )
 
 
-def test_corridor_north_wall_uses_background_underside() -> None:
+def test_corridor_uses_approved_hanging_north_face() -> None:
     rows = render_irregular_room(cells_from_mask(CORRIDOR_MASK))
     assert rows[4] == "| |         | ,— —,— —,—‘—,         | |"
-    assert rows[5] == "|/| `   `    /|__/___/___/| `   `   |/|"
-    assert "‘/___/___/___/" not in rows[5]
+    assert rows[5] == "|/| `   `   ‘/___/___/___/  `   `   |/|"
 
 
-def test_corridor_south_foreground_wall_and_room_floors_remain_unchanged() -> None:
-    rows = render_irregular_room(cells_from_mask(CORRIDOR_MASK))
-    assert rows[6] == "| |           ,— —,— —,— —,         | |"
-    assert rows[7] == "|/| `   `    /|__/___/___/  `   `   |/|"
-    assert rows[-1] == "‘/___/___/___/          ‘/___/___/___/"
+def test_corridor_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(CORRIDOR_MASK)) == APPROVED_CORRIDOR
