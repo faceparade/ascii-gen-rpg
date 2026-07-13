@@ -1,7 +1,8 @@
-"""Generate literal review output for wide and offset corridor fixtures."""
+"""Generate literal review output for wide, offset, and staggered corridors."""
 from pathlib import Path
 
 from corridor_variations_v2 import horizontal_corridor_bands, vertical_corridor_bands
+from staggered_corridor_v2 import staggered_vertical_corridors
 from style_sample_system import cells_from_mask, render_irregular_room
 
 CASES = (
@@ -29,6 +30,21 @@ CASES = (
             "#######",
         ),
         vertical_corridor_bands,
+    ),
+    (
+        "STAGGERED DOGLEG CORRIDOR",
+        (
+            "#######",
+            "#######",
+            ".#.....",
+            ".#.....",
+            ".#####.",
+            ".....#.",
+            ".....#.",
+            "#######",
+            "#######",
+        ),
+        staggered_vertical_corridors,
     ),
 )
 
