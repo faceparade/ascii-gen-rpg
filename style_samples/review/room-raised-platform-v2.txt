@@ -1,4 +1,13 @@
-GRAMMAR V2 CENTERED RAISED PLATFORM — MANUAL REVIEW
+GRAMMAR V2 CENTERED FREESTANDING RAISED PLATFORM — DEFERRED
+
+STATUS
+------
+Retained as a later elevation treatment. It is no longer the primary dungeon elevation model.
+
+The active model is a lower room/path cut into explicit higher terrain, documented in:
+
+- `sunken-terrain-reference-v2.txt`
+- `sunken-corridor-chamber-v2.txt`
 
 FLOOR MASK
 ----------
@@ -16,8 +25,8 @@ ELEVATION MAP
 01110
 00000
 
-AUTOMATIC DRAFT
----------------
+DEFERRED DRAFT
+--------------
   ,— —,— —,— —,— —,— —,
  /|__/___/___/___/__ /|
 ‘ |   ,— —,— —,— —, | |
@@ -38,27 +47,6 @@ CONFIRMED TOPOLOGY
 - the platform has 12 exposed directional perimeter edges
 - actor anchors remain at ordinary logical-section coordinates
 
-PROJECTION CONTRACT
--------------------
-- the platform is a nested Grammar v2 shell over the lower floor
-- north/east platform faces are background elevation faces
-- south/west platform faces are foreground elevation faces
-- north and south face rows clear lower-floor lattice marks beneath them
-- the platform top retains its own two-by-two interior lattice markers
-- foreground platform faces may occlude actors standing on the lower floor
-
-MANUAL REVIEW SCOPE
--------------------
-Review only the base platform artwork in this checkpoint:
-- nested top rim
-- recessed north/background face
-- east background face
-- south foreground face
-- west foreground face
-- platform-top lattice spacing
-
-Actor placement, x-ray visibility, irregular platforms, and multiple levels are separate later checkpoints.
-
-STATUS
-------
-Manual approval required before this projection becomes an approved target.
+REVISIT LATER
+-------------
+Return to this fixture after the sunken terrain/cliff model, actor visibility, and multiple-level rules are established.
