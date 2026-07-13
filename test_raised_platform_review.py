@@ -69,6 +69,7 @@ def test_platform_faces_clear_lower_floor_lattice() -> None:
 
 
 def test_centered_platform_literal_projection_is_stable_for_review() -> None:
+    """Keep the executable draft stable without treating it as approved art."""
     assert render_room_with_platforms(cells_from_mask(ROOM_MASK), ELEVATIONS) == REVIEW_DRAFT
 
 
