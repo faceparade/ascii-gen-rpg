@@ -47,7 +47,7 @@ This is a renderer-level rule shared by rooms, bridges, corridors, junctions, an
 11. approved four-way cross-junction
 12. approved enclosed rectangular corridor loop
 13. approved irregular enclosed courtyard
-14. reviewing centered raised platform
+14. reviewing centered raised platform projection
 
 ## Approved irregular enclosed courtyard
 
@@ -65,7 +65,7 @@ This is a renderer-level rule shared by rooms, bridges, corridors, junctions, an
 00000
 ```
 
-The centered 3×3 platform is one connected elevation-1 component with 12 exposed directional perimeter edges. Actor anchors remain unchanged. North/east platform faces are background; south/west faces are foreground. Projection glyphs remain under review.
+The centered 3×3 platform is one connected elevation-1 component with 12 exposed directional perimeter edges. Actor anchors remain unchanged. North/east platform faces are background; south/west faces are foreground. These topology rules are regression-tested. Rim and face glyphs remain under review.
 
 ## Commands
 
@@ -74,5 +74,7 @@ pytest -q
 python style_sample_system.py
 python foreground_occlusion.py
 ```
+
+GitHub Actions compiles all modules and runs the complete test suite on every push and pull request.
 
 The branch remains draft and should be squashed before merge.
