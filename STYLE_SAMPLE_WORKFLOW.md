@@ -38,7 +38,7 @@ A staggered corridor is a one-section-thick orthogonal path. It records the two 
 
 ## Approved corridor coverage
 
-The exact approved target set now includes:
+The exact approved target set includes:
 
 1. One-section horizontal corridor
 2. One-section centered vertical corridor
@@ -108,7 +108,7 @@ The corridor stays at `x=5`. The upper opening has margins `5/1`; the lower room
 
 The path connects an upper `1/5` opening to a lower `5/1` opening through one eastward bend on `y=4`.
 
-## Reviewing two-section-wide vertical corridor
+## Reviewing centered two-section-wide vertical corridor
 
 ```text
 ########
@@ -129,9 +129,36 @@ Review focus:
 - interior backtick column
 - two-section lower doorway
 
-## Next corridor case
+## Reviewing two-section-wide offset vertical corridor
 
-After the wide-vertical draft is approved or revised, add a corridor that is both multiple sections wide and offset within its adjoining room walls. Then add mirrored shifted-room and westward-dogleg regressions before resuming elevation.
+```text
+########
+########
+.##.....
+.##.....
+.##.....
+########
+########
+```
+
+The corridor spans `x=1..2`, `y=2..4`, with length 3, thickness 2, and west/east margins `1/5` at both openings. The rooms remain horizontally aligned; only the doorway band is offset. The exact draft is stored at `style_samples/review/room-wide-offset-vertical-corridor-v2.txt`.
+
+Review focus:
+
+- short west wall segment at both openings
+- long east wall segment at both openings
+- paired vertical wall faces
+- interior backtick column
+- whether offset placement changes either doorway terminal
+
+## Next corridor cases
+
+After the two wide-vertical drafts are approved or revised:
+
+1. Add the mirrored east-offset wide corridor.
+2. Add a wide corridor between shifted room shells.
+3. Add mirrored shifted-room and westward-dogleg regressions.
+4. Resume elevation review.
 
 ## Paused centered raised platform
 
