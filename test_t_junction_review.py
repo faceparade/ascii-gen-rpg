@@ -24,7 +24,7 @@ T_MASK = (
     "..#####..",
 )
 
-LITERAL_DRAFT = (
+APPROVED_TARGET = (
     "  ,— —,— —,— —,           ,— —,— —,— —,",
     " /|__/___/___/|          /|__/___/___/|",
     "‘ |         | |         ‘ |         | |",
@@ -81,5 +81,5 @@ def test_t_branch_directional_walls_and_occlusion_are_stable() -> None:
         assert section_occluders(cells, Point(4, y)) == frozenset({"west"})
 
 
-def test_t_junction_literal_draft_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(T_MASK)) == LITERAL_DRAFT
+def test_t_junction_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(T_MASK)) == APPROVED_TARGET
