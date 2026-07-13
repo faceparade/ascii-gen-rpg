@@ -8,6 +8,7 @@
     "actor_anchors",
     "lattice_intersections",
     "directional_walls",
+    "junction_classification",
     "junction_resolution",
     "entities",
     "foreground_composition"
@@ -116,11 +117,19 @@
       "status": "approved",
       "target": "targets/room-horizontal-corridor-v2.txt",
       "purpose": "Two rooms joined by continuous walkable floor. The upper doorway span intentionally uses the approved hanging junction face while the lower corridor edge retains its foreground wall."
+    },
+    {
+      "id": "vertical-corridor-v2",
+      "mask": ["#####", "#####", "..#..", "..#..", "..#..", "#####", "#####"],
+      "status": "reviewing",
+      "review": "review/room-vertical-corridor-v2.txt",
+      "purpose": "Upper and lower rooms joined by a one-section-wide, three-section-long passage with a foreground west wall and background east wall."
     }
   ],
   "open_work": [
+    "Approve the vertical corridor doorway and wall transitions.",
     "Approve multi-level and nested irregular junctions beyond the current L-shape, bridge, and corridor motifs.",
-    "Define vertical corridor and T-junction transitions per directional wall layer.",
+    "Define T-junction transitions per directional wall layer.",
     "Define raised-platform projection using the same topology/layer pipeline."
   ],
   "irregular_wall_motifs": {
@@ -182,6 +191,15 @@
       "detection": "An interior north run with matching upper and lower east/west side-wall segments, empty cells above and below the passage span, and a matching exposed south run one logical row below.",
       "north_wall_resolution": "Join the upper doorway walls with the curved rim and the hanging ‘/___.../ face.",
       "south_wall_resolution": "Retain the ordinary foreground south rim and face."
+    },
+    "vertical_corridor_junction": {
+      "status": "reviewing",
+      "description": "A one-section-wide passage between upper and lower rooms has a foreground west wall and background east wall.",
+      "detection": "Paired exposed west/east runs around one occupied column, continuous floor connections above and below, and matching room-wall segments on both sides of each doorway opening.",
+      "west_wall_layer": "foreground_wall",
+      "east_wall_layer": "background_wall",
+      "actor_occlusion": "Every corridor section is occluded by its exposed west wall only.",
+      "visual_resolution": "Preserve the literal upper doorway, lower doorway, and paired wall transitions pending approval."
     }
   }
 }
