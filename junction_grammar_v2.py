@@ -12,6 +12,7 @@ JunctionKind = Literal[
     "east_extending_bridge",
     "west_extending_bridge",
     "horizontal_corridor",
+    "south_branch_t_junction",
 ]
 Termination = Literal[
     "inner_east_wall",
@@ -20,7 +21,7 @@ Termination = Literal[
     "exterior_east",
 ]
 VerticalJunctionKind = Literal["vertical_corridor"]
-VerticalTermination = Literal["upper_room", "lower_room"]
+VerticalTermination = Literal["upper_room", "lower_room", "t_junction"]
 
 
 @dataclass(frozen=True, order=True)
@@ -33,6 +34,7 @@ class HorizontalJunction:
     end_x: int
     left_termination: Termination
     right_termination: Termination
+    branch_x: int | None = None
 
     @property
     def width(self) -> int:
@@ -60,10 +62,7 @@ def _edge(edges: frozenset[BoundaryEdge], section: Point, direction: str) -> boo
 
 
 def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, ...]:
-    """Classify promoted bridge motifs and one-cell-high room corridors.
-
-    The classifier is topology-only. It does not inspect rendered characters.
-    """
+    """Classify promoted bridges, corridors, and south-branch T junctions."""
     edges = boundary_edges(cells)
     south_runs = set(directional_runs(cells, "south"))
     result: list[HorizontalJunction] = []
@@ -71,7 +70,6 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
     for boundary_y, start_x, end_x in directional_runs(cells, "north"):
         if boundary_y == 0:
             continue
-
         above_empty = all(
             Point(x, boundary_y - 1) not in cells
             for x in range(start_x, end_x + 1)
@@ -91,7 +89,6 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
         right_exterior = _edge(
             edges, Point(end_x, boundary_y), "east"
         )
-
         left_lower = (
             _edge(edges, Point(start_x - 1, boundary_y + 1), "east")
             if start_x > 0
@@ -105,6 +102,20 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
             for x in range(start_x, end_x + 1)
         )
         matching_south = (boundary_y + 1, start_x, end_x) in south_runs
+
+        branch_columns = tuple(
+            x
+            for x in range(start_x, end_x + 1)
+            if Point(x, boundary_y + 1) in cells
+        )
+        south_walled_except_branch = (
+            len(branch_columns) == 1
+            and all(
+                x == branch_columns[0]
+                or _edge(edges, Point(x, boundary_y), "south")
+                for x in range(start_x, end_x + 1)
+            )
+        )
 
         if (
             left_upper
@@ -122,6 +133,18 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
                     end_x,
                     "inner_east_wall",
                     "inner_west_wall",
+                )
+            )
+        elif left_upper and right_upper and south_walled_except_branch:
+            result.append(
+                HorizontalJunction(
+                    "south_branch_t_junction",
+                    boundary_y,
+                    start_x,
+                    end_x,
+                    "inner_east_wall",
+                    "inner_west_wall",
+                    branch_columns[0],
                 )
             )
         elif left_upper and right_upper:
@@ -157,7 +180,6 @@ def horizontal_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, .
                     "inner_west_wall",
                 )
             )
-
     return tuple(result)
 
 
@@ -170,12 +192,7 @@ def corridor_junctions(cells: frozenset[Point]) -> tuple[HorizontalJunction, ...
 
 
 def vertical_junctions(cells: frozenset[Point]) -> tuple[VerticalJunction, ...]:
-    """Classify single-section-wide passages connecting upper and lower rooms.
-
-    A vertical corridor has paired exposed west/east wall runs, continuous floor
-    between occupied sections above and below, and matching room-wall segments
-    on both sides of each doorway opening.
-    """
+    """Classify single-section-wide passages connecting upper and lower spaces."""
     edges = boundary_edges(cells)
     east_runs = set(directional_runs(cells, "east"))
     result: list[VerticalJunction] = []
@@ -210,13 +227,30 @@ def vertical_junctions(cells: frozenset[Point]) -> tuple[VerticalJunction, ...]:
         )
 
         if top_left and top_right and bottom_left and bottom_right:
+            top_termination: VerticalTermination = (
+                "t_junction"
+                if _edge(edges, top, "north")
+                and Point(boundary_x - 1, start_y - 1) in cells
+                and Point(boundary_x + 1, start_y - 1) in cells
+                and _edge(
+                    edges,
+                    Point(boundary_x - 1, start_y - 1),
+                    "south",
+                )
+                and _edge(
+                    edges,
+                    Point(boundary_x + 1, start_y - 1),
+                    "south",
+                )
+                else "upper_room"
+            )
             result.append(
                 VerticalJunction(
                     "vertical_corridor",
                     boundary_x,
                     start_y,
                     end_y,
-                    "upper_room",
+                    top_termination,
                     "lower_room",
                 )
             )
