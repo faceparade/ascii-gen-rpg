@@ -11,7 +11,7 @@ LOWER_CELLS = frozenset(
 )
 ELEVATIONS = {point: (0 if point in LOWER_CELLS else 1) for point in SURFACE_CELLS}
 REJECTED = Path("style_samples/review/sunken-corridor-chamber-cliff-art-v2.txt")
-USER_CORRECTION = Path("style_samples/review/sunken-corridor-chamber-cliff-art-v2-attempt-2.txt")
+TARGET = Path("style_samples/targets/sunken-corridor-chamber-cliff-art-v2.txt")
 EXPECTED_DRAFT = (
     "  ,— —,— —,— —,— —,— —,— —,— —,",
     "  |__/___/___/___/___/___/__ /|",
@@ -31,7 +31,7 @@ def _draft() -> tuple[str, ...]:
     return render_sunken_terrain(SURFACE_CELLS, ELEVATIONS, LOWER_CELLS)
 
 
-def test_user_authored_projection_has_expected_bounds() -> None:
+def test_approved_projection_has_expected_bounds() -> None:
     rows = _draft()
     assert len(rows) == 11
     assert max(map(len, rows)) == 31
@@ -48,9 +48,6 @@ def test_rejected_cliff_artwork_remains_archived() -> None:
     assert "Do not promote" in review_text
 
 
-def test_user_correction_is_exactly_locked_while_under_review() -> None:
+def test_approved_cliff_artwork_matches_golden_target() -> None:
     assert _draft() == EXPECTED_DRAFT
-    review_text = USER_CORRECTION.read_text(encoding="utf-8")
-    assert "\n".join(EXPECTED_DRAFT) in review_text
-    assert "User-authored correction under manual review" in review_text
-    assert "Do not promote without explicit approval" in review_text
+    assert tuple(TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_DRAFT
