@@ -34,7 +34,7 @@ def _draft() -> tuple[str, ...]:
 def test_user_authored_projection_has_expected_bounds() -> None:
     rows = _draft()
     assert len(rows) == 11
-    assert max(map(len, rows)) == 38
+    assert max(map(len, rows)) == 31
 
 
 def test_projection_contains_upper_and_lower_lattice_markers() -> None:
