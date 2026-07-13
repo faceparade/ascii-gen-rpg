@@ -21,4 +21,10 @@ jobs:
       - name: Compile Grammar v2 modules
         run: python -m compileall -q .
       - name: Run complete test suite
-        run: python -m pytest -q
+        shell: bash
+        run: |
+          python -m pytest -q --tb=short > pytest.log 2>&1 || {
+            tail -n 140 pytest.log
+            exit 1
+          }
+          cat pytest.log
