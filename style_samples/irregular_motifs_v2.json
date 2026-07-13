@@ -54,6 +54,15 @@
       "north_hanging_face_repeat": "/___",
       "south_face": "Keep the ordinary foreground south-wall treatment.",
       "note": "The corridor is topologically distinct from a courtyard even though the approved visual junction reuses the same hanging face motif."
+    },
+    "vertical_corridor_junction": {
+      "status": "reviewing",
+      "detection": "Paired exposed west/east runs around one occupied column, continuous connections into rooms above and below, and matching room-wall segments around both doorway openings.",
+      "semantic_kind": "vertical_corridor",
+      "west_wall": "Foreground |/| run crossing the actor anchor.",
+      "east_wall": "Background |/| run beyond the centered actor anchor.",
+      "actor_occlusion": "The exposed west wall occludes every corridor section; the east wall does not.",
+      "note": "The current upper and lower doorway transitions remain literal and require visual approval."
     }
   },
   "approved_fixtures": [
@@ -78,5 +87,10 @@
       "target": "targets/room-horizontal-corridor-v2.txt"
     }
   ],
-  "reviewing_fixtures": []
+  "reviewing_fixtures": [
+    {
+      "mask": ["#####", "#####", "..#..", "..#..", "..#..", "#####", "#####"],
+      "review": "review/room-vertical-corridor-v2.txt"
+    }
+  ]
 }
