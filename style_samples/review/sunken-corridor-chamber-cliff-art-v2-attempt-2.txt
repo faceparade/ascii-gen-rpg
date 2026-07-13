@@ -1,4 +1,4 @@
-GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — ATTEMPT 2
+GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — USER CORRECTION
 
 APPROVED TOPOLOGY
 -----------------
@@ -16,27 +16,28 @@ Walkable lower plane:
 .###...
 .......
 
-AUTOMATIC DRAFT
----------------
-                    `   `
-      ,— — — — — —.
-     /|           |
-    ‘ |           | '— — — — —
-    |/| `   `   |/|
-    | |           | ,— — — — —
-    |/| `   `   |/|
-    | '— — — — — —'
-     ‘/___/___/___/
-                    `   `
+USER-AUTHORED PROJECTION
+------------------------
+  ,— —,— —,— —,— —,— —,— —,— —,
+  |__/___/___/___/___/___/__ /|
+  |   ,— — — — — —.         | |
+  |  /|           | `   `   |/|
+  | ‘ |           '— — — — —'—'
+  | |/|
+  | | |           ,— —,— —,— —,
+  | |/|           |__/___/__ /|
+  | | ,— —,— —,— —,         | |
+  | ‘/___/___/___/  `   `   |/|
+  '— — — — — — — — — — — — — —'
 
-WHAT CHANGED
-------------
-- traces the connected lower chamber/corridor cut instead of the upper-cell footprint
-- aggregates the chamber rim into continuous runs
-- uses two uncapped corridor shoulders at the east crop boundary
-- separates upper-plane lattice from lower-floor lattice
-- keeps the earlier rejected draft archived separately
+INTERPRETATION
+--------------
+- surrounding terrain reads as one continuous elevated plane
+- the sunken chamber and eastbound corridor read as one connected lower cut
+- the upper-right and lower-right terrain shelves remain visually continuous
+- the right-side corridor opening is represented within the terrain composition rather than as a detached shell fragment
+- the bottom line closes the visible terrain crop as explicitly drawn by the user
 
 STATUS
 ------
-Manual artwork review required. Do not promote without explicit approval.
+User-authored correction under manual review. Do not promote without explicit approval.
