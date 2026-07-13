@@ -5,13 +5,14 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 ## Pipeline
 
 1. **Floor topology** — each `#` is one walkable logical section.
-2. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)`.
-3. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
-4. **Directional walls** — north/east are background layers; south/west are foreground layers.
-5. **Junction classification** — bridge, corridor, T, cross, and enclosed-loop structures are identified from topology.
-6. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
-7. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
-8. **Composition** — foreground walls may hide an entity or display it in x-ray styling.
+2. **Elevation topology** — optional non-negative height is stored separately for each floor section.
+3. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` and remain tied to logical sections.
+4. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
+5. **Directional walls** — north/east are background layers; south/west are foreground layers.
+6. **Junction classification** — bridge, corridor, T, cross, and enclosed-loop structures are identified from topology.
+7. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
+8. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
+9. **Composition** — foreground walls and elevation faces may hide an entity or display it in x-ray styling.
 
 Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
 
@@ -29,7 +30,7 @@ It must not collapse to:
 /___/|
 ```
 
-This is a renderer-level rule shared by rectangular rooms, irregular rooms, bridges, corridors, T-junctions, cross-junctions, and enclosed loops. Ordinary south-wall faces that do not terminate in an east-wall pipe remain unchanged.
+This is a renderer-level rule shared by rooms, bridges, corridors, junctions, and enclosed courtyards. Ordinary south-wall faces remain unchanged.
 
 ## Regression sequence
 
@@ -45,15 +46,26 @@ This is a renderer-level rule shared by rectangular rooms, irregular rooms, brid
 10. approved south-branch T-junction
 11. approved four-way cross-junction
 12. approved enclosed rectangular corridor loop
-13. reviewing irregular enclosed courtyard
+13. approved irregular enclosed courtyard
+14. reviewing centered raised platform
 
-## Approved enclosed corridor loop
+## Approved irregular enclosed courtyard
 
-`room-enclosed-loop-v2` is a one-section-thick occupied ring around one rectangular enclosed void. Flood fill confirms the void cannot reach the exterior. The exact 16-row projection is approved, including all repeated inner/outer right-angle transitions and the recessed east-cap terminal motif.
+`room-irregular-enclosed-void-v2` contains one connected 16-cell enclosed void with bounds `x=1..5`, `y=1..4`, but the component does not fill those rectangular bounds. Its exact 16-row stepped inner-boundary rendering is approved.
 
-## Reviewing irregular enclosed courtyard
+## Reviewing centered raised platform
 
-`room-irregular-enclosed-void-v2` contains one connected enclosed void whose cells do not fill their rectangular bounds. It verifies that flood-fill detection generalizes beyond rectangular loops while leaving the stepped inner-boundary glyph transitions reviewable.
+`room-raised-platform-v2` uses a 5×5 walkable floor and a separate elevation map:
+
+```text
+00000
+01110
+01110
+01110
+00000
+```
+
+The centered 3×3 platform is one connected elevation-1 component with 12 exposed directional perimeter edges. Actor anchors remain unchanged. North/east platform faces are background; south/west faces are foreground. Projection glyphs remain under review.
 
 ## Commands
 
