@@ -39,6 +39,16 @@ jobs:
           set -o pipefail
           python -m pytest -q --tb=short 2>&1 | tee pytest.log
 
+      - name: Generate corridor variation review
+        run: python generate_corridor_variation_review.py
+
+      - name: Upload corridor variation review
+        uses: actions/upload-artifact@v4
+        with:
+          name: corridor-variations-review-${{ github.run_id }}
+          path: corridor-variations-review.txt
+          retention-days: 7
+
       - name: Upload pytest log after failure
         if: failure()
         uses: actions/upload-artifact@v4
