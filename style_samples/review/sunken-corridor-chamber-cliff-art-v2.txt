@@ -1,0 +1,42 @@
+GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — MANUAL REVIEW
+
+APPROVED TOPOLOGY
+-----------------
+Elevation:
+1111111
+1000111
+1000000
+1000111
+1111111
+
+Walkable lower plane:
+.......
+.###...
+.######
+.###...
+.......
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,— —,— —,— —,— —,
+ /|__/___/___/___/___/___/__ /|
+‘ |   ,— —,— —,— —,
+|/|  /|__/___/___/  `   `
+| | ‘ |         ‘ ,— —,— —,—
+|/| |/| `   `   ‘/___/___/__
+| | | |           ,— —,— —,— —,
+|/| |/| `   `    /|__/___/__ /|
+| | | ,— —,— —,—‘—,
+|/| ‘/___/___/___/  `   `
+
+REVIEW SCOPE
+------------
+- north and west crop framing of the continuing upper plane
+- chamber cliff rim and vertical faces
+- eastbound corridor opening
+- lower-floor lattice visibility
+- no south/east crop closure
+
+STATUS
+------
+Manual artwork review required. Topology is already approved.
