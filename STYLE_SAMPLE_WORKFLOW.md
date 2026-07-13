@@ -5,7 +5,7 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 ## Pipeline
 
 1. **Floor topology** — each `#` is one walkable logical section.
-2. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, and room-wall margins.
+2. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, room shifts, and room-wall margins.
 3. **Elevation topology** — optional non-negative height is stored separately for each floor section.
 4. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` and remain tied to logical sections.
 5. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
@@ -40,6 +40,8 @@ A straight corridor is represented as a rectangular logical band.
 
 For an east-west passage, the model records passage length, doorway thickness, and top/bottom room-wall margins at both ends. For a north-south passage, it records passage length, doorway thickness, and left/right margins at both ends. Equal opposing margins indicate a centered opening. Unequal margins indicate a valid offset opening.
 
+The room-wall margins at the two ends are independent. A straight north-south corridor may remain in one fixed x column while the lower room is horizontally shifted relative to the upper room. `room_shift_x` is positive when the lower room begins farther east.
+
 A staggered corridor is represented as a one-section-thick orthogonal path. It records the upper and lower opening positions independently, the bend row, direction of the horizontal shift, path length, and all four room-wall margins.
 
 ## Regression sequence
@@ -54,13 +56,14 @@ A staggered corridor is represented as a one-section-thick orthogonal path. It r
 8. approved one-section horizontal corridor
 9. approved centered vertical corridor
 10. reviewing two-section-wide horizontal corridor
-11. reviewing west-offset vertical corridor
-12. reviewing staggered eastward dogleg corridor
-13. approved south-branch T-junction
-14. approved four-way cross-junction
-15. approved enclosed rectangular corridor loop
-16. approved irregular enclosed courtyard
-17. paused centered raised-platform projection
+11. reviewing west-offset vertical corridor with aligned rooms
+12. reviewing shifted rooms with a straight vertical corridor
+13. reviewing staggered eastward dogleg corridor
+14. approved south-branch T-junction
+15. approved four-way cross-junction
+16. approved enclosed rectangular corridor loop
+17. approved irregular enclosed courtyard
+18. paused centered raised-platform projection
 
 ## Reviewing two-section-wide horizontal corridor
 
@@ -91,7 +94,23 @@ Its corridor band spans logical `x=3..5`, `y=2..3`. It is three sections long an
 #######
 ```
 
-The passage occupies logical `x=1`, `y=2..4`. Each doorway has west/east margins of `1/5`. Centering is not required.
+The passage occupies logical `x=1`, `y=2..4`. Each doorway has west/east margins of `1/5`. The rooms are horizontally aligned and the margin pair is unchanged at both ends. Centering is not required.
+
+## Reviewing shifted rooms with a straight corridor
+
+`room-shifted-straight-corridor-v2` uses:
+
+```text
+#######....
+#######....
+.....#.....
+.....#.....
+.....#.....
+....#######
+....#######
+```
+
+The corridor remains at logical `x=5`, `y=2..4`; it has no bend. Its upper-room opening has west/east margins `5/1`. The lower room begins four logical sections farther east, so the lower opening has margins `1/5`. The model records `room_shift_x=4`, different opening-margin pairs, and one fixed corridor column. The asymmetric upper and lower doorway transitions remain under visual review.
 
 ## Reviewing staggered dogleg corridor
 
@@ -117,7 +136,7 @@ The upper opening is at `x=1` with margins `1/5`; the lower opening is at `x=5` 
 
 ## Paused centered raised platform
 
-The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until corridor width, offset, and staggered-opening cases are resolved.
+The centered 3×3 platform topology and executable nested-shell draft remain regression-tested. Visual approval and actor/elevation interaction work are paused until corridor width, offset, shifted-room, and staggered-opening cases are resolved.
 
 ## Commands
 
