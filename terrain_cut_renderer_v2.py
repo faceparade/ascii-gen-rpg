@@ -74,16 +74,20 @@ def _draw_upper_crop_frame(canvas: LayeredCanvas, width_cells: int, height_cells
 def _draw_cliff_boundaries(
     canvas: LayeredCanvas,
     boundaries: dict[Direction, frozenset[Point]],
+    surface_cells: frozenset[Point],
 ) -> None:
     """Project one continuous lower-floor rim using directional cliff faces."""
 
     for cell in boundaries["north"]:
         x = 2 + cell.x * SECTION_STRIDE_X
         y = cell.y * SECTION_STRIDE_Y
-        for offset, glyph in enumerate(",— —,"):
+        east_open = Point(cell.x + 1, cell.y) not in surface_cells
+        motif = ",— — " if east_open else ",— —,"
+        underside = "/|__ " if east_open else "/|__/"
+        for offset, glyph in enumerate(motif):
             if glyph != " ":
                 canvas.put("background_wall", Point(x + offset, y), glyph)
-        for offset, glyph in enumerate("/|__/"):
+        for offset, glyph in enumerate(underside):
             if glyph != " ":
                 canvas.put("background_wall", Point(x - 1 + offset, y + 1), glyph)
 
@@ -99,16 +103,21 @@ def _draw_cliff_boundaries(
     for cell in boundaries["south"]:
         x = 2 + cell.x * SECTION_STRIDE_X
         y = ACTOR_ORIGIN_Y + cell.y * SECTION_STRIDE_Y
-        for offset, glyph in enumerate(",— —,"):
+        east_open = Point(cell.x + 1, cell.y) not in surface_cells
+        motif = ",— — " if east_open else ",— —,"
+        face = "___ " if east_open else "___/"
+        for offset, glyph in enumerate(motif):
             if glyph != " ":
                 canvas.put("foreground_wall", Point(x + offset, y), glyph)
-        for offset, glyph in enumerate("___/"):
-            canvas.put("foreground_wall", Point(x + offset, y + 1), glyph)
+        for offset, glyph in enumerate(face):
+            if glyph != " ":
+                canvas.put("foreground_wall", Point(x + offset, y + 1), glyph)
 
+    west_top = min((point.y for point in boundaries["west"]), default=None)
     for cell in boundaries["west"]:
         x = ACTOR_ORIGIN_X + cell.x * SECTION_STRIDE_X
         y = ACTOR_ORIGIN_Y + cell.y * SECTION_STRIDE_Y
-        canvas.put("foreground_wall", Point(x - 2, y), "‘" if cell.y == min(p.y for p in boundaries["west"]) else "|")
+        canvas.put("foreground_wall", Point(x - 2, y), "‘" if cell.y == west_top else "|")
         canvas.put("foreground_wall", Point(x, y), "|")
         canvas.put("foreground_wall", Point(x - 2, y + 1), "|")
         canvas.put("foreground_wall", Point(x - 1, y + 1), "/")
@@ -146,5 +155,5 @@ def render_sunken_terrain(
         canvas.put("lattice", marker, "`")
 
     boundaries = _lower_cliff_boundaries(surface_cells, elevations, walkable_cells)
-    _draw_cliff_boundaries(canvas, boundaries)
+    _draw_cliff_boundaries(canvas, boundaries, surface_cells)
     return canvas.compose()
