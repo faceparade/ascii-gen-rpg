@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from corridor_variations_v2 import vertical_corridor_bands
 from staggered_corridor_v2 import StaggeredVerticalCorridor, staggered_vertical_corridors
 from style_sample_system import Point, cells_from_mask, render_irregular_room
 
+
+TARGET = Path("style_samples/targets/room-staggered-dogleg-corridor-v2.txt")
 
 STAGGERED_MASK = (
     "#######",
@@ -13,29 +17,6 @@ STAGGERED_MASK = (
     ".....#.",
     "#######",
     "#######",
-)
-
-LITERAL_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/___/__ /|",
-    "‘ |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,   ,— —,— —,— —,— —,—‘—,",
-    "‘/___/   /|__/___/___/___/___/",
-    "    ‘ | ‘ |",
-    "    |/| |/|",
-    "    | | | ,— —,— —,— —,— —,",
-    "    |/| ‘/___/___/___/__ /|",
-    "    | ,— —,— —,— —,— —, | |",
-    "    ‘/___/___/___/___/  |/|",
-    "                    ‘ | | |",
-    "                    |/| |/|",
-    "  ,— —,— —,— —,— —,—‘—, | ,— —,",
-    " /|__/___/___/___/___/  ‘/__ /|",
-    "‘ |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,— —,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/___/___/",
 )
 
 
@@ -76,5 +57,6 @@ def test_solid_room_has_no_staggered_corridor() -> None:
     assert staggered_vertical_corridors(solid) == ()
 
 
-def test_staggered_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(STAGGERED_MASK)) == LITERAL_DRAFT
+def test_staggered_rendering_matches_approved_target() -> None:
+    expected = tuple(TARGET.read_text(encoding="utf-8").splitlines())
+    assert render_irregular_room(cells_from_mask(STAGGERED_MASK)) == expected
