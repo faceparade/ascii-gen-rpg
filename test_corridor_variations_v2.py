@@ -209,6 +209,12 @@ def test_two_section_wide_offset_vertical_corridor_band() -> None:
     assert vertical_corridor_junctions(cells) == ()
 
 
+def test_wide_offset_vertical_literal_rendering_is_stable_for_review() -> None:
+    assert render_irregular_room(cells_from_mask(WIDE_OFFSET_VERTICAL_MASK)) == _review_rows(
+        "room-wide-offset-vertical-corridor-v2.txt"
+    )
+
+
 def test_solid_room_has_no_corridor_bands() -> None:
     solid = frozenset(Point(x, y) for y in range(5) for x in range(5))
     assert horizontal_corridor_bands(solid) == ()
