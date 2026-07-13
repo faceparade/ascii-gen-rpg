@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from enclosed_loop_grammar_v2 import enclosed_voids, rectangular_corridor_loops
 from style_sample_system import Point, cells_from_mask, render_irregular_room, section_occluders
 
@@ -12,24 +14,10 @@ LOOP_MASK = (
     "#######",
 )
 
-LITERAL_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/___/__ /|",
-    "‘ |   ,— —,— —,— —,— —,— —, | |",
-    "|/|  /|__/___/___/___/__ /  |/|",
-    "| | ‘ |                 | | | |",
-    "|/| |/|                 |/| |/|",
-    "| | | |                 | | | |",
-    "|/| |/|                 |/| |/|",
-    "| | | |                 | | | |",
-    "|/| |/|                 |/| |/|",
-    "| | | |                 | | | |",
-    "|/| |/|                 |/| |/|",
-    "| | | ,— —,— —,— —,— —,—‘—, | |",
-    "|/| ‘/___/___/___/___/___/  |/|",
-    "| ,— —,— —,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/___/___/",
-)
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-enclosed-loop-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_loop_has_one_enclosed_rectangular_void() -> None:
@@ -56,5 +44,5 @@ def test_loop_representative_foreground_occlusion_is_directional() -> None:
     assert section_occluders(cells, Point(0, 6)) == frozenset({"south", "west"})
 
 
-def test_loop_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(LOOP_MASK)) == LITERAL_DRAFT
+def test_loop_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(LOOP_MASK)) == approved_target()
