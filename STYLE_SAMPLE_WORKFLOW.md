@@ -1,20 +1,20 @@
 # Structure Sample and Style Review Workflow — Grammar v2
 
-The floorplan is authoritative. ASCII wall art is a directional projection layered over that floorplan.
+The logical terrain is authoritative. ASCII wall and cliff art is a directional projection layered over explicit topology.
 
 ## Pipeline
 
-1. **Floor topology** — each `#` is one walkable logical section.
-2. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, room shifts, and room-wall margins.
-3. **Elevation topology** — optional non-negative height is stored separately for each floor section.
-4. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` and remain tied to logical sections.
-5. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
-6. **Directional walls** — north/east are background layers; south/west are foreground layers.
-7. **Elevation projection** — positive-height components are projected over the floor using directional background and foreground faces.
-8. **Junction classification** — bridge, corridor, T, cross, enclosed-loop, and dogleg structures are identified from topology.
-9. **Junction resolution** — approved motifs replace literal wall-layer collisions where needed.
-10. **Entities** — placed from logical section coordinates, never inferred from visible wall glyphs.
-11. **Composition** — foreground walls and elevation faces may hide an entity or display it in x-ray styling.
+1. **Surface topology** — every rendered terrain surface is explicit.
+2. **Walkable floor topology** — rooms and pathways are a subset of terrain surfaces.
+3. **Corridor topology** — rectangular bands and one-section orthogonal paths record length, thickness, bends, room shifts, and wall margins.
+4. **Elevation topology** — every surface cell has an explicit non-negative height.
+5. **Actor anchors** — projected at `(2 + 4x, 2 + 2y)` for walkable logical sections.
+6. **Lattice intersections** — a backtick appears only where four neighboring floor sections meet.
+7. **Cliff detection** — height transitions are directed from the higher surface toward the lower adjacent surface.
+8. **Directional walls and cliff faces** — north/east are background layers; south/west are foreground layers.
+9. **Junction resolution** — approved motifs replace literal layer collisions where needed.
+10. **Entities** — placed from logical section coordinates and elevation.
+11. **Composition** — foreground walls and cliff faces may hide an entity or display it in x-ray styling.
 
 Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
 
@@ -28,23 +28,15 @@ An underside or hanging face that terminates directly into an east wall reserves
 
 It must not collapse to `/___/|`. Ordinary south-wall faces remain unchanged.
 
-## Corridor phase complete
+## Structural phase complete
 
-Approved exact targets cover:
+Approved exact targets cover rooms, courtyards, bridges, corridor widths and offsets, shifted room shells, mirrored doglegs, T-junctions, four-way crossings, loops, and the organic connected dungeon.
 
-- one-section horizontal and vertical corridors;
-- centered and offset openings;
-- rooms shifted east and west around a straight corridor;
-- eastward and westward doglegs;
-- two-section-wide horizontal and vertical corridors;
-- centered, west-offset, east-offset, and shifted-room wide vertical corridors;
-- T-junction, four-way crossing, enclosed loop, and irregular enclosed courtyard.
-
-The rectangular-band topology accepts arbitrary positive thickness, while exact artwork is currently locked for thicknesses one and two.
+The rectangular corridor topology accepts arbitrary positive thickness, while exact artwork is currently locked for thicknesses one and two.
 
 ## Batch approval rule for non-elevation geometry
 
-Symmetric or parameter-only variants may be promoted without an additional visual stop when:
+Symmetric or parameter-only structural variants may be promoted without another visual stop when:
 
 - the topology classifier returns the expected semantic object;
 - only margins, mirror direction, or room origin changes;
@@ -52,7 +44,7 @@ Symmetric or parameter-only variants may be promoted without an additional visua
 - the literal rendering is stored as an exact golden target;
 - the complete CI suite passes.
 
-A case returns to manual review when it introduces a new wall transition, layer interaction, or unresolved glyph collision.
+Elevation never uses this shortcut.
 
 ## Approved organic integration dungeon
 
@@ -68,50 +60,82 @@ Confirmed properties:
 - rendering SHA-256: `51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6`;
 - elevation data: deliberately absent.
 
-The approved metadata and digest are stored at `style_samples/targets/connected-map-v2.txt`. Generate the full projection with:
+The approved metadata and digest are stored at `style_samples/targets/connected-map-v2.txt`.
 
-```bash
-python generate_connected_map_review.py
-```
+## Primary elevation model: sunken paths in raised terrain
 
-## Elevation review policy
+The dungeon’s primary elevation model is no longer a freestanding raised island. Rooms and pathways occupy the lower plane, while the surrounding terrain is an explicit higher plane.
 
-Elevation is not eligible for automatic batch approval. Every new elevation treatment must be shown and explicitly approved before promotion.
+Authoritative rules:
 
-Review sequence:
+- surface occupancy, elevation, and walkability are separate data;
+- every rendered surface has an explicit elevation;
+- blank ASCII space alone means neither elevated ground nor void;
+- a cliff exists only between two defined cardinally adjacent surfaces of different heights;
+- the cliff is directed from the higher surface toward the lower surface;
+- absent neighbors do not produce an implicit wall or cliff;
+- the elevated plane may therefore continue beyond the south, east, or any other crop boundary without being boxed in;
+- freestanding raised platforms remain a separate later treatment.
 
-1. Centered rectangular platform shell.
-2. Actor standing on elevated floor.
-3. Lower-floor actors behind south and west elevation faces.
-4. Opaque, x-ray, and walls-removed visibility modes.
-5. Irregular platform footprints.
-6. Multiple elevation levels.
+The user-authored visual reference is stored at:
 
-Only one new visual concept should be introduced at each checkpoint.
+`style_samples/review/sunken-terrain-reference-v2.txt`
 
-## Active checkpoint: centered 3×3 platform shell
+## Active checkpoint: straight sunken corridor opening into a chamber
 
-Floor mask:
+Surface mask:
 
 ```text
-#####
-#####
-#####
-#####
-#####
+#######
+#######
+#######
+#######
+#######
 ```
 
 Elevation map:
 
 ```text
-00000
-01110
-01110
-01110
-00000
+1111111
+1000111
+1000000
+1000111
+1111111
 ```
 
-The topology is confirmed. Manual review is limited to the nested top rim, north/east background faces, south/west foreground faces, and platform-top lattice spacing. Actor rendering and multiple levels are not part of this checkpoint.
+Walkable lower plane:
+
+```text
+.......
+.###...
+.######
+.###...
+.......
+```
+
+Confirmed topology:
+
+- 35 explicit terrain surfaces;
+- 12 walkable level-0 cells;
+- 23 level-1 surrounding surfaces;
+- 17 directed cliff edges;
+- no implicit wall at the crop edge;
+- the eastbound corridor may continue beyond the review crop.
+
+The topology record is stored at `style_samples/review/sunken-corridor-chamber-v2.txt`. The next manual checkpoint is the rendered cliff artwork for this exact fixture.
+
+## Elevation review sequence
+
+1. Render and approve the straight sunken corridor/chamber fixture.
+2. Add inside and outside cliff corners.
+3. Add a junction surrounded by elevated terrain.
+4. Apply the approved cliff treatment to a region of the organic dungeon.
+5. Review actors on the lower plane and behind foreground cliff faces.
+6. Review opaque, x-ray, and walls-removed modes.
+7. Review irregular cliff footprints and multiple elevation levels.
+8. Return later to freestanding raised platforms.
+
+Only one new visual concept is introduced at each checkpoint.
 
 ## Commands
 
@@ -119,7 +143,6 @@ The topology is confirmed. Manual review is limited to the nested top rim, north
 pytest -q
 python style_sample_system.py
 python foreground_occlusion.py
-python generate_corridor_variation_review.py
 python generate_connected_map_review.py
 ```
 
