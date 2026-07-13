@@ -1,0 +1,24 @@
+name: Grammar v2 tests
+
+on:
+  push:
+    branches:
+      - feature/style-sample-workflow
+  pull_request:
+    branches:
+      - phase-2-layout-generation
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependency
+        run: python -m pip install --upgrade pytest
+      - name: Compile Grammar v2 modules
+        run: python -m compileall -q .
+      - name: Run complete test suite
+        run: python -m pytest -q
