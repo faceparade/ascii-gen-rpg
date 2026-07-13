@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASCII Style Review Inbox</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#0f0f0d;
+  --panel:#191812;
+  --panel2:#222018;
+  --line:#4c4737;
+  --text:#e9e2cc;
+  --muted:#aaa28e;
+  --accent:#e5c46f;
+  --good:#82c99a;
+  --bad:#e38b82;
+  --warn:#e0b26e;
+  --blue:#91b9e3;
+}
+* { box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.4 system-ui,sans-serif;
+  overflow:hidden;
+}
+button,select,input,textarea { font:inherit; }
+button {
+  border:1px solid var(--line);
+  background:#29261d;
+  color:var(--text);
+  padding:7px 10px;
+  cursor:pointer;
+}
+button:hover { background:#373226; }
+button:disabled { opacity:.45; cursor:not-allowed; }
+button.primary { border-color:#8e7840; color:#ffe3a0; }
+button.good { border-color:#426c50; color:#a8e6b9; }
+button.bad { border-color:#75453f; color:#f1aaa3; }
+button.warn { border-color:#765c33; color:#f0c77f; }
+input,select,textarea {
+  background:#11110e;
+  color:var(--text);
+  border:1px solid var(--line);
+}
+#app {
+  display:grid;
+  grid-template-columns:310px minmax(0,1fr);
+  height:100%;
+}
+aside {
+  border-right:1px solid var(--line);
+  background:#15140f;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+header {
+  padding:14px;
+  border-bottom:1px solid var(--line);
+}
+header h1 { margin:0 0 4px; font-size:18px; color:var(--accent); }
+header p { margin:0; color:var(--muted); }
+.filters {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+}
+.filters input { grid-column:1/-1; padding:7px 8px; width:100%; }
+.filters select { padding:7px 8px; width:100%; }
+#queue {
+  overflow:auto;
+  padding:8px;
+  flex:1;
+}
+.queue-item {
+  width:100%;
+  text-align:left;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:4px 8px;
+  margin-bottom:6px;
+  padding:9px;
+  border:1px solid transparent;
+  background:#1c1a14;
+}
+.queue-item:hover { border-color:var(--line); }
+.queue-item.active { border-color:var(--accent); background:#272318; }
+.queue-item .title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.queue-item .meta { color:var(--muted); font-size:12px; }
+.badge {
+  align-self:start;
+  padding:2px 6px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  font-size:11px;
+}
+.badge.approved { color:var(--good); }
+.badge.rejected { color:var(--bad); }
+.badge.needs_changes { color:var(--warn); }
+.badge.skipped { color:var(--blue); }
+.badge.stale { border-color:var(--bad); }
+aside footer {
+  padding:10px 12px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+}
+main {
+  min-width:0;
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr) auto;
+  overflow:hidden;
+}
+#sampleHeader {
+  padding:12px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+#sampleTitle { margin:0 0 4px; font-size:19px; color:var(--accent); }
+#sampleMeta { color:var(--muted); }
+.navigation { display:flex; gap:6px; flex-wrap:wrap; }
+.toolbar {
+  padding:9px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  background:#14130f;
+}
+.toolbar .spacer { flex:1; }
+#staleBanner {
+  display:none;
+  padding:8px 16px;
+  background:#4b241f;
+  color:#ffd0ca;
+  border-bottom:1px solid #7b4038;
+}
+#workspace {
+  overflow:auto;
+  padding:12px;
+}
+.view-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+}
+.panel {
+  border:1px solid var(--line);
+  background:var(--panel);
+  min-width:0;
+}
+.panel h2 {
+  margin:0;
+  padding:8px 10px;
+  border-bottom:1px solid var(--line);
+  font-size:13px;
+  color:var(--accent);
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+.source { color:var(--muted); font-weight:400; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+pre.art {
+  margin:0;
+  min-height:260px;
+  padding:12px;
+  overflow:auto;
+  white-space:pre;
+  tab-size:4;
+  background:#0a0a08;
+  color:#f3ecd5;
+  font:16px/1.2 "Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
+#diffPanel { display:none; }
+#editorPanel { display:none; margin-top:12px; }
+#editor {
+  width:100%;
+  min-height:360px;
+  resize:vertical;
+  padding:12px;
+  white-space:pre;
+  overflow:auto;
+  tab-size:4;
+  spellcheck:false;
+  font:16px/1.2 "Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
+.editor-meta {
+  padding:8px 10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  color:var(--muted);
+  border-top:1px solid var(--line);
+}
+#topologyPanel {
+  display:none;
+  margin-top:12px;
+}
+.topology-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+  padding:10px;
+}
+.topology-grid pre {
+  margin:0;
+  padding:10px;
+  background:#0a0a08;
+  overflow:auto;
+  font:15px/1.2 "Cascadia Mono",Consolas,monospace;
+}
+#reviewBar {
+  border-top:1px solid var(--line);
+  background:#171610;
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:minmax(240px,1fr) auto;
+  gap:10px;
+  align-items:end;
+}
+#notes { width:100%; min-height:58px; padding:8px; resize:vertical; }
+.actions { display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-end; }
+#toast {
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  max-width:460px;
+  padding:10px 13px;
+  background:#28241b;
+  border:1px solid var(--line);
+  box-shadow:0 8px 30px #0008;
+  display:none;
+  z-index:10;
+}
+#toast.error { border-color:#8a4840; color:#ffb4ad; }
+#toast.ok { border-color:#426c50; color:#b5ebc2; }
+.small { font-size:12px; color:var(--muted); }
+.hidden { display:none !important; }
+@media(max-width:900px) {
+  body { overflow:auto; }
+  #app { grid-template-columns:1fr; height:auto; }
+  aside { max-height:360px; border-right:0; border-bottom:1px solid var(--line); }
+  main { min-height:700px; }
+  .view-grid { grid-template-columns:1fr; }
+  #reviewBar { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <header>
+      <h1>Review inbox</h1>
+      <p id="queueSummary">Loading…</p>
+    </header>
+    <div class="filters">
+      <input id="search" type="search" placeholder="Filter samples">
+      <select id="statusFilter" aria-label="Status filter">
+        <option value="">All statuses</option>
+      </select>
+      <select id="categoryFilter" aria-label="Category filter">
+        <option value="">All categories</option>
+      </select>
+    </div>
+    <div id="queue"></div>
+    <footer>
+      <div>Auto-refresh: every 3 seconds</div>
+      <div id="publishState">Local decisions only</div>
+    </footer>
+  </aside>
+
+  <main>
+    <section id="sampleHeader">
+      <div>
+        <h1 id="sampleTitle">Select a sample</h1>
+        <div id="sampleMeta"></div>
+      </div>
+      <div class="navigation">
+        <button id="previousButton">Previous</button>
+        <button id="nextButton">Next</button>
+      </div>
+    </section>
+
+    <div id="staleBanner">
+      Candidate changed since this page loaded. Refresh before saving or deciding.
+      <button id="refreshButton">Refresh now</button>
+    </div>
+
+    <div class="toolbar">
+      <button id="sideBySideButton" class="primary">Side by side</button>
+      <button id="candidateButton">Candidate</button>
+      <button id="referenceButton">Reference</button>
+      <button id="diffButton">Difference</button>
+      <button id="topologyButton">Topology</button>
+      <button id="editButton">Edit correction</button>
+      <label><input id="spacesToggle" type="checkbox"> Show spaces</label>
+      <label><input id="rulerToggle" type="checkbox"> Rulers</label>
+      <span class="spacer"></span>
+      <button id="publishButton" class="hidden">Publish review batch</button>
+    </div>
+
+    <section id="workspace">
+      <div id="sideBySideView" class="view-grid">
+        <div class="panel" id="candidatePanel">
+          <h2><span>Candidate</span><span class="source" id="candidateSource"></span></h2>
+          <pre class="art" id="candidateArt"></pre>
+        </div>
+        <div class="panel" id="referencePanel">
+          <h2><span>Reference</span><span class="source" id="referenceSource"></span></h2>
+          <pre class="art" id="referenceArt"></pre>
+        </div>
+      </div>
+
+      <div class="panel" id="diffPanel">
+        <h2><span>Line difference</span><span class="source">candidate versus reference</span></h2>
+        <pre class="art" id="diffArt"></pre>
+      </div>
+
+      <div class="panel" id="topologyPanel">
+        <h2><span>Logical data</span><span class="source">from catalog_v2.json</span></h2>
+        <div class="topology-grid" id="topologyGrid"></div>
+      </div>
+
+      <div class="panel" id="editorPanel">
+        <h2><span>Exact correction editor</span><span class="source">UTF-8, no wrapping</span></h2>
+        <textarea id="editor" wrap="off" spellcheck="false"></textarea>
+        <div class="editor-meta">
+          <span id="cursorInfo">row 1, column 1</span>
+          <span id="editorDimensions"></span>
+          <span id="raggedWarning"></span>
+          <span class="spacer"></span>
+          <button id="resetEditorButton">Reset to candidate</button>
+          <button id="saveCorrectionButton" class="primary">Save correction</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviewBar">
+      <div>
+        <label for="notes">Review notes</label>
+        <textarea id="notes" placeholder="Optional notes"></textarea>
+      </div>
+      <div class="actions">
+        <button data-decision="approved" class="good">Approve</button>
+        <button data-decision="rejected" class="bad">Reject</button>
+        <button data-decision="needs_changes" class="warn">Needs changes</button>
+        <button data-decision="skipped">Skip</button>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+const state = {
+  token: "",
+  publishEnabled: false,
+  samples: [],
+  filtered: [],
+  currentId: null,
+  detail: null,
+  loadedHash: null,
+  view: "side",
+  showSpaces: false,
+  showRulers: false,
+};
+
+const $ = id => document.getElementById(id);
+
+async function api(path, options = {}) {
+  const headers = Object.assign({}, options.headers || {});
+  if (options.method && options.method !== "GET") {
+    headers["Content-Type"] = "application/json";
+    headers["X-Review-Token"] = state.token;
+  }
+  const response = await fetch(path, Object.assign({}, options, {headers, cache:"no-store"}));
+  const payload = await response.json().catch(() => ({error:`HTTP ${response.status}`}));
+  if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+  return payload;
+}
+
+function toast(message, type = "ok") {
+  const node = $("toast");
+  node.textContent = message;
+  node.className = type;
+  node.style.display = "block";
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => node.style.display = "none", 3500);
+}
+
+function uniqueValues(key) {
+  return [...new Set(state.samples.map(item => item[key]).filter(Boolean))].sort();
+}
+
+function rebuildFilters() {
+  const status = $("statusFilter");
+  const category = $("categoryFilter");
+  const currentStatus = status.value;
+  const currentCategory = category.value;
+  status.innerHTML = '<option value="">All statuses</option>';
+  category.innerHTML = '<option value="">All categories</option>';
+  for (const value of uniqueValues("status")) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value.replaceAll("_", " ");
+    status.append(option);
+  }
+  for (const value of uniqueValues("category")) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value.replaceAll("_", " ");
+    category.append(option);
+  }
+  status.value = currentStatus;
+  category.value = currentCategory;
+}
+
+function applyFilters() {
+  const query = $("search").value.trim().toLowerCase();
+  const status = $("statusFilter").value;
+  const category = $("categoryFilter").value;
+  state.filtered = state.samples.filter(item => {
+    const haystack = `${item.id} ${item.title} ${item.category} ${item.status}`.toLowerCase();
+    return (!query || haystack.includes(query))
+      && (!status || item.status === status)
+      && (!category || item.category === category);
+  });
+  renderQueue();
+}
+
+function decisionBadge(sample) {
+  const badge = document.createElement("span");
+  badge.className = "badge";
+  if (sample.decision_stale) {
+    badge.classList.add("stale");
+    badge.textContent = "stale";
+  } else if (sample.decision) {
+    badge.classList.add(sample.decision);
+    badge.textContent = sample.decision.replaceAll("_", " ");
+  } else {
+    badge.textContent = String(sample.status || "unknown").replaceAll("_", " ");
+  }
+  return badge;
+}
+
+function renderQueue() {
+  const queue = $("queue");
+  queue.replaceChildren();
+  for (const sample of state.filtered) {
+    const button = document.createElement("button");
+    button.className = "queue-item" + (sample.id === state.currentId ? " active" : "");
+    button.dataset.id = sample.id;
+
+    const title = document.createElement("span");
+    title.className = "title";
+    title.textContent = sample.title;
+
+    const badgeHolder = document.createElement("span");
+    badgeHolder.append(decisionBadge(sample));
+
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = `${sample.category} · ${sample.id}`;
+
+    button.append(title, badgeHolder, meta);
+    button.addEventListener("click", () => loadSample(sample.id));
+    queue.append(button);
+  }
+  const pending = state.samples.filter(sample => !sample.decision || sample.decision_stale).length;
+  $("queueSummary").textContent = `${state.samples.length} samples · ${pending} unresolved`;
+}
+
+function normalizeDisplay(text) {
+  let value = text || "";
+  if (state.showSpaces) {
+    value = value.split("\n").map(line => line.replaceAll(" ", "·")).join("\n");
+  }
+  if (!state.showRulers || !value) return value;
+  const width = Math.max(1, ...value.split("\n").map(line => line.length));
+  const tens = Array.from({length:width}, (_,i) => Math.floor((i+1)/10) % 10 || " ").join("");
+  const ones = Array.from({length:width}, (_,i) => (i+1) % 10).join("");
+  return `${tens}\n${ones}\n${"─".repeat(width)}\n${value}`;
+}
+
+function buildDiff(candidate, reference) {
+  if (!reference) return "No reference is available for this sample.\n";
+  const a = candidate.split("\n");
+  const b = reference.split("\n");
+  const width = String(Math.max(a.length, b.length)).length;
+  const output = [];
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const left = a[i] ?? "";
+    const right = b[i] ?? "";
+    const number = String(i + 1).padStart(width, "0");
+    if (left === right) {
+      output.push(`  ${number} ${left}`);
+    } else {
+      output.push(`- ${number} ${left}`);
+      output.push(`+ ${number} ${right}`);
+    }
+  }
+  return output.join("\n");
+}
+
+function renderArtwork() {
+  if (!state.detail) return;
+  $("candidateArt").textContent = normalizeDisplay(state.detail.candidate);
+  $("referenceArt").textContent = normalizeDisplay(state.detail.reference || "No reference available.\n");
+  $("diffArt").textContent = normalizeDisplay(buildDiff(state.detail.candidate, state.detail.reference));
+  $("candidateSource").textContent = state.detail.candidate_source || "";
+  $("referenceSource").textContent = state.detail.reference_source || "";
+}
+
+function topologySections(sample) {
+  return [
+    ["Surface", sample.surface_mask],
+    ["Elevation", sample.elevation_map],
+    ["Walkable", sample.walkable_mask],
+    ["Mask", sample.mask],
+  ].filter(([, rows]) => Array.isArray(rows));
+}
+
+function renderTopology() {
+  const grid = $("topologyGrid");
+  grid.replaceChildren();
+  if (!state.detail) return;
+  const sections = topologySections(state.detail.sample);
+  if (!sections.length) {
+    const text = document.createElement("p");
+    text.textContent = "No logical masks are recorded for this sample.";
+    grid.append(text);
+    return;
+  }
+  for (const [label, rows] of sections) {
+    const panel = document.createElement("div");
+    const heading = document.createElement("strong");
+    heading.textContent = label;
+    const pre = document.createElement("pre");
+    pre.textContent = rows.join("\n");
+    panel.append(heading, pre);
+    grid.append(panel);
+  }
+}
+
+function setView(view) {
+  state.view = view;
+  $("sideBySideView").classList.toggle("hidden", !["side","candidate","reference"].includes(view));
+  $("candidatePanel").classList.toggle("hidden", view === "reference");
+  $("referencePanel").classList.toggle("hidden", view === "candidate");
+  $("diffPanel").style.display = view === "diff" ? "block" : "none";
+  $("topologyPanel").style.display = view === "topology" ? "block" : "none";
+}
+
+function updateEditorMeta() {
+  const editor = $("editor");
+  const before = editor.value.slice(0, editor.selectionStart);
+  const row = before.split("\n").length;
+  const column = before.length - before.lastIndexOf("\n");
+  const char = editor.value[editor.selectionStart] || "";
+  $("cursorInfo").textContent = `row ${row}, column ${column}${char ? ` · ${JSON.stringify(char)}` : ""}`;
+
+  const lines = editor.value.split("\n");
+  const lengths = lines.map(line => line.length);
+  const nonempty = lengths.filter(length => length > 0);
+  const min = nonempty.length ? Math.min(...nonempty) : 0;
+  const max = lengths.length ? Math.max(...lengths) : 0;
+  $("editorDimensions").textContent = `${lines.length} rows · max width ${max}`;
+  $("raggedWarning").textContent = nonempty.length && min !== max ? `ragged widths ${min}–${max}` : "";
+}
+
+function enterEditMode() {
+  if (!state.detail) return;
+  $("editorPanel").style.display = "block";
+  $("editor").value = state.detail.correction || state.detail.candidate;
+  updateEditorMeta();
+  $("editor").focus();
+}
+
+function nextIndex(delta) {
+  if (!state.filtered.length) return null;
+  const index = state.filtered.findIndex(item => item.id === state.currentId);
+  if (index < 0) return state.filtered[0].id;
+  const next = Math.min(state.filtered.length - 1, Math.max(0, index + delta));
+  return state.filtered[next].id;
+}
+
+async function loadSamples({preserveCurrent = true} = {}) {
+  const payload = await api("/api/samples");
+  const previous = state.samples.find(sample => sample.id === state.currentId);
+  state.samples = payload.samples;
+  rebuildFilters();
+  applyFilters();
+
+  if (preserveCurrent && state.currentId) {
+    const current = state.samples.find(sample => sample.id === state.currentId);
+    if (current && state.loadedHash && current.candidate_sha256 !== state.loadedHash) {
+      $("staleBanner").style.display = "block";
+    }
+  }
+  if (!state.currentId && state.filtered.length) {
+    await loadSample(state.filtered[0].id);
+  }
+}
+
+async function loadSample(sampleId) {
+  const detail = await api(`/api/sample/${encodeURIComponent(sampleId)}`);
+  state.currentId = sampleId;
+  state.detail = detail;
+  state.loadedHash = detail.candidate_sha256;
+  $("staleBanner").style.display = "none";
+  $("sampleTitle").textContent = detail.sample.title || sampleId;
+  $("sampleMeta").textContent =
+    `${detail.sample.category || "uncategorized"} · ${detail.sample.status || "unknown"} · `
+    + `${detail.candidate_sha256.slice(0,12)} · rows ${detail.candidate_row_lengths.join(", ")}`;
+  $("notes").value = detail.decision?.notes || "";
+  $("editorPanel").style.display = "none";
+  renderArtwork();
+  renderTopology();
+  renderQueue();
+  setView(state.view);
+}
+
+async function saveCorrection() {
+  if (!state.detail) return;
+  const result = await api(`/api/correction/${encodeURIComponent(state.currentId)}`, {
+    method:"POST",
+    body:JSON.stringify({
+      candidate_sha256: state.loadedHash,
+      text: $("editor").value,
+    }),
+  });
+  state.detail.correction = $("editor").value;
+  toast(`Correction saved: ${result.correction}`);
+}
+
+async function decide(decision) {
+  if (!state.detail) return;
+  await api(`/api/decision/${encodeURIComponent(state.currentId)}`, {
+    method:"POST",
+    body:JSON.stringify({
+      candidate_sha256: state.loadedHash,
+      decision,
+      notes: $("notes").value,
+    }),
+  });
+  toast(`Decision saved: ${decision.replaceAll("_"," ")}`);
+  await loadSamples();
+  const unresolved = state.filtered.find(item => !item.decision || item.decision_stale);
+  if (unresolved && unresolved.id !== state.currentId) await loadSample(unresolved.id);
+  else {
+    const next = nextIndex(1);
+    if (next && next !== state.currentId) await loadSample(next);
+  }
+}
+
+async function publishBatch() {
+  if (!confirm("Commit and push only style_samples/decisions and style_samples/corrections?")) return;
+  const result = await api("/api/publish", {method:"POST", body:"{}"});
+  toast(result.published ? `Published ${result.commit_sha.slice(0,12)} on ${result.branch}` : result.message);
+  await refreshGitStatus();
+}
+
+async function refreshGitStatus() {
+  const status = await api("/api/git-status");
+  if (!status.enabled) {
+    $("publishState").textContent = "Local decisions only";
+    return;
+  }
+  $("publishButton").classList.remove("hidden");
+  $("publishState").textContent =
+    `${status.branch || "unknown branch"} · ${status.changed?.length || 0} review file changes`;
+}
+
+function bindEvents() {
+  $("search").addEventListener("input", applyFilters);
+  $("statusFilter").addEventListener("change", applyFilters);
+  $("categoryFilter").addEventListener("change", applyFilters);
+  $("previousButton").addEventListener("click", () => {
+    const id = nextIndex(-1); if (id) loadSample(id);
+  });
+  $("nextButton").addEventListener("click", () => {
+    const id = nextIndex(1); if (id) loadSample(id);
+  });
+  $("refreshButton").addEventListener("click", () => loadSample(state.currentId));
+  $("sideBySideButton").addEventListener("click", () => setView("side"));
+  $("candidateButton").addEventListener("click", () => setView("candidate"));
+  $("referenceButton").addEventListener("click", () => setView("reference"));
+  $("diffButton").addEventListener("click", () => setView("diff"));
+  $("topologyButton").addEventListener("click", () => setView("topology"));
+  $("editButton").addEventListener("click", enterEditMode);
+  $("spacesToggle").addEventListener("change", event => {
+    state.showSpaces = event.target.checked; renderArtwork();
+  });
+  $("rulerToggle").addEventListener("change", event => {
+    state.showRulers = event.target.checked; renderArtwork();
+  });
+  $("editor").addEventListener("input", updateEditorMeta);
+  $("editor").addEventListener("click", updateEditorMeta);
+  $("editor").addEventListener("keyup", updateEditorMeta);
+  $("resetEditorButton").addEventListener("click", () => {
+    if (!state.detail) return;
+    $("editor").value = state.detail.candidate;
+    updateEditorMeta();
+  });
+  $("saveCorrectionButton").addEventListener("click", () => saveCorrection().catch(showError));
+  $("publishButton").addEventListener("click", () => publishBatch().catch(showError));
+  document.querySelectorAll("[data-decision]").forEach(button => {
+    button.addEventListener("click", () => decide(button.dataset.decision).catch(showError));
+  });
+  document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && $("editorPanel").style.display === "block") {
+      event.preventDefault();
+      saveCorrection().catch(showError);
+    }
+  });
+}
+
+function showError(error) {
+  console.error(error);
+  toast(error.message || String(error), "error");
+  if ((error.message || "").includes("changed after")) $("staleBanner").style.display = "block";
+}
+
+async function initialize() {
+  bindEvents();
+  const config = await api("/api/config");
+  state.token = config.token;
+  state.publishEnabled = config.publish_enabled;
+  await loadSamples({preserveCurrent:false});
+  await refreshGitStatus();
+  setInterval(() => {
+    loadSamples().catch(showError);
+    if (state.publishEnabled) refreshGitStatus().catch(showError);
+  }, 3000);
+}
+
+initialize().catch(showError);
+</script>
+</body>
+</html>
