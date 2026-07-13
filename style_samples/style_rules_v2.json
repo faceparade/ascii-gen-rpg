@@ -57,9 +57,22 @@
       "status": "approved for eastward and westward dogleg fixtures"
     }
   },
+  "integration_map": {
+    "status": "reviewing",
+    "id": "connected-map-v2",
+    "generator": "connected_map_v2.py",
+    "review": "review/connected-map-v2.txt",
+    "logical_bounds": {"width": 140, "height": 54},
+    "walkable_cells": 1258,
+    "feature_count": 23,
+    "connectivity": "One cardinally connected component using three horizontal gallery spines and one vertical backbone.",
+    "rendering": {"rows": 110, "maximum_width": 563, "sha256": "12da9aed6fd7264a297baa6a3d18cda0996b8d1b72e0eb894d889b91c27603b3"},
+    "elevation": "Intentionally absent. Manual approval of this map is the gate before elevation work resumes."
+  },
   "elevation": {
     "status": "reviewing",
-    "paused_after_topology": false,
+    "manual_visual_approval_required": true,
+    "paused_pending_connected_map_review": true,
     "meaning": "A non-negative height stored separately for each occupied floor section.",
     "connectivity": "Cardinally connected sections at equal positive height form one platform.",
     "actor_anchor": "Logical actor anchors remain unchanged by elevation.",
@@ -75,7 +88,7 @@
       "visual_model": "nested Grammar v2 shell shifted to the platform logical origin",
       "face_clearing": "North underside and south hanging-face rows clear buried lower-floor lattice before platform glyphs compose.",
       "top_lattice": "The platform top retains lattice points derived from its own occupied footprint.",
-      "next_after_corridors": "active"
+      "next_after_connected_map": "manual centered-platform review"
     }
   },
   "lattice": {
@@ -124,10 +137,12 @@
     {"id":"cross-junction-v2","status":"approved","target":"targets/room-cross-junction-v2.txt"},
     {"id":"enclosed-loop-v2","status":"approved","target":"targets/room-enclosed-loop-v2.txt"},
     {"id":"irregular-enclosed-void-v2","status":"approved","target":"targets/room-irregular-enclosed-void-v2.txt"},
+    {"id":"connected-map-v2","status":"reviewing","review":"review/connected-map-v2.txt"},
     {"id":"raised-platform-v2","status":"reviewing","review":"review/room-raised-platform-v2.txt"}
   ],
   "open_work": [
-    "Approve or revise the centered raised-platform projection.",
+    "Manually review and approve or revise the single connected pre-elevation integration map.",
+    "Manually approve or revise every elevation projection before promotion.",
     "Test actor visibility above and behind platform faces.",
     "Generalize elevation projection to irregular platform footprints.",
     "Integrate approved Grammar v2 structures into the full scene renderer."
