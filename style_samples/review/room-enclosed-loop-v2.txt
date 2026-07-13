@@ -1,0 +1,43 @@
+GRAMMAR V2 ENCLOSED CORRIDOR LOOP — REVIEWING
+
+MASK
+----
+#######
+#.....#
+#.....#
+#.....#
+#.....#
+#.....#
+#######
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,— —,— —,— —,— —,
+ /|__/___/___/___/___/___/___/|
+‘ |   ,— —,— —,— —,— —,— —, | |
+|/|  /|__/___/___/___/___/  |/|
+| | ‘ |                 ‘ | | |
+|/| |/|                 |/| |/|
+| | | |                 | | | |
+|/| |/|                 |/| |/|
+| | | |                 | | | |
+|/| |/|                 |/| |/|
+| | | |                 | | | |
+|/| |/|                 |/| |/|
+| | | ,— —,— —,— —,— —,—‘—, | |
+|/| ‘/___/___/___/___/___/  |/|
+| ,— —,— —,— —,— —,— —,— —,—‘—,
+‘/___/___/___/___/___/___/___/
+
+CONFIRMED STRUCTURE
+-------------------
+- one rectangular enclosed void occupies logical x=1..5, y=1..5
+- occupied floor forms a one-section-thick loop around that void
+- the void is detected by flood fill and cannot reach the exterior
+- top and bottom arms expose foreground south edges
+- left and right vertical arms expose foreground west edges on opposite sides of the loop
+- no visual override has been applied
+
+REVIEW QUESTION
+---------------
+Confirm or edit the four repeated right-angle transitions and the inner courtyard wall treatment.
