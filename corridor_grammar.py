@@ -1,15 +1,27 @@
-"""Corridor-aware entry point preserving the approved literal composition."""
+"""Final Grammar v2 room compositor and approved east-cap spacing."""
 from __future__ import annotations
 
 from irregular_room_grammar import render_irregular_room as _render_irregular_room
 from style_sample_system_v2_base import Point
 
 
-def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
-    """Render rooms without repainting classified horizontal corridors.
+EAST_CAP_UNDERSIDE_SOURCE = "___/|"
+EAST_CAP_UNDERSIDE_TARGET = "__ /|"
 
-    Horizontal corridors remain semantically distinct in ``junction_grammar_v2``,
-    but their approved visual treatment intentionally reuses the hanging
-    ``‘/___.../`` junction face produced by the irregular-room compositor.
+
+def _apply_east_cap_spacing(rows: tuple[str, ...]) -> tuple[str, ...]:
+    """Reserve the recessed column before every east-face slash.
+
+    Ordinary north-wall undersides and hanging faces that terminate directly
+    into an east wall use ``/__ /|`` rather than ``/___/|``. South-wall faces
+    are unaffected because they do not terminate in an east-wall pipe.
     """
-    return _render_irregular_room(cells)
+    return tuple(
+        row.replace(EAST_CAP_UNDERSIDE_SOURCE, EAST_CAP_UNDERSIDE_TARGET)
+        for row in rows
+    )
+
+
+def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
+    """Render an irregular room and apply the approved recessed east cap."""
+    return _apply_east_cap_spacing(_render_irregular_room(cells))
