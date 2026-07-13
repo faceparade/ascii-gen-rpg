@@ -15,6 +15,22 @@ The floorplan is authoritative. ASCII wall art is a directional projection layer
 
 Approved fixtures live under `style_samples/targets/`. Unapproved visual cases remain under `style_samples/review/`.
 
+## East-cap terminal spacing
+
+An underside or hanging face that terminates directly into an east wall reserves one recessed blank column before the face slash:
+
+```text
+/__ /|
+```
+
+It must not collapse to:
+
+```text
+/___/|
+```
+
+This is a renderer-level rule shared by rectangular rooms, irregular rooms, bridges, corridors, T-junctions, cross-junctions, and enclosed loops. Ordinary south-wall faces that do not terminate in an east-wall pipe remain unchanged.
+
 ## Regression sequence
 
 1. 1×1 section
@@ -32,11 +48,11 @@ Approved fixtures live under `style_samples/targets/`. Unapproved visual cases r
 
 ## Approved four-way cross-junction
 
-`room-cross-junction-v2` is detected when one occupied center has all four cardinal neighbors and no occupied diagonal neighbors. The literal 20-row projection is approved exactly. The center is unobscured, vertical arms use west-wall occlusion, and horizontal arms use south-wall occlusion.
+`room-cross-junction-v2` is detected when one occupied center has all four cardinal neighbors and no occupied diagonal neighbors. The corrected 20-row projection is approved exactly. The center is unobscured, vertical arms use west-wall occlusion, and horizontal arms use south-wall occlusion.
 
 ## Reviewing enclosed corridor loop
 
-`room-enclosed-loop-v2` is a one-section-thick occupied ring around one rectangular enclosed void. The void is found by flood fill: an empty component qualifies only when it cannot reach the floorplan exterior. The current literal four-corner and inner-courtyard transitions remain under review.
+`room-enclosed-loop-v2` is a one-section-thick occupied ring around one rectangular enclosed void. The void is found by flood fill: an empty component qualifies only when it cannot reach the floorplan exterior. Its east-cap spacing now follows the shared terminal rule; the remaining four-corner and inner-courtyard transitions remain under review.
 
 ## Commands
 
