@@ -1,0 +1,47 @@
+GRAMMAR V2 THREE-ROOM T-JUNCTION — REVIEWING
+
+MASK
+----
+###...###
+###...###
+#########
+....#....
+....#....
+....#....
+..#####..
+..#####..
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,           ,— —,— —,— —,
+ /|__/___/___/|          /|__/___/___/|
+‘ |         | |         ‘ |         | |
+|/| `   `   |/|         |/| `   `   |/|
+| |         | ,— —,— —,—‘—,         | |
+|/| `   `   ‘/___/___/___/  `   `   |/|
+| ,— —,— —,— —,— —,   ,— —,— —,— —,—‘—,
+‘/___/___/___/___/   /|__/___/___/___/
+                ‘ | ‘ |
+                |/| |/|
+                | | | |
+                |/| |/|
+          ,— —,—‘—, | ,— —,— —,
+         /|__/___/  ‘/___/___/|
+        ‘ |                 | |
+        |/| `   `   `   `   |/|
+        | ,— —,— —,— —,— —,—‘—,
+        ‘/___/___/___/___/___/
+
+CONFIRMED STRUCTURE
+-------------------
+- left and right rooms join through a three-section horizontal span
+- one south branch leaves the span at logical section (4,2)
+- the vertical branch runs through sections (4,3), (4,4), and (4,5)
+- the junction section itself has no foreground occluder
+- every section below it is occluded only by the foreground west wall
+- the vertical branch terminates in the lower room
+
+REVIEW QUESTION
+---------------
+Confirm or edit the center T transition and the lower-room doorway treatment.
+No visual override has been applied; this is the literal Grammar v2 composition.
