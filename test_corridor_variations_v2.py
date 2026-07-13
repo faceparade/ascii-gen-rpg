@@ -78,6 +78,16 @@ WIDE_VERTICAL_MASK = (
     "########",
 )
 
+WIDE_OFFSET_VERTICAL_MASK = (
+    "########",
+    "########",
+    ".##.....",
+    ".##.....",
+    ".##.....",
+    "########",
+    "########",
+)
+
 
 def test_two_section_wide_horizontal_corridor_band() -> None:
     assert horizontal_corridor_bands(cells_from_mask(WIDE_HORIZONTAL_MASK)) == (
@@ -181,6 +191,22 @@ def test_wide_vertical_literal_rendering_is_stable_for_review() -> None:
     assert render_irregular_room(cells_from_mask(WIDE_VERTICAL_MASK)) == _review_rows(
         "room-wide-vertical-corridor-v2.txt"
     )
+
+
+def test_two_section_wide_offset_vertical_corridor_band() -> None:
+    cells = cells_from_mask(WIDE_OFFSET_VERTICAL_MASK)
+    assert vertical_corridor_bands(cells) == (
+        VerticalCorridorBand(1, 2, 2, 4, 1, 5, 1, 5),
+    )
+    band = vertical_corridor_bands(cells)[0]
+    assert band.length == 3
+    assert band.thickness == 2
+    assert not band.is_centered
+    assert band.is_offset
+    assert band.rooms_are_horizontally_aligned
+    assert band.opening_margins_match
+    assert band.room_shift_x == 0
+    assert vertical_corridor_junctions(cells) == ()
 
 
 def test_solid_room_has_no_corridor_bands() -> None:
