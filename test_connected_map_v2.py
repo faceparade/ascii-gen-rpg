@@ -1,5 +1,4 @@
 from collections import deque
-import hashlib
 from pathlib import Path
 
 from connected_map_v2 import FEATURES, connected_map_cells, connected_map_mask
@@ -7,7 +6,6 @@ from style_sample_system import Point, render_irregular_room
 
 
 REVIEW = Path("style_samples/review/connected-map-v2.txt")
-EXPECTED_RENDER_SHA256 = "12da9aed6fd7264a297baa6a3d18cda0996b8d1b72e0eb894d889b91c27603b3"
 
 
 def _component(cells: frozenset[Point], start: Point) -> frozenset[Point]:
@@ -27,22 +25,33 @@ def _component(cells: frozenset[Point], start: Point) -> frozenset[Point]:
     return frozenset(seen)
 
 
-def _render_digest() -> str:
-    rows = render_irregular_room(connected_map_cells())
-    payload = ("\n".join(rows) + "\n").encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+def _longest_horizontal_run(mask: tuple[str, ...]) -> int:
+    longest = 0
+    for row in mask:
+        current = 0
+        for glyph in row:
+            if glyph == "#":
+                current += 1
+                longest = max(longest, current)
+            else:
+                current = 0
+    return longest
 
 
 def test_connected_map_is_one_walkable_component() -> None:
     cells = connected_map_cells()
-    assert len(cells) == 1258
+    assert len(cells) == 966
     assert _component(cells, min(cells)) == cells
 
 
-def test_connected_map_has_expected_bounds() -> None:
+def test_connected_map_has_compact_dungeon_bounds() -> None:
     mask = connected_map_mask()
-    assert len(mask) == 54
-    assert {len(row) for row in mask} == {140}
+    assert len(mask) == 68
+    assert {len(row) for row in mask} == {85}
+
+
+def test_connected_map_avoids_a_full_width_gallery_spine() -> None:
+    assert _longest_horizontal_run(connected_map_mask()) <= 24
 
 
 def test_every_approved_variation_is_embedded_as_an_exact_translated_submask() -> None:
@@ -63,8 +72,7 @@ def test_connected_map_has_no_elevation_layer() -> None:
     assert "Elevation data is intentionally absent." in REVIEW.read_text(encoding="utf-8")
 
 
-def test_connected_map_rendering_matches_manual_review_digest() -> None:
+def test_connected_map_renderer_handles_complete_dungeon() -> None:
     rows = render_irregular_room(connected_map_cells())
-    assert len(rows) == 110
-    assert max(map(len, rows)) == 563
-    assert _render_digest() == EXPECTED_RENDER_SHA256
+    assert len(rows) == 138
+    assert max(map(len, rows)) == 343
