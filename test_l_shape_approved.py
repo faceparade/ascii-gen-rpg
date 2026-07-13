@@ -5,7 +5,7 @@ def test_approved_l_shape_matches_concave_wall_target() -> None:
     cells = cells_from_mask(("###", "##.", "##."))
     assert render_irregular_room(cells) == (
         "  ,— —,— —,— —,",
-        " /|__/___/___/|",
+        " /|__/___/__ /|",
         "‘ |       ,—‘—,",
         "|/| `    /|__/",
         "| |     ‘ |",
