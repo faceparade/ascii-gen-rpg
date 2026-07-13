@@ -75,12 +75,12 @@
     },
     {
       "id": "room-vertical-corridor-v2",
-      "title": "Grammar v2 two-room vertical corridor",
+      "title": "Approved Grammar v2 two-room vertical corridor",
       "category": "corridor",
       "mask": ["#####", "#####", "..#..", "..#..", "..#..", "#####", "#####"],
-      "tags": ["grammar-v2", "doorway", "vertical-corridor", "review-target"],
-      "notes": "Reviewing fixture for upper and lower rooms joined by a one-section-wide, three-section-long passage. The west wall is foreground and the east wall is background.",
-      "status": "reviewing"
+      "tags": ["grammar-v2", "doorway", "vertical-corridor", "approved-reference"],
+      "notes": "Approved upper/lower room corridor. The literal doorway transitions are retained; the west passage wall is foreground and the east wall is background.",
+      "status": "approved"
     }
   ]
 }
