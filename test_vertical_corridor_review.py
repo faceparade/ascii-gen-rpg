@@ -17,6 +17,24 @@ VERTICAL_CORRIDOR_MASK = (
     "#####",
     "#####",
 )
+APPROVED_TARGET = (
+    "  ,— —,— —,— —,— —,— —,",
+    " /|__/___/___/___/___/|",
+    "‘ |                 | |",
+    "|/| `   `   `   `   |/|",
+    "| ,— —,— —,   ,— —,—‘—,",
+    "‘/___/___/   /|__/___/",
+    "        ‘ | ‘ |",
+    "        |/| |/|",
+    "        | | | |",
+    "        |/| |/|",
+    "  ,— —,—‘—, | ,— —,— —,",
+    " /|__/___/  ‘/___/___/|",
+    "‘ |                 | |",
+    "|/| `   `   `   `   |/|",
+    "| ,— —,— —,— —,— —,—‘—,",
+    "‘/___/___/___/___/___/",
+)
 
 
 def test_vertical_room_passage_is_classified_from_topology() -> None:
@@ -52,9 +70,5 @@ def test_vertical_corridor_west_wall_is_the_only_actor_occluder() -> None:
         assert section_occluders(cells, Point(2, y)) == frozenset({"west"})
 
 
-def test_vertical_corridor_literal_draft_keeps_three_section_passage() -> None:
-    rows = render_irregular_room(cells_from_mask(VERTICAL_CORRIDOR_MASK))
-    assert rows[6] == "        ‘ | ‘ |"
-    assert rows[7] == "        |/| |/|"
-    assert rows[8] == "        | | | |"
-    assert rows[9] == "        |/| |/|"
+def test_vertical_corridor_matches_approved_target_exactly() -> None:
+    assert render_irregular_room(cells_from_mask(VERTICAL_CORRIDOR_MASK)) == APPROVED_TARGET
