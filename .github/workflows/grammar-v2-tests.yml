@@ -39,16 +39,6 @@ jobs:
           set -o pipefail
           python -m pytest -q --tb=short 2>&1 | tee pytest.log
 
-      - name: Generate batched corridor matrix review
-        run: python generate_corridor_variation_review.py
-
-      - name: Upload batched corridor matrix review
-        uses: actions/upload-artifact@v4
-        with:
-          name: corridor-matrix-review-${{ github.run_id }}
-          path: corridor-matrix-review.txt
-          retention-days: 7
-
       - name: Upload pytest log after failure
         if: failure()
         uses: actions/upload-artifact@v4
