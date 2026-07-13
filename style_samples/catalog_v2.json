@@ -72,6 +72,15 @@
       "tags": ["grammar-v2", "doorway", "horizontal-corridor", "approved-reference"],
       "notes": "Approved two-room corridor. The topology remains distinct from a courtyard, while its upper doorway junction intentionally uses the same hanging face motif.",
       "status": "approved"
+    },
+    {
+      "id": "room-vertical-corridor-v2",
+      "title": "Grammar v2 two-room vertical corridor",
+      "category": "corridor",
+      "mask": ["#####", "#####", "..#..", "..#..", "..#..", "#####", "#####"],
+      "tags": ["grammar-v2", "doorway", "vertical-corridor", "review-target"],
+      "notes": "Reviewing fixture for upper and lower rooms joined by a one-section-wide, three-section-long passage. The west wall is foreground and the east wall is background.",
+      "status": "reviewing"
     }
   ]
 }
