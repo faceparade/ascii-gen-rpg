@@ -1,0 +1,42 @@
+GRAMMAR V2 IRREGULAR ENCLOSED VOID — REVIEWING
+
+MASK
+----
+#######
+#...###
+#...###
+#.....#
+#.....#
+#######
+#######
+
+AUTOMATIC DRAFT
+---------------
+  ,— —,— —,— —,— —,— —,— —,— —,
+ /|__/___/___/___/___/___/__ /|
+‘ |   ,— —,— —,— —,         | |
+|/|  /|__/___/___/  `   `   |/|
+| | ‘ |         ‘ |         | |
+|/| |/|         |/| `   `   |/|
+| | | |         | ,— —,— —, | |
+|/| |/|         ‘/___/___/  |/|
+| | | |                 ‘ | | |
+|/| |/|                 |/| |/|
+| | | ,— —,— —,— —,— —,—‘—, | |
+|/| ‘/___/___/___/___/___/  |/|
+| |                         | |
+|/| `   `   `   `   `   `   |/|
+| ,— —,— —,— —,— —,— —,— —,—‘—,
+‘/___/___/___/___/___/___/___/
+
+CONFIRMED STRUCTURE
+-------------------
+- one enclosed empty component is detected by flood fill
+- the component is non-rectangular and therefore is not a rectangular corridor loop
+- its bounds are logical x=1..5, y=1..4
+- east-cap terminal spacing follows the shared recessed-column rule
+- no shape-specific visual override has been applied
+
+REVIEW QUESTION
+---------------
+Confirm or edit the stepped inner-courtyard turns before promotion.
