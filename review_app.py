@@ -194,6 +194,26 @@ class ReviewState:
         except FileNotFoundError:
             return None
 
+    def _target_source(self, sample: dict[str, Any]) -> tuple[str, str] | None:
+        explicit = sample.get("target")
+        candidates: list[str] = []
+        if isinstance(explicit, str):
+            candidates.append(explicit)
+        aliases = {
+            "room-foreground-four-by-four-v2": "targets/room-foreground-walls-on.txt",
+        }
+        alias = aliases.get(str(sample.get("id", "")))
+        if alias:
+            candidates.append(alias)
+        candidates.append(f"targets/{sample['id']}.txt")
+        for relative in candidates:
+            text = self._read_relative(
+                f"style_samples/{relative}" if not relative.startswith("style_samples/") else relative
+            )
+            if text is not None:
+                return text, relative
+        return None
+
     def _candidate_source(self, sample: dict[str, Any]) -> tuple[str, str] | None:
         status = str(sample.get("status", ""))
         ordered_fields: list[str]
@@ -251,7 +271,20 @@ class ReviewState:
             ref_candidate = self.candidate_for(samples[reference_id])
             return ref_candidate.text, ref_candidate.source
 
-        if sample.get("category") == "elevation":
+        category = sample.get("category")
+        if category != "elevation":
+            target = self._target_source(sample)
+            if target is not None:
+                raw, relative = target
+                return extract_artwork(raw), relative
+
+        if category == "room":
+            relative = "targets/room-foreground-walls-on.txt"
+            raw = self._read_relative(f"style_samples/{relative}")
+            if raw is not None:
+                return extract_artwork(raw), relative
+
+        if category == "elevation":
             authoritative = samples.get("sunken-terrain-reference-v2")
             if authoritative and authoritative.get("id") != sample.get("id"):
                 ref_candidate = self.candidate_for(authoritative)

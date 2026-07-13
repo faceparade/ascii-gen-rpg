@@ -40,6 +40,14 @@ def build_project(root: Path) -> None:
         + REFERENCE_ART,
         encoding="utf-8",
     )
+    (root / "style_samples/targets/structural-v2.txt").write_text(
+        "completed structural target  \n",
+        encoding="utf-8",
+    )
+    (root / "style_samples/targets/room-foreground-walls-on.txt").write_text(
+        "completed room style reference\n",
+        encoding="utf-8",
+    )
     catalog = {
         "schema_version": 1,
         "samples": [
@@ -60,6 +68,20 @@ def build_project(root: Path) -> None:
                 "category": "elevation",
                 "status": "authoritative",
                 "review": "review/reference-v2.txt",
+            },
+            {
+                "id": "structural-v2",
+                "title": "Approved structural sample",
+                "category": "corridor",
+                "status": "approved",
+                "mask": ["##"],
+            },
+            {
+                "id": "room-draft-v2",
+                "title": "Room draft",
+                "category": "room",
+                "status": "reviewing",
+                "mask": ["#"],
             },
         ],
     }
@@ -88,6 +110,19 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
     assert detail["candidate_sha256"] == sha256_text(CANDIDATE_ART)
     assert detail["candidate_row_lengths"] == [7, 8]
     assert detail["sample"]["elevation_map"] == ["101"]
+
+
+def test_completed_references_are_inferred_from_golden_targets(project: Path) -> None:
+    state = ReviewState(project)
+
+    structural = state.sample_detail("structural-v2")
+    assert structural["candidate"] == "MASK\n##\n"
+    assert structural["reference"] == "completed structural target  \n"
+    assert structural["reference_source"] == "targets/structural-v2.txt"
+
+    room_draft = state.sample_detail("room-draft-v2")
+    assert room_draft["reference"] == "completed room style reference\n"
+    assert room_draft["reference_source"] == "targets/room-foreground-walls-on.txt"
 
 
 def test_correction_preserves_exact_spaces_and_newline(project: Path) -> None:
