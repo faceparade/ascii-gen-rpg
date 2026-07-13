@@ -67,6 +67,16 @@ OFFSET_VERTICAL_DRAFT = (
     "‘/___/___/___/___/___/___/___/",
 )
 
+SHIFTED_ROOM_STRAIGHT_MASK = (
+    "#######....",
+    "#######....",
+    ".....#.....",
+    ".....#.....",
+    ".....#.....",
+    "....#######",
+    "....#######",
+)
+
 CENTERED_VERTICAL_MASK = (
     "#####",
     "#####",
@@ -119,6 +129,27 @@ def test_existing_vertical_classifier_accepts_offset_opening() -> None:
 
 def test_offset_vertical_literal_rendering_is_stable_for_review() -> None:
     assert render_irregular_room(cells_from_mask(OFFSET_VERTICAL_MASK)) == OFFSET_VERTICAL_DRAFT
+
+
+def test_shifted_rooms_keep_one_straight_corridor_column() -> None:
+    bands = vertical_corridor_bands(cells_from_mask(SHIFTED_ROOM_STRAIGHT_MASK))
+    assert bands == (
+        VerticalCorridorBand(5, 5, 2, 4, 5, 1, 1, 5),
+    )
+    band = bands[0]
+    assert band.thickness == 1
+    assert band.length == 3
+    assert band.start_x == band.end_x == 5
+    assert (band.top_left_margin, band.top_right_margin) == (5, 1)
+    assert (band.bottom_left_margin, band.bottom_right_margin) == (1, 5)
+    assert band.is_offset
+
+
+def test_existing_vertical_classifier_accepts_shifted_rooms() -> None:
+    junctions = vertical_corridor_junctions(cells_from_mask(SHIFTED_ROOM_STRAIGHT_MASK))
+    assert len(junctions) == 1
+    assert junctions[0].boundary_x == 5
+    assert (junctions[0].start_y, junctions[0].end_y) == (2, 4)
 
 
 def test_centered_vertical_corridor_remains_centered() -> None:
