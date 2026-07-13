@@ -15,10 +15,18 @@ from style_sample_system import Point, cells_from_mask, render_irregular_room
 
 
 TARGETS = Path("style_samples/targets")
+REVIEWS = Path("style_samples/review")
 
 
 def _target(name: str) -> tuple[str, ...]:
     return tuple((TARGETS / name).read_text(encoding="utf-8").splitlines())
+
+
+def _review_rows(name: str) -> tuple[str, ...]:
+    lines = (REVIEWS / name).read_text(encoding="utf-8").splitlines()
+    start = lines.index("AUTOMATIC DRAFT") + 2
+    end = next((index for index in range(start, len(lines)) if not lines[index]), len(lines))
+    return tuple(lines[start:end])
 
 
 WIDE_HORIZONTAL_MASK = (
@@ -167,6 +175,12 @@ def test_two_section_wide_vertical_corridor_band() -> None:
     assert band.is_centered
     assert band.room_shift_x == 0
     assert vertical_corridor_junctions(cells) == ()
+
+
+def test_wide_vertical_literal_rendering_is_stable_for_review() -> None:
+    assert render_irregular_room(cells_from_mask(WIDE_VERTICAL_MASK)) == _review_rows(
+        "room-wide-vertical-corridor-v2.txt"
+    )
 
 
 def test_solid_room_has_no_corridor_bands() -> None:
