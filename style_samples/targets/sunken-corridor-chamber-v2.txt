@@ -1,0 +1,43 @@
+GRAMMAR V2 SUNKEN CORRIDOR OPENING INTO A CHAMBER — APPROVED TOPOLOGY
+
+SURFACE MASK
+------------
+#######
+#######
+#######
+#######
+#######
+
+ELEVATION MAP
+-------------
+1111111
+1000111
+1000000
+1000111
+1111111
+
+WALKABLE LOWER PLANE
+--------------------
+.......
+.###...
+.######
+.###...
+.......
+
+APPROVED TOPOLOGY
+-----------------
+- all 35 rendered terrain surfaces have explicit elevations
+- the chamber and corridor contain 12 walkable level-0 cells
+- the surrounding 23 surfaces are level 1
+- the topology produces 17 directed height-transition edges
+- each cliff edge points from an elevation-1 surface toward an adjacent elevation-0 surface
+- missing neighbors at the crop boundary produce no implicit cliff or closing wall
+- the eastbound corridor may continue outside the crop
+
+APPROVAL SCOPE
+--------------
+This target approves the explicit terrain, elevation, walkability, and cliff-edge topology only.
+
+NEXT MANUAL CHECKPOINT
+----------------------
+Render and review the cliff rim and vertical faces for this exact topology using the authoritative user-authored reference in `style_samples/review/sunken-terrain-reference-v2.txt`.
