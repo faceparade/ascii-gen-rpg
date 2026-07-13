@@ -87,6 +87,8 @@ The executable projection draft treats the platform as a nested Grammar v2 shell
 
 North/east platform faces are background; south/west platform faces are foreground. The north underside and south hanging face clear lower-floor lattice marks beneath them. The platform top retains its own interior lattice markers. The glyph treatment remains under review.
 
+The exact draft and all topology/layer checks pass in the complete GitHub Actions suite: `167 passed`.
+
 ## Commands
 
 ```bash
