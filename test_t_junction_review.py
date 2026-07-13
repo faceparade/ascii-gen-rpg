@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from irregular_room_grammar import directional_runs
 from junction_grammar_v2 import (
     HorizontalJunction,
@@ -24,26 +26,10 @@ T_MASK = (
     "..#####..",
 )
 
-APPROVED_TARGET = (
-    "  ,— —,— —,— —,           ,— —,— —,— —,",
-    " /|__/___/___/|          /|__/___/___/|",
-    "‘ |         | |         ‘ |         | |",
-    "|/| `   `   |/|         |/| `   `   |/|",
-    "| |         | ,— —,— —,—‘—,         | |",
-    "|/| `   `   ‘/___/___/___/  `   `   |/|",
-    "| ,— —,— —,— —,— —,   ,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/   /|__/___/___/___/",
-    "                ‘ | ‘ |",
-    "                |/| |/|",
-    "                | | | |",
-    "                |/| |/|",
-    "          ,— —,—‘—, | ,— —,— —,",
-    "         /|__/___/  ‘/___/___/|",
-    "        ‘ |                 | |",
-    "        |/| `   `   `   `   |/|",
-    "        | ,— —,— —,— —,— —,—‘—,",
-    "        ‘/___/___/___/___/___/",
-)
+
+def approved_target() -> tuple[str, ...]:
+    path = Path(__file__).parent / "style_samples" / "targets" / "room-t-junction-v2.txt"
+    return tuple(path.read_text(encoding="utf-8").splitlines())
 
 
 def test_three_room_layout_is_classified_as_south_branch_t_junction() -> None:
@@ -82,4 +68,4 @@ def test_t_branch_directional_walls_and_occlusion_are_stable() -> None:
 
 
 def test_t_junction_matches_approved_target_exactly() -> None:
-    assert render_irregular_room(cells_from_mask(T_MASK)) == APPROVED_TARGET
+    assert render_irregular_room(cells_from_mask(T_MASK)) == approved_target()
