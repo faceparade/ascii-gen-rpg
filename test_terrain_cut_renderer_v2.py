@@ -24,15 +24,19 @@ def test_initial_terrain_cut_projection_stays_inside_surface_canvas() -> None:
     assert max(map(len, rows)) <= 31
 
 
-def test_lower_plane_retains_its_logical_lattice() -> None:
+def test_both_planes_retain_logical_lattice_markers() -> None:
     rows = _draft()
     assert sum(row.count("`") for row in rows) >= 4
 
 
-def test_open_east_crop_does_not_gain_a_vertical_closing_pipe() -> None:
+def test_open_east_corridor_has_no_closing_face() -> None:
     rows = tuple(row.ljust(31) for row in _draft())
-    for y in (4, 5, 8, 9):
-        assert rows[y][28:31] == "   "
+    east_exit_x = 28
+    corridor_actor_y = 6
+    corridor_lattice_y = 7
+    for y in (corridor_actor_y, corridor_lattice_y):
+        assert "|" not in rows[y][east_exit_x:31]
+        assert "/" not in rows[y][east_exit_x:31]
 
 
 def test_rejected_cliff_artwork_is_not_an_approved_golden_target() -> None:
