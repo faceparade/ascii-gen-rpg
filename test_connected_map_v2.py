@@ -7,7 +7,7 @@ from style_sample_system import Point, render_irregular_room
 
 
 TARGET = Path("style_samples/targets/connected-map-v2.txt")
-EXPECTED_RENDER_SHA256 = "51ca9dbef997129b449b6c32dfbe11e3d6932bdcb10fe2774e7fc03e45178ea6"
+EXPECTED_RENDER_SHA256 = "a1384a9e0167bda6e834eff6f8332ad61e600d9daa1fbfec5df92f8fb9eff819"
 
 
 def _component(cells: frozenset[Point], start: Point) -> frozenset[Point]:

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-corridor-chamber-v2",
+  "candidate_sha256": "9515b84733d63ecda43773b56b28dd4d9c1da631dd38c7dd3265e92705210344",
+  "decision": "approved",
+  "notes": "Migrated from catalog status: approved.",
+  "reviewed_at": "2026-07-13T20:34:38Z"
+}

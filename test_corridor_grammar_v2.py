@@ -63,7 +63,7 @@ def test_two_room_passage_is_classified_as_corridor_not_bridge() -> None:
 
 def test_corridor_uses_approved_hanging_north_face() -> None:
     rows = render_irregular_room(cells_from_mask(CORRIDOR_MASK))
-    assert rows[4] == "| |         | ,— —,— —,—‘—,         | |"
+    assert rows[4] == "| |         | ,— —,— —,—'—,         | |"
     assert rows[5] == "|/| `   `   ‘/___/___/___/  `   `   |/|"
 
 

@@ -1,6 +1,7 @@
 """Directional boundary-run renderer for Grammar v2 irregular rooms."""
 from __future__ import annotations
 
+from enclosed_loop_grammar_v2 import enclosed_voids
 from typing import Iterable
 
 from style_sample_system_v2_base import (
@@ -140,7 +141,7 @@ def _render_courtyard_bridge_junction(
         canvas.put(layer, Point(x + 1, y), "—")
         canvas.put(layer, Point(x + 2, y), " ")
         canvas.put(layer, Point(x + 3, y), "—")
-    canvas.put(layer, Point(screen_end - 2, y), "‘")
+    canvas.put(layer, Point(screen_end - 2, y), "'")
     canvas.put(layer, Point(screen_end, y), ",")
 
     for screen_x in range(screen_start - 2, screen_end + 1):
@@ -190,6 +191,7 @@ def _render_one_sided_bridge_junction(
 
 def _render_mirrored_one_sided_bridge_junction(
     canvas: LayeredCanvas,
+    cells: frozenset[Point],
     boundary_y: int,
     start_x: int,
     end_x: int,
@@ -208,7 +210,34 @@ def _render_mirrored_one_sided_bridge_junction(
         canvas.put(layer, Point(x + 1, y), "—")
         canvas.put(layer, Point(x + 2, y), " ")
         canvas.put(layer, Point(x + 3, y), "—")
-    canvas.put(layer, Point(screen_end - 2, y), "‘")
+    occupied_rows_above = {
+        row_y: {point.x for point in cells if point.y == row_y}
+        for row_y in range(boundary_y)
+    }
+    max_y = max(point.y for point in cells)
+    occupied_rows_below = {
+        row_y: {point.x for point in cells if point.y == row_y}
+        for row_y in range(boundary_y + 1, max_y + 1)
+    }
+    width = max(point.x for point in cells) + 1
+    narrow_rows_above = [xs for xs in occupied_rows_above.values() if len(xs) < width]
+    narrow_rows_below = [xs for xs in occupied_rows_below.values() if len(xs) < width]
+    straight_offset_stem = (
+        start_x == end_x == 0
+        and narrow_rows_above
+        and all(xs == {1} for xs in narrow_rows_above)
+    )
+    supported_below = all(
+        Point(x, boundary_y + 1) in cells
+        for x in range(start_x, end_x + 1)
+    )
+    changes_column = any(above != below for above in narrow_rows_above for below in narrow_rows_below)
+    curved_terminal = (
+        boundary_y == max_y
+        or straight_offset_stem
+        or (changes_column and not supported_below and start_x > 0)
+    )
+    canvas.put(layer, Point(screen_end - 2, y), "‘" if curved_terminal else "'")
     canvas.put(layer, Point(screen_end, y), ",")
 
     for screen_x in range(screen_start - 1, screen_end + 1):
@@ -313,8 +342,13 @@ def _render_south_run(
         _put(canvas, layer, x + 3, y, "—")
     _put(canvas, layer, screen_end, y, ",")
 
-    if BoundaryEdge(Point(end_x, boundary_y - 1), "east") in edges:
-        _put(canvas, layer, screen_end - 2, y, "‘")
+    ends_at_east_exterior = BoundaryEdge(Point(end_x, boundary_y - 1), "east") in edges
+    ends_at_downward_opening = (
+        Point(end_x + 1, boundary_y - 1) in cells
+        and Point(end_x + 1, boundary_y) in cells
+    )
+    if ends_at_east_exterior:
+        _put(canvas, layer, screen_end - 2, y, "'")
 
     start_section = Point(start_x, boundary_y - 1)
     starts_at_west_exterior = BoundaryEdge(start_section, "west") in edges
@@ -335,6 +369,13 @@ def _render_south_run(
             for screen_x in range(underscore_start, x + 3):
                 _put(canvas, layer, screen_x, y + 1, "_")
             _put(canvas, layer, x + 3, y + 1, "/")
+    opening_cell = Point(end_x, boundary_y)
+    descends_inside_void = any(
+        opening_cell in void.cells and boundary_y > void.min_y
+        for void in enclosed_voids(cells)
+    )
+    if ends_at_downward_opening and not descends_inside_void:
+        _put(canvas, layer, screen_end, y + 1, "|")
 
 
 def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
@@ -360,6 +401,6 @@ def render_irregular_room(cells: frozenset[Point]) -> tuple[str, ...]:
     for boundary_y, start_x, end_x in one_sided_bridge_runs(cells):
         _render_one_sided_bridge_junction(canvas, boundary_y, start_x, end_x)
     for boundary_y, start_x, end_x in mirrored_one_sided_bridge_runs(cells):
-        _render_mirrored_one_sided_bridge_junction(canvas, boundary_y, start_x, end_x)
+        _render_mirrored_one_sided_bridge_junction(canvas, cells, boundary_y, start_x, end_x)
 
     return canvas.compose()

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-raised-platform-v2",
+  "candidate_sha256": "c59d126002b02d787d205048e95ebcf52d6feea6a8aa0ee7abbe7c6c60dc811c",
+  "decision": "skipped",
+  "notes": "Migrated from catalog status: deferred.",
+  "reviewed_at": "2026-07-13T20:34:38Z"
+}

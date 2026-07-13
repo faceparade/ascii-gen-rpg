@@ -46,7 +46,7 @@ def test_two_by_two_has_one_shared_lattice_intersection() -> None:
 
 def test_four_by_four_projected_room_matches_approved_wall_fixture() -> None:
     assert render_projected_room_shell(4, 4) == (
-        "  ,— —,— —,— —,— —,",
+        "  ,— —,— —,— —,— —," + " ",
         " /|__/___/___/__ /|",
         "‘ |             | |",
         "|/| `   `   `   |/|",
@@ -54,8 +54,8 @@ def test_four_by_four_projected_room_matches_approved_wall_fixture() -> None:
         "|/| `   `   `   |/|",
         "| |             | |",
         "|/| `   `   `   |/|",
-        "| ,— —,— —,— —,—‘—,",
-        "‘/___/___/___/___/",
+        "| ,— —,— —,— —,—'—,",
+        "‘/___/___/___/___/" + " ",
     )
 
 

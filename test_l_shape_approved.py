@@ -6,10 +6,10 @@ def test_approved_l_shape_matches_concave_wall_target() -> None:
     assert render_irregular_room(cells) == (
         "  ,— —,— —,— —,",
         " /|__/___/__ /|",
-        "‘ |       ,—‘—,",
+        "‘ |       ,—'—,",
         "|/| `    /|__/",
         "| |     ‘ |",
         "|/| `   |/|",
-        "| ,— —,—‘—,",
+        "| ,— —,—'—,",
         "‘/___/___/",
     )

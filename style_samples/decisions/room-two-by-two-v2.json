@@ -2,9 +2,9 @@
   "schema_version": 1,
   "sample_id": "room-two-by-two-v2",
   "candidate_sha256": "407ac16004e3d7a45988d513c2c6f1db37e5abce4fe7dbdd2f1721d817c43022",
-  "decision": "approved",
-  "notes": "",
-  "reviewed_at": "2026-07-13T20:00:27Z",
+  "decision": "needs_changes",
+  "notes": "The prior correction duplicated the 4×4 artwork despite a 2×2 mask. Replaced with a topology-correct generated 2×2 proposal for review.",
+  "reviewed_at": "2026-07-13T20:34:38Z",
   "correction": "corrections/room-two-by-two-v2.txt",
-  "correction_sha256": "24becfc1032dd096cc583c7e794471f853768d694b3a058786320f88406bdf2e"
+  "correction_sha256": "988ba1f6414d8fae79caceeac5dfe8481001d2b6eebd70edc45eab19b0d1c69c"
 }

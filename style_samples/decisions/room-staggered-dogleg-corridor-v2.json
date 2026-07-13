@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "sample_id": "room-staggered-dogleg-corridor-v2",
+  "candidate_sha256": "ec24c2ebc16595c9e7195e05c240d41a1997bc49a83f287a752429cfa524b53d",
+  "decision": "approved",
+  "notes": "Migrated from catalog status: approved.",
+  "reviewed_at": "2026-07-13T20:34:38Z"
+}

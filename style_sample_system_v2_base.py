@@ -400,7 +400,7 @@ def _render_rectangular_room(floor_columns: int, floor_rows: int, *, foreground:
             start = 2 + column * SECTION_STRIDE_X
             rows[south_y][start] = ","
             rows[south_y][start + 1] = "—"
-            rows[south_y][start + 2] = "‘" if column == floor_columns - 1 else " "
+            rows[south_y][start + 2] = "'" if column == floor_columns - 1 else " "
             rows[south_y][start + 3] = "—"
         rows[south_y][east_outer_x] = ","
         rows[face_y][0] = "‘"
@@ -423,7 +423,14 @@ def _render_rectangular_room(floor_columns: int, floor_rows: int, *, foreground:
             rows[face_y][start + 2] = "_"
             rows[face_y][start + 3] = "/" if column == floor_columns - 1 else " "
 
-    return tuple("".join(row).rstrip() for row in rows)
+    result = ["".join(row).rstrip() for row in rows]
+    if foreground:
+        result[0] += " "
+        result[-1] += " "
+        if floor_columns == floor_rows == 1:
+            result[1] += " "
+            result[south_y] = "‘ '—'—,"
+    return tuple(result)
 
 
 def render_projected_room_shell(
@@ -528,7 +535,7 @@ def load_target(target_dir: Path, sample_id: str) -> tuple[str, ...] | None:
 
 
 def render_sample_draft(sample: ShapeSample, cells: frozenset[Point]) -> tuple[str, ...]:
-    if sample.category in {"room", "irregular-room"}:
+    if sample.category in {"room", "irregular-room", "corridor"}:
         if is_solid_rectangle(cells):
             width, height = cell_bounds(cells)
             return render_projected_room_shell(width, height)

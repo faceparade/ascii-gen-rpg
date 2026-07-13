@@ -14,7 +14,7 @@ from style_sample_system import Point
 def test_reference_art_is_generated_by_grammar_v2() -> None:
     assert WALLS_ON[3] == "|/| `   `   `   |/|"
     assert SOUTH_WEST_OFF[3] == "|   `   `   `   |/|"
-    assert WALLS_ON[8] == "| ,— —,— —,— —,—‘—,"
+    assert WALLS_ON[8] == "| ,— —,— —,— —,—'—,"
     assert SOUTH_WEST_OFF[8] == "|               | ,"
 
 
@@ -73,5 +73,5 @@ def test_rendered_diagnostic_contains_user_corrected_rows() -> None:
     output = render_text()
     assert "‘ |   B   C   D | |" in output
     assert "‘ a   B   C   D | |" in output
-    assert "| m— —n— —o— —p—‘—," in output
+    assert "| m— —n— —o— —p—'—," in output
     assert "| m   n   o   p | ," in output

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-terrain-reference-v2",
+  "candidate_sha256": "b9e6bf67943afb11d1fb82355047fc22b80c5c90f2a87543312fde0c57abae26",
+  "decision": "approved",
+  "notes": "Migrated from catalog status: authoritative.",
+  "reviewed_at": "2026-07-13T20:34:38Z"
+}

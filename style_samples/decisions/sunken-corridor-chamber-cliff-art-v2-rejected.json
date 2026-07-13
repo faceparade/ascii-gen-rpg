@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-corridor-chamber-cliff-art-v2-rejected",
+  "candidate_sha256": "d92d8a4a3caa3c3de71c264c896317700502e1d3d39b2556606ce15c34e76f3f",
+  "decision": "rejected",
+  "notes": "Migrated from catalog status: rejected.",
+  "reviewed_at": "2026-07-13T20:34:38Z"
+}
