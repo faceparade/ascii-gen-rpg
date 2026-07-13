@@ -1,4 +1,4 @@
-GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — MANUAL REVIEW
+GRAMMAR V2 SUNKEN CORRIDOR / CHAMBER CLIFF ART — REJECTED
 
 APPROVED TOPOLOGY
 -----------------
@@ -16,8 +16,8 @@ Walkable lower plane:
 .###...
 .......
 
-AUTOMATIC DRAFT
----------------
+REJECTED AUTOMATIC DRAFT
+------------------------
   ,— —,— —,— —,— —,— —,— —,— —,
  /|__/___/___/___/___/___/__ /|
 ‘ |   ,— —,— —,— —,
@@ -29,14 +29,18 @@ AUTOMATIC DRAFT
 | | | ,— —,— —,—‘—,
 |/| ‘/___/___/___/  `   `
 
-REVIEW SCOPE
-------------
-- north and west crop framing of the continuing upper plane
-- chamber cliff rim and vertical faces
-- eastbound corridor opening
-- lower-floor lattice visibility
-- no south/east crop closure
+WHY IT FAILED
+-------------
+- it reads as fragments of ordinary room shells rather than one continuous elevated terrain plane
+- the chamber-to-corridor transition is visually broken into unrelated motifs
+- the lower cut does not read clearly as a single recessed space
+- crop suppression removed characters mechanically instead of deriving open terrain continuation from the reference grammar
+- the result does not follow the user-authored dungeon reference closely enough
 
 STATUS
 ------
-Manual artwork review required. Topology is already approved.
+Rejected by manual review. Do not promote or use as an approved regression target.
+
+NEXT ATTEMPT
+------------
+Build a dedicated terrain-rim compositor from the user-authored reference. It must trace one continuous height boundary, project faces toward the lower plane, preserve the corridor opening, and treat open crop continuation as topology rather than post-render character deletion.
