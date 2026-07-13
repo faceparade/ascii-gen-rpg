@@ -47,6 +47,12 @@ PROJECTION CONTRACT
 - the platform top retains its own two-by-two interior lattice markers
 - foreground platform faces may occlude actors standing on the lower floor
 
+VALIDATION
+----------
+- Grammar v2 module compilation passed in GitHub Actions
+- the complete repository suite passed: 167 tests
+- the exact 12-row draft is regression-locked while under review
+
 REVIEW QUESTION
 ---------------
 Confirm or edit the nested rim, recessed north face, and foreground south/west faces before promotion.
