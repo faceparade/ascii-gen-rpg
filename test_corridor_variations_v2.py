@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from corridor_variations_v2 import (
     HorizontalCorridorBand,
     VerticalCorridorBand,
@@ -12,6 +14,13 @@ from junction_grammar_v2 import (
 from style_sample_system import Point, cells_from_mask, render_irregular_room
 
 
+TARGETS = Path("style_samples/targets")
+
+
+def _target(name: str) -> tuple[str, ...]:
+    return tuple((TARGETS / name).read_text(encoding="utf-8").splitlines())
+
+
 WIDE_HORIZONTAL_MASK = (
     "###...###",
     "###...###",
@@ -19,23 +28,6 @@ WIDE_HORIZONTAL_MASK = (
     "#########",
     "###...###",
     "###...###",
-)
-
-WIDE_HORIZONTAL_DRAFT = (
-    "  ,— —,— —,— —,           ,— —,— —,— —,",
-    " /|__/___/__ /|          /|__/___/__ /|",
-    "‘ |         | |         ‘ |         | |",
-    "|/| `   `   |/|         |/| `   `   |/|",
-    "| |         | ,— —,— —,—‘—,         | |",
-    "|/| `   `   ‘/___/___/___/  `   `   |/|",
-    "| |                                 | |",
-    "|/| `   `   `   `   `   `   `   `   |/|",
-    "| |           ,— —,— —,— —,         | |",
-    "|/| `   `    /|__/___/___/  `   `   |/|",
-    "| |         ‘ |         ‘ |         | |",
-    "|/| `   `   |/|         |/| `   `   |/|",
-    "| ,— —,— —,—‘—,         | ,— —,— —,—‘—,",
-    "‘/___/___/___/          ‘/___/___/___/",
 )
 
 OFFSET_VERTICAL_MASK = (
@@ -48,25 +40,6 @@ OFFSET_VERTICAL_MASK = (
     "#######",
 )
 
-OFFSET_VERTICAL_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/___/__ /|",
-    "‘ |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,   ,— —,— —,— —,— —,—‘—,",
-    "‘/___/   /|__/___/___/___/___/",
-    "    ‘ | ‘ |",
-    "    |/| |/|",
-    "    | | | |",
-    "    |/| |/|",
-    "  ,—‘—, | ,— —,— —,— —,— —,— —,",
-    " /|__/  ‘/___/___/___/___/__ /|",
-    "‘ |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,— —,— —,— —,— —,— —,—‘—,",
-    "‘/___/___/___/___/___/___/___/",
-)
-
 SHIFTED_ROOM_STRAIGHT_MASK = (
     "#######....",
     "#######....",
@@ -77,25 +50,6 @@ SHIFTED_ROOM_STRAIGHT_MASK = (
     "....#######",
 )
 
-SHIFTED_ROOM_STRAIGHT_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/___/___/__ /|",
-    "‘ |                         | |",
-    "|/| `   `   `   `   `   `   |/|",
-    "| ,— —,— —,— —,— —,— —,   ,—‘—,",
-    "‘/___/___/___/___/___/   /|__/",
-    "                    ‘ | ‘ |",
-    "                    |/| |/|",
-    "                    | | | |",
-    "                    |/| |/|",
-    "                  ,—‘—, | ,— —,— —,— —,— —,— —,",
-    "                 /|__/  ‘/___/___/___/___/__ /|",
-    "                ‘ |                         | |",
-    "                |/| `   `   `   `   `   `   |/|",
-    "                | ,— —,— —,— —,— —,— —,— —,—‘—,",
-    "                ‘/___/___/___/___/___/___/___/",
-)
-
 CENTERED_VERTICAL_MASK = (
     "#####",
     "#####",
@@ -104,6 +58,16 @@ CENTERED_VERTICAL_MASK = (
     "..#..",
     "#####",
     "#####",
+)
+
+WIDE_VERTICAL_MASK = (
+    "########",
+    "########",
+    "...##...",
+    "...##...",
+    "...##...",
+    "########",
+    "########",
 )
 
 
@@ -118,14 +82,16 @@ def test_two_section_wide_horizontal_corridor_band() -> None:
     assert not band.is_offset
 
 
-def test_wide_corridor_bypasses_one_row_corridor_and_bridge_resolvers() -> None:
+def test_wide_horizontal_corridor_bypasses_one_row_resolvers() -> None:
     cells = cells_from_mask(WIDE_HORIZONTAL_MASK)
     assert corridor_junctions(cells) == ()
     assert horizontal_junctions(cells) == ()
 
 
-def test_wide_corridor_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(WIDE_HORIZONTAL_MASK)) == WIDE_HORIZONTAL_DRAFT
+def test_wide_horizontal_rendering_matches_approved_target() -> None:
+    assert render_irregular_room(cells_from_mask(WIDE_HORIZONTAL_MASK)) == _target(
+        "room-wide-horizontal-corridor-v2.txt"
+    )
 
 
 def test_offset_vertical_opening_records_unequal_wall_margins() -> None:
@@ -148,8 +114,10 @@ def test_existing_vertical_classifier_accepts_offset_opening() -> None:
     assert (junctions[0].start_y, junctions[0].end_y) == (2, 4)
 
 
-def test_offset_vertical_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(OFFSET_VERTICAL_MASK)) == OFFSET_VERTICAL_DRAFT
+def test_offset_vertical_rendering_matches_approved_target() -> None:
+    assert render_irregular_room(cells_from_mask(OFFSET_VERTICAL_MASK)) == _target(
+        "room-offset-vertical-corridor-v2.txt"
+    )
 
 
 def test_shifted_rooms_keep_one_straight_corridor_column() -> None:
@@ -176,14 +144,29 @@ def test_existing_vertical_classifier_accepts_shifted_rooms() -> None:
     assert (junctions[0].start_y, junctions[0].end_y) == (2, 4)
 
 
-def test_shifted_room_straight_literal_rendering_is_stable_for_review() -> None:
-    assert render_irregular_room(cells_from_mask(SHIFTED_ROOM_STRAIGHT_MASK)) == SHIFTED_ROOM_STRAIGHT_DRAFT
+def test_shifted_room_straight_rendering_matches_approved_target() -> None:
+    assert render_irregular_room(cells_from_mask(SHIFTED_ROOM_STRAIGHT_MASK)) == _target(
+        "room-shifted-straight-corridor-v2.txt"
+    )
 
 
 def test_centered_vertical_corridor_remains_centered() -> None:
     assert vertical_corridor_bands(cells_from_mask(CENTERED_VERTICAL_MASK)) == (
         VerticalCorridorBand(2, 2, 2, 4, 2, 2, 2, 2),
     )
+
+
+def test_two_section_wide_vertical_corridor_band() -> None:
+    cells = cells_from_mask(WIDE_VERTICAL_MASK)
+    assert vertical_corridor_bands(cells) == (
+        VerticalCorridorBand(3, 4, 2, 4, 3, 3, 3, 3),
+    )
+    band = vertical_corridor_bands(cells)[0]
+    assert band.length == 3
+    assert band.thickness == 2
+    assert band.is_centered
+    assert band.room_shift_x == 0
+    assert vertical_corridor_junctions(cells) == ()
 
 
 def test_solid_room_has_no_corridor_bands() -> None:
