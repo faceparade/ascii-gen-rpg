@@ -129,3 +129,55 @@ def test_inside_cliff_corner_exposes_approved_artwork() -> None:
     assert "SURFACE" not in detail["candidate"]
     assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
     assert detail["decision"]["decision"] == "approved"
+
+
+def test_outside_cliff_corner_review_fixture_has_one_projecting_upper_tip() -> None:
+    import json
+
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    sample = next(item for item in catalog["samples"] if item["id"] == "sunken-outside-cliff-corner-v2")
+
+    assert sample["status"] == "reviewing"
+    assert sample["surface_mask"] == ["#####"] * 5
+    assert sample["elevation_map"] == ["11111", "11000", "11000", "00000", "00000"]
+    assert sample["walkable_mask"] == [".....", "..###", "..###", "#####", "#####"]
+
+    surface = frozenset(
+        Point(x, y)
+        for y, row in enumerate(sample["surface_mask"])
+        for x, cell in enumerate(row)
+        if cell == "#"
+    )
+    lower = frozenset(
+        Point(x, y)
+        for y, row in enumerate(sample["walkable_mask"])
+        for x, cell in enumerate(row)
+        if cell == "#"
+    )
+    elevations = {
+        Point(x, y): int(height)
+        for y, row in enumerate(sample["elevation_map"])
+        for x, height in enumerate(row)
+    }
+    edges = cliff_edges(surface, elevations, lower)
+
+    assert len(surface - lower) == 9
+    assert len(lower) == 16
+    assert len(edges) == 7
+    assert CliffEdge(Point(1, 2), Point(2, 2), "east", 1) in edges
+    assert CliffEdge(Point(1, 2), Point(1, 3), "south", 1) in edges
+    assert not any(edge.lower == Point(4, 4) for edge in edges)
+
+
+def test_outside_cliff_corner_exposes_review_only_artwork() -> None:
+    state = ReviewState(Path.cwd())
+    detail = state.sample_detail("sunken-outside-cliff-corner-v2")
+
+    assert detail["sample"]["status"] == "reviewing"
+    assert detail["sample"]["review"] == "review/sunken-outside-cliff-corner-v2.txt"
+    assert "target" not in detail["sample"]
+    assert detail["candidate_source"] == "review/sunken-outside-cliff-corner-v2.txt"
+    assert detail["candidate"].strip()
+    assert "ELEVATION" not in detail["candidate"]
+    assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
+    assert detail["decision"] is None

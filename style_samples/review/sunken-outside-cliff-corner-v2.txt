@@ -1,0 +1,53 @@
+GRAMMAR V2 OUTSIDE CLIFF CORNER — PROVISIONAL DRAFT
+
+SCOPE
+-----
+Artwork proposal for one explicit 5 × 5 outside-corner topology. This is not approved and does not define a renderer rule.
+
+AUTOMATIC DRAFT
+---------------
+      ,— —,— —,— —,— —,
+      |__/___/___/__ /|
+      |   ,— —,— —,— —'—'
+      |  /|
+      | ‘ |   ,— —,
+      | |/|  /|__ /|
+      | | | ‘ |   | |
+      | |/| |/|   |/|
+      | | '—'—'— —'
+      | |/
+      '—'
+
+TOPOLOGY
+--------
+SURFACE
+#####
+#####
+#####
+#####
+#####
+
+ELEVATION
+11111
+11000
+11000
+00000
+00000
+
+WALKABLE LOWER PLANE
+.....
+..###
+..###
+#####
+#####
+
+INTERPRETATION
+--------------
+- The level-1 terrain enters across the north crop and projects south as a 2 × 2 shelf.
+- Upper cell (1,2) is the outside tip, carrying both east- and south-facing cliff edges.
+- The lower plane continues openly through the east and south crop boundaries.
+- No outer room shell or crop-boundary cap is implied.
+
+STATUS
+------
+Manual artwork review required. Do not promote until the user approves or corrects the draft.
