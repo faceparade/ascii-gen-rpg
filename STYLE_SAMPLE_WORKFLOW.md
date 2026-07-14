@@ -37,9 +37,9 @@ Symmetric or parameter-only **non-elevation** variants may be promoted together 
 
 ## Reviewed correction promotion complete
 
-- 21 approved correction files are reproduced exactly by shared renderers and promoted golden targets.
+- 22 approved correction files are reproduced exactly by shared renderers and promoted golden targets.
 - Legacy catalog outcomes have review decision sidecars; no decisions are stale.
-- `room-two-by-two-v2` is the only `needs_changes` sample. Its former mislabeled 4 × 4 draft was replaced with topology-correct 2 × 2 output, but it remains unapproved.
+- `room-two-by-two-v2` is approved. Its former mislabeled 4 × 4 draft was replaced with topology-correct 2 × 2 output and promoted as a golden target.
 - The exact-output regression suite and GitHub Actions are green.
 
 ## Approved organic dungeon
@@ -142,7 +142,7 @@ The rejected room-shell-based attempt remains archived under `style_samples/revi
 
 ## Active elevation checkpoint: cliff corners
 
-**Pause/resume point:** structural work and review-state cleanup are complete. On resume, either approve/revise the isolated 2 × 2 proposal or begin the first new elevation concept: the inside cliff corner. No other sample is waiting on review.
+**Pause/resume point:** structural work and review-state cleanup are complete, including the 2 × 2 room. On resume, begin the first new elevation concept: the inside cliff corner. No sample is waiting on review.
 
 Next, derive and manually review a compact corner vocabulary from the approved treatment:
 
