@@ -186,6 +186,35 @@ pre.art {
   color:#f3ecd5;
   font:16px/1.2 "Cascadia Mono","SFMono-Regular",Consolas,monospace;
 }
+.shape-context {
+  padding:10px;
+  border-bottom:1px solid var(--line);
+  background:#11110e;
+}
+.shape-context h3 {
+  margin:0 0 8px;
+  color:var(--accent);
+  font-size:13px;
+}
+.shape-key-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:8px;
+}
+.shape-key-card {
+  min-width:0;
+  padding:8px;
+  border:1px solid var(--line);
+  background:#0a0a08;
+}
+.shape-key-card strong { display:block; margin-bottom:5px; }
+.shape-key-card pre {
+  margin:0 0 6px;
+  overflow:auto;
+  color:#f3ecd5;
+  font:15px/1.15 "Cascadia Mono",Consolas,monospace;
+}
+.shape-key-card .legend { color:var(--muted); font-size:11px; }
 #diffPanel { display:none; }
 #editorPanel { display:none; margin-top:12px; }
 #editor {
@@ -318,6 +347,10 @@ pre.art {
       <div id="sideBySideView" class="view-grid">
         <div class="panel" id="candidatePanel">
           <h2><span>Candidate</span><span class="source" id="candidateSource"></span></h2>
+          <div class="shape-context" id="candidateShape">
+            <h3>Attempted shape</h3>
+            <div class="shape-key-grid" id="candidateShapeGrid"></div>
+          </div>
           <pre class="art" id="candidateArt"></pre>
         </div>
         <div class="panel" id="referencePanel">
@@ -519,8 +552,30 @@ function buildDiff(candidate, reference) {
   return output.join("\n");
 }
 
+function renderShapeKey(sections) {
+  const container = $("candidateShape");
+  const grid = $("candidateShapeGrid");
+  grid.replaceChildren();
+  const available = Array.isArray(sections) ? sections : [];
+  container.classList.toggle("hidden", !available.length);
+  for (const section of available) {
+    const card = document.createElement("div");
+    card.className = "shape-key-card";
+    const heading = document.createElement("strong");
+    heading.textContent = section.label;
+    const pre = document.createElement("pre");
+    pre.textContent = section.rows.join("\n");
+    const legend = document.createElement("div");
+    legend.className = "legend";
+    legend.textContent = section.legend;
+    card.append(heading, pre, legend);
+    grid.append(card);
+  }
+}
+
 function renderArtwork() {
   if (!state.detail) return;
+  renderShapeKey(state.detail.shape_key);
   $("candidateArt").textContent = normalizeDisplay(state.detail.candidate);
   $("referenceArt").textContent = normalizeDisplay(state.detail.reference || "No reference available.\n");
   $("diffArt").textContent = normalizeDisplay(buildDiff(state.detail.candidate, state.detail.reference));

@@ -102,6 +102,18 @@ def test_extract_artwork_from_wrapped_review() -> None:
     assert extract_artwork(wrapped) == "abc  \ndef\n"
 
 
+def test_candidate_panel_contains_attempted_shape_key() -> None:
+    html = Path("review_app.html").read_text(encoding="utf-8")
+    candidate_start = html.index('id="candidatePanel"')
+    reference_start = html.index('id="referencePanel"')
+    candidate_markup = html[candidate_start:reference_start]
+
+    assert 'id="candidateShape"' in candidate_markup
+    assert 'id="candidateShapeGrid"' in candidate_markup
+    assert "Attempted shape" in candidate_markup
+    assert "renderShapeKey(state.detail.shape_key)" in html
+
+
 def test_candidate_reference_and_row_lengths(project: Path) -> None:
     state = ReviewState(project)
     detail = state.sample_detail("sample-v2")
@@ -111,6 +123,23 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
     assert detail["candidate_row_lengths"] == [7, 8]
     assert detail["candidate_leading_spaces"] == [2, 2]
     assert detail["sample"]["elevation_map"] == ["101"]
+    assert detail["shape_key"] == [
+        {
+            "label": "Surface",
+            "rows": ["###"],
+            "legend": "# = defined terrain · . = outside crop",
+        },
+        {
+            "label": "Elevation",
+            "rows": ["101"],
+            "legend": "1 = upper plane · 0 = lower plane",
+        },
+        {
+            "label": "Walkable",
+            "rows": [".#."],
+            "legend": "# = walkable lower plane · . = not walkable",
+        },
+    ]
 
 
 def test_completed_references_are_inferred_from_golden_targets(project: Path) -> None:

@@ -148,6 +148,25 @@ def leading_space_counts(text: str) -> list[int]:
     return [len(line) - len(line.lstrip(" ")) for line in text.splitlines()]
 
 
+_SHAPE_KEY_FIELDS = (
+    ("Surface", "surface_mask", "# = defined terrain · . = outside crop"),
+    ("Elevation", "elevation_map", "1 = upper plane · 0 = lower plane"),
+    ("Walkable", "walkable_mask", "# = walkable lower plane · . = not walkable"),
+    ("Mask", "mask", "# = included cell · . = excluded cell"),
+)
+
+
+def shape_key(sample: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return the logical masks and symbol meanings needed to read artwork."""
+
+    sections: list[dict[str, Any]] = []
+    for label, field, legend in _SHAPE_KEY_FIELDS:
+        rows = sample.get(field)
+        if isinstance(rows, list) and all(isinstance(row, str) for row in rows):
+            sections.append({"label": label, "rows": rows, "legend": legend})
+    return sections
+
+
 @dataclass(frozen=True)
 class Candidate:
     text: str
@@ -366,6 +385,7 @@ class ReviewState:
             editable_source = candidate.source
         return {
             "sample": sample,
+            "shape_key": shape_key(sample),
             "candidate": candidate.text,
             "candidate_source": candidate.source,
             "candidate_sha256": candidate.sha256,
