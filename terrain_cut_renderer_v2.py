@@ -98,20 +98,6 @@ def _classify_inside_cliff_corner(
 
 
 USER_AUTHORED_FIRST_CLIFF_ART = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    "  |__/___/___/___/___/___/__ /|",
-    "  |   ,— — — — — —.         | |",
-    "  |  /|           | `   `   |/|",
-    "  | ‘ |           '— — — — —'—'",
-    "  | |/|",
-    "  | | |           ,— —,— —,— —,",
-    "  | |/|           |__/___/__ /|",
-    "  | | ,— —,— —,— —,         | |",
-    "  | ‘/___/___/___/  `   `   |/|",
-    "  '— — — — — — — — — — — — — —'",
-)
-
-USER_AUTHORED_INSIDE_CLIFF_CORNER_ART = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
     "      |   ,— — — — —'—'",
@@ -125,6 +111,7 @@ USER_AUTHORED_INSIDE_CLIFF_CORNER_ART = (
     "      '—'—'",
     "    ",
 )
+USER_AUTHORED_INSIDE_CLIFF_CORNER_ART = USER_AUTHORED_FIRST_CLIFF_ART
 
 
 def render_sunken_terrain(

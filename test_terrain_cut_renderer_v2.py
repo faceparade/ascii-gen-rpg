@@ -12,21 +12,9 @@ LOWER_CELLS = frozenset(
 ELEVATIONS = {point: (0 if point in LOWER_CELLS else 1) for point in SURFACE_CELLS}
 REJECTED = Path("style_samples/review/sunken-corridor-chamber-cliff-art-v2.txt")
 TARGET = Path("style_samples/targets/sunken-corridor-chamber-cliff-art-v2.txt")
+LATEST_APPROVED_CORRECTION = Path("style_samples/corrections/sunken-corridor-chamber-cliff-art-v2.txt")
 INSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-inside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,— —,— —,",
-    "  |__/___/___/___/___/___/__ /|",
-    "  |   ,— — — — — —.         | |",
-    "  |  /|           | `   `   |/|",
-    "  | ‘ |           '— — — — —'—'",
-    "  | |/|",
-    "  | | |           ,— —,— —,— —,",
-    "  | |/|           |__/___/__ /|",
-    "  | | ,— —,— —,— —,         | |",
-    "  | ‘/___/___/___/  `   `   |/|",
-    "  '— — — — — — — — — — — — — —'",
-)
-EXPECTED_INSIDE_CORNER = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
     "      |   ,— — — — —'—'",
@@ -40,6 +28,7 @@ EXPECTED_INSIDE_CORNER = (
     "      '—'—'",
     "    ",
 )
+EXPECTED_INSIDE_CORNER = EXPECTED_DRAFT
 
 
 def _draft() -> tuple[str, ...]:
@@ -48,13 +37,14 @@ def _draft() -> tuple[str, ...]:
 
 def test_approved_projection_has_expected_bounds() -> None:
     rows = _draft()
-    assert len(rows) == 11
-    assert max(map(len, rows)) == 31
+    assert len(rows) == 12
+    assert max(map(len, rows)) == 23
 
 
-def test_projection_contains_upper_and_lower_lattice_markers() -> None:
+def test_projection_contains_submitted_inside_corner_join() -> None:
     rows = _draft()
-    assert sum(row.count("`") for row in rows) == 4
+    assert rows[2].endswith("'—'")
+    assert rows[10].endswith("'—'—'")
 
 
 def test_rejected_cliff_artwork_remains_archived() -> None:
@@ -66,6 +56,10 @@ def test_rejected_cliff_artwork_remains_archived() -> None:
 def test_approved_cliff_artwork_matches_golden_target() -> None:
     assert _draft() == EXPECTED_DRAFT
     assert tuple(TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_DRAFT
+
+
+def test_canonical_cliff_target_reflects_latest_approved_update() -> None:
+    assert TARGET.read_bytes() == LATEST_APPROVED_CORRECTION.read_bytes()
 
 
 def test_user_approved_inside_corner_matches_golden_target() -> None:

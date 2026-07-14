@@ -1,8 +1,10 @@
 {
   "schema_version": 1,
   "sample_id": "sunken-corridor-chamber-cliff-art-v2",
-  "candidate_sha256": "ac490bad309e61d1bc77caa4449d8f5d2f9b86c4859c05d964ee58c176388ed6",
+  "candidate_sha256": "442d4c3a0fe09e85d72ba067725e2e02682435c2df0e21b84fdb5f9914733394",
   "decision": "approved",
-  "notes": "Migrated from catalog status: approved.",
-  "reviewed_at": "2026-07-13T20:34:38Z"
+  "notes": "Updated to the latest user-submitted cliff artwork.",
+  "reviewed_at": "2026-07-14T16:01:19Z",
+  "correction": "corrections/sunken-corridor-chamber-cliff-art-v2.txt",
+  "correction_sha256": "442d4c3a0fe09e85d72ba067725e2e02682435c2df0e21b84fdb5f9914733394"
 }
