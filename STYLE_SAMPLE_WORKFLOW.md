@@ -142,7 +142,9 @@ The rejected room-shell-based attempt remains archived under `style_samples/revi
 
 ## Active elevation checkpoint: cliff corners
 
-**Pause/resume point:** structural work and review-state cleanup are complete, including the 2 × 2 room. On resume, begin the first new elevation concept: the inside cliff corner. No sample is waiting on review.
+**Approved inside corner:** `sunken-inside-cliff-corner-v2` defines a 5 × 5 explicit terrain surface with a one-section level-0 cut that turns from east to south around level-1 terrain. It has seven lower walkable cells, fourteen directed cliff edges, and open east/south crop ends with no implicit caps.
+
+The user-submitted artwork is locked byte-for-byte as the first inside-corner golden projection. The renderer recognizes only this exact topology; mirrored and outside-corner rules remain unapproved.
 
 Next, derive and manually review a compact corner vocabulary from the approved treatment:
 

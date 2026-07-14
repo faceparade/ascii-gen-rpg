@@ -82,6 +82,21 @@ def _classify_chamber_corridor(
     return ChamberCorridorCut(min_x, max_x, min_y, max_y, corridor_y, corridor_end_x)
 
 
+def _classify_inside_cliff_corner(
+    surface_cells: frozenset[Point],
+    lower_cells: frozenset[Point],
+) -> None:
+    """Recognize the approved 5×5 east-to-south lower L-turn."""
+
+    expected_surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    expected_lower = frozenset(
+        {Point(x, 1) for x in range(1, 5)}
+        | {Point(1, y) for y in range(2, 5)}
+    )
+    if surface_cells != expected_surface or lower_cells != expected_lower:
+        raise NotImplementedError("inside-corner artwork is approved only for the 5×5 east-to-south L-turn")
+
+
 USER_AUTHORED_FIRST_CLIFF_ART = (
     "  ,— —,— —,— —,— —,— —,— —,— —,",
     "  |__/___/___/___/___/___/__ /|",
@@ -94,6 +109,21 @@ USER_AUTHORED_FIRST_CLIFF_ART = (
     "  | | ,— —,— —,— —,         | |",
     "  | ‘/___/___/___/  `   `   |/|",
     "  '— — — — — — — — — — — — — —'",
+)
+
+USER_AUTHORED_INSIDE_CLIFF_CORNER_ART = (
+    "      ,— —,— —,— —,— —,",
+    "      |__/___/___/__ /|",
+    "      |   ,— — — — —'—'",
+    "      |  /|           ",
+    "      | ‘ |",
+    "      | |/|",
+    "      | | |",
+    "      | |/|",
+    "      | | |",
+    "      | |/|",
+    "      '—'—'",
+    "    ",
 )
 
 
@@ -115,5 +145,11 @@ def render_sunken_terrain(
     if not upper_cells or not walkable_cells:
         raise ValueError("terrain-cut projection requires both upper and lower surfaces")
 
-    _classify_chamber_corridor(surface_cells, walkable_cells)
-    return USER_AUTHORED_FIRST_CLIFF_ART
+    bounds = cell_bounds(surface_cells)
+    if bounds == (7, 5):
+        _classify_chamber_corridor(surface_cells, walkable_cells)
+        return USER_AUTHORED_FIRST_CLIFF_ART
+    if bounds == (5, 5):
+        _classify_inside_cliff_corner(surface_cells, walkable_cells)
+        return USER_AUTHORED_INSIDE_CLIFF_CORNER_ART
+    raise NotImplementedError("terrain-cut artwork has not been approved for this topology")

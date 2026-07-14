@@ -144,6 +144,10 @@ def row_lengths(text: str) -> list[int]:
     return [len(line) for line in text.splitlines()]
 
 
+def leading_space_counts(text: str) -> list[int]:
+    return [len(line) - len(line.lstrip(" ")) for line in text.splitlines()]
+
+
 @dataclass(frozen=True)
 class Candidate:
     text: str
@@ -366,6 +370,7 @@ class ReviewState:
             "candidate_source": candidate.source,
             "candidate_sha256": candidate.sha256,
             "candidate_row_lengths": row_lengths(candidate.text),
+            "candidate_leading_spaces": leading_space_counts(candidate.text),
             "reference": reference_text,
             "reference_source": reference_source,
             "editable_output": editable_output,

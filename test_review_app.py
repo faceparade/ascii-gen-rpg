@@ -109,6 +109,7 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
     assert detail["reference"] == REFERENCE_ART
     assert detail["candidate_sha256"] == sha256_text(CANDIDATE_ART)
     assert detail["candidate_row_lengths"] == [7, 8]
+    assert detail["candidate_leading_spaces"] == [2, 2]
     assert detail["sample"]["elevation_map"] == ["101"]
 
 

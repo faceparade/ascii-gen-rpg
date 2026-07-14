@@ -27,6 +27,10 @@ def approved_corrected_samples() -> list[tuple[ShapeSample, tuple[str, ...]]]:
         if record.get("decision") != "approved" or not record.get("correction"):
             continue
         item = samples_by_id[record["sample_id"]]
+        # This parameterized check exercises the ordinary ShapeSample renderer.
+        # Elevation corrections have dedicated terrain-cut golden tests.
+        if "mask" not in item:
+            continue
         sample = ShapeSample(
             sample_id=item["id"],
             title=item["title"],

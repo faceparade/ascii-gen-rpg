@@ -631,7 +631,8 @@ async function loadSample(sampleId) {
   $("sampleTitle").textContent = detail.sample.title || sampleId;
   $("sampleMeta").textContent =
     `${detail.sample.category || "uncategorized"} · ${detail.sample.status || "unknown"} · `
-    + `${detail.candidate_sha256.slice(0,12)} · rows ${detail.candidate_row_lengths.join(", ")}`;
+    + `${detail.candidate_sha256.slice(0,12)} · row lengths ${detail.candidate_row_lengths.join(", ")} · `
+    + `leading spaces ${detail.candidate_leading_spaces.join(", ")}`;
   $("notes").value = detail.decision?.notes || "";
   $("editorPanel").style.display = "none";
   renderArtwork();

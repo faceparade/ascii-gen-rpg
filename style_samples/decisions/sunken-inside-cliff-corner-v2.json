@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-inside-cliff-corner-v2",
+  "candidate_sha256": "442d4c3a0fe09e85d72ba067725e2e02682435c2df0e21b84fdb5f9914733394",
+  "decision": "approved",
+  "notes": "User submitted and approved the first east-to-south inside cliff-corner artwork.",
+  "reviewed_at": "2026-07-14T16:01:19Z",
+  "correction": "corrections/sunken-inside-cliff-corner-v2.txt",
+  "correction_sha256": "442d4c3a0fe09e85d72ba067725e2e02682435c2df0e21b84fdb5f9914733394"
+}

@@ -1,0 +1,54 @@
+GRAMMAR V2 INSIDE CLIFF CORNER — AUTOMATIC DRAFT
+
+SCOPE
+-----
+Artwork proposal for the already explicit 5 × 5 topology. This is not approved and does not define a renderer rule.
+
+AUTOMATIC DRAFT
+---------------
+      ,— —,— —,— —,— —
+     /|__/___/___/___/
+    ‘ |   ,— —,— —,— —
+    |/|  /|__/___/__ /
+    | | ‘ |
+    |/| |/|
+    | | | |
+    |/| |/|
+    | | | |
+    |/| |/|
+    | | | |
+    |/| |/|
+
+TOPOLOGY
+--------
+SURFACE
+#####
+#####
+#####
+#####
+#####
+
+ELEVATION
+11111
+10000
+10111
+10111
+10111
+
+WALKABLE LOWER PLANE
+.....
+.####
+.#...
+.#...
+.#...
+
+INTERPRETATION
+--------------
+- The lower one-section trench enters from the east, turns south, and exits the crop.
+- The horizontal and vertical cliff bands meet at the inside corner around the level-1 southeast terrain.
+- East and south ends are intentionally open; no crop-boundary cap is drawn.
+- No outer room shell is implied.
+
+STATUS
+------
+Manual artwork review required.

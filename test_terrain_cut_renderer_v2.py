@@ -12,6 +12,7 @@ LOWER_CELLS = frozenset(
 ELEVATIONS = {point: (0 if point in LOWER_CELLS else 1) for point in SURFACE_CELLS}
 REJECTED = Path("style_samples/review/sunken-corridor-chamber-cliff-art-v2.txt")
 TARGET = Path("style_samples/targets/sunken-corridor-chamber-cliff-art-v2.txt")
+INSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-inside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
     "  ,— —,— —,— —,— —,— —,— —,— —,",
     "  |__/___/___/___/___/___/__ /|",
@@ -24,6 +25,20 @@ EXPECTED_DRAFT = (
     "  | | ,— —,— —,— —,         | |",
     "  | ‘/___/___/___/  `   `   |/|",
     "  '— — — — — — — — — — — — — —'",
+)
+EXPECTED_INSIDE_CORNER = (
+    "      ,— —,— —,— —,— —,",
+    "      |__/___/___/__ /|",
+    "      |   ,— — — — —'—'",
+    "      |  /|           ",
+    "      | ‘ |",
+    "      | |/|",
+    "      | | |",
+    "      | |/|",
+    "      | | |",
+    "      | |/|",
+    "      '—'—'",
+    "    ",
 )
 
 
@@ -51,3 +66,15 @@ def test_rejected_cliff_artwork_remains_archived() -> None:
 def test_approved_cliff_artwork_matches_golden_target() -> None:
     assert _draft() == EXPECTED_DRAFT
     assert tuple(TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_DRAFT
+
+
+def test_user_approved_inside_corner_matches_golden_target() -> None:
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    lower = frozenset(
+        {Point(x, 1) for x in range(1, 5)}
+        | {Point(1, y) for y in range(2, 5)}
+    )
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+
+    assert render_sunken_terrain(surface, elevations, lower) == EXPECTED_INSIDE_CORNER
+    assert tuple(INSIDE_CORNER_TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_INSIDE_CORNER
