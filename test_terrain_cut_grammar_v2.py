@@ -127,7 +127,8 @@ def test_inside_cliff_corner_exposes_approved_artwork() -> None:
     assert detail["candidate_source"] == "targets/sunken-inside-cliff-corner-v2.txt"
     assert detail["candidate"].strip()
     assert "SURFACE" not in detail["candidate"]
-    assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
+    assert detail["reference_source"] == "corrections/sunken-inside-cliff-corner-v2.txt"
+    assert detail["reference"] == detail["display_output"]
     assert detail["decision"]["decision"] == "approved"
 
 
@@ -179,7 +180,8 @@ def test_outside_cliff_corner_exposes_review_only_artwork() -> None:
     assert detail["candidate_source"] == "review/sunken-outside-cliff-corner-v2.txt"
     assert detail["candidate"].strip()
     assert "ELEVATION" not in detail["candidate"]
-    assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
+    assert detail["reference_source"] == "corrections/sunken-outside-cliff-corner-v2.txt"
+    assert detail["reference"] == detail["display_output"]
     assert detail["decision"]["decision"] == "approved"
     assert "open stepped outside-cliff layout" in detail["decision"]["notes"]
     assert detail["decision"]["candidate_sha256"] == detail["candidate_sha256"]

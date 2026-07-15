@@ -122,8 +122,9 @@ def test_review_html_exposes_cell_grid_editor_controls() -> None:
     assert 'type="module"' in html
     assert 'from "./review_grid_editor.js"' in html
     assert "Current output" in html
-    assert "Style reference — shape may differ" in html
-    assert "Text difference vs style reference" in html
+    assert "Completed reference" in html
+    assert "shape may differ" not in html
+    assert "Text difference vs completed reference" in html
     assert "state.detail.display_output" in html
     assert "state.detail.display_source" in html
     assert "state.detail.correction !== null" in html
@@ -249,6 +250,87 @@ def test_correction_preserves_exact_spaces_and_newline(project: Path) -> None:
     detail = state.sample_detail("sample-v2")
     assert detail["display_output"] == correction
     assert detail["display_source"] == "corrections/sample-v2.txt"
+
+
+def test_approved_current_correction_becomes_completed_reference(project: Path) -> None:
+    state = ReviewState(project)
+    candidate_hash = state.sample_detail("sample-v2")["candidate_sha256"]
+    correction = "approved exact shape  \n"
+    state.save_correction(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "text": correction},
+    )
+    state.save_decision(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "decision": "approved", "notes": ""},
+    )
+
+    detail = state.sample_detail("sample-v2")
+
+    assert detail["display_output"] == correction
+    assert detail["reference"] == correction
+    assert detail["reference_source"] == "corrections/sample-v2.txt"
+
+
+def test_unapproved_correction_does_not_become_completed_reference(project: Path) -> None:
+    state = ReviewState(project)
+    candidate_hash = state.sample_detail("sample-v2")["candidate_sha256"]
+    state.save_correction(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "text": "not approved\n"},
+    )
+    state.save_decision(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "decision": "needs_changes", "notes": ""},
+    )
+
+    detail = state.sample_detail("sample-v2")
+
+    assert detail["reference"] == REFERENCE_ART
+    assert detail["reference_source"] == "review/reference-v2.txt"
+
+
+def test_stale_candidate_correction_does_not_become_completed_reference(project: Path) -> None:
+    state = ReviewState(project)
+    candidate_hash = state.sample_detail("sample-v2")["candidate_sha256"]
+    state.save_correction(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "text": "approved old candidate\n"},
+    )
+    state.save_decision(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "decision": "approved", "notes": ""},
+    )
+    (project / "style_samples/review/sample-v2.txt").write_text("changed candidate\n", encoding="utf-8")
+
+    detail = state.sample_detail("sample-v2")
+
+    assert detail["reference"] == REFERENCE_ART
+    assert detail["reference_source"] == "review/reference-v2.txt"
+
+
+def test_changed_approved_correction_is_stale_and_not_completed_reference(project: Path) -> None:
+    state = ReviewState(project)
+    candidate_hash = state.sample_detail("sample-v2")["candidate_sha256"]
+    state.save_correction(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "text": "approved version\n"},
+    )
+    state.save_decision(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "decision": "approved", "notes": ""},
+    )
+    state.save_correction(
+        "sample-v2",
+        {"candidate_sha256": candidate_hash, "text": "edited after approval\n"},
+    )
+
+    detail = state.sample_detail("sample-v2")
+    queue_item = next(item for item in state.list_samples() if item["id"] == "sample-v2")
+
+    assert detail["reference"] == REFERENCE_ART
+    assert detail["reference_source"] == "review/reference-v2.txt"
+    assert queue_item["decision_stale"] is True
 
 
 def test_decision_records_hash_and_correction(project: Path) -> None:

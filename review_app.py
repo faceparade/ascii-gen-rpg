@@ -352,6 +352,14 @@ class ReviewState:
             candidate = self.candidate_for(sample)
             decision = self.read_decision(sample["id"])
             decision_hash = decision.get("candidate_sha256") if isinstance(decision, dict) else None
+            recorded_correction_hash = decision.get("correction_sha256") if isinstance(decision, dict) else None
+            correction_stale = False
+            if isinstance(recorded_correction_hash, str):
+                current_correction = self.read_correction(sample["id"])
+                correction_stale = (
+                    current_correction is None
+                    or sha256_text(current_correction) != recorded_correction_hash
+                )
             output.append(
                 {
                     "id": sample["id"],
@@ -361,7 +369,9 @@ class ReviewState:
                     "candidate_sha256": candidate.sha256,
                     "candidate_available": bool(candidate.text),
                     "decision": decision.get("decision") if isinstance(decision, dict) else None,
-                    "decision_stale": bool(decision_hash and decision_hash != candidate.sha256),
+                    "decision_stale": bool(
+                        (decision_hash and decision_hash != candidate.sha256) or correction_stale
+                    ),
                     "reviewed_at": decision.get("reviewed_at") if isinstance(decision, dict) else None,
                 }
             )
@@ -378,6 +388,16 @@ class ReviewState:
         previous_text, previous_source = self._previous_for(sample)
         correction = self.read_correction(sample_id)
         decision = self.read_decision(sample_id)
+        correction_sha256 = sha256_text(correction) if correction is not None else None
+        if (
+            correction is not None
+            and isinstance(decision, dict)
+            and decision.get("decision") == "approved"
+            and decision.get("candidate_sha256") == candidate.sha256
+            and decision.get("correction_sha256") == correction_sha256
+        ):
+            reference_text = correction
+            reference_source = f"corrections/{sample_id}.txt"
         if candidate.source == "catalog topology" and reference_text:
             editable_output = reference_text
             editable_source = reference_source
@@ -411,7 +431,7 @@ class ReviewState:
             "previous": previous_text,
             "previous_source": previous_source,
             "correction": correction,
-            "correction_sha256": sha256_text(correction) if correction is not None else None,
+            "correction_sha256": correction_sha256,
             "decision": decision,
         }
 
