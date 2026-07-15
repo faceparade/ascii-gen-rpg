@@ -430,9 +430,9 @@ pre.art {
 
     <div class="toolbar">
       <button id="sideBySideButton" class="primary">Side by side</button>
-      <button id="candidateButton">Candidate</button>
-      <button id="referenceButton">Completed reference</button>
-      <button id="diffButton">Difference</button>
+      <button id="candidateButton">Current output only</button>
+      <button id="referenceButton">Style reference</button>
+      <button id="diffButton">Text difference</button>
       <button id="topologyButton">Topology</button>
       <button id="editButton">Grid editor</button>
       <label><input id="spacesToggle" type="checkbox"> Show spaces</label>
@@ -444,21 +444,21 @@ pre.art {
     <section id="workspace">
       <div id="sideBySideView" class="view-grid">
         <div class="panel" id="candidatePanel">
-          <h2><span>Candidate</span><span class="source" id="candidateSource"></span></h2>
+          <h2><span>Current output</span><span class="source" id="candidateSource"></span></h2>
           <div class="shape-context" id="candidateShape">
-            <h3>Attempted shape</h3>
+            <h3>Geometry reference — not an output preview</h3>
             <div class="shape-key-grid" id="candidateShapeGrid"></div>
           </div>
           <pre class="art" id="candidateArt"></pre>
         </div>
         <div class="panel" id="referencePanel">
-          <h2><span>Completed reference</span><span class="source" id="referenceSource"></span></h2>
+          <h2><span>Style reference — shape may differ</span><span class="source" id="referenceSource"></span></h2>
           <pre class="art" id="referenceArt"></pre>
         </div>
       </div>
 
       <div class="panel" id="diffPanel">
-        <h2><span>Line difference</span><span class="source">candidate versus completed reference</span></h2>
+        <h2><span>Text difference vs style reference</span><span class="source">not a topology comparison</span></h2>
         <pre class="art" id="diffArt"></pre>
       </div>
 
@@ -470,7 +470,7 @@ pre.art {
       <div class="panel" id="gridEditorPanel">
         <h2><span>Cell grid editor</span><span class="source" id="editorSource">spaces are visible cells</span></h2>
         <div class="shape-context" id="gridEditorShape">
-          <strong>Shape key — read only</strong>
+          <strong>Geometry reference — not an output preview</strong>
           <div class="shape-map-legend"><span class="raised">Elevated</span><span class="lower">Lower</span></div>
           <div class="shape-key-grid" id="gridEditorShapeGrid"></div>
         </div>
@@ -527,6 +527,7 @@ pre.art {
 
 <script type="module">
 import {
+  applySavedCorrection,
   createDocument,
   deleteCell,
   deleteRow,
@@ -534,6 +535,7 @@ import {
   History,
   insertCell,
   insertRow,
+  isRedundantTerrainFootprint,
   paintCell,
   resizeRow,
   serializeDocument,
@@ -701,13 +703,15 @@ function buildDiff(candidate, reference) {
 
 function renderShapeKeyInto(container, grid, sections) {
   grid.replaceChildren();
-  const available = Array.isArray(sections) ? sections : [];
+  const available = (Array.isArray(sections) ? sections : []).filter(
+    section => !isRedundantTerrainFootprint(section.label, section.rows),
+  );
   container.classList.toggle("hidden", !available.length);
   for (const section of available) {
     const card = document.createElement("div");
     card.className = "shape-key-card";
     const heading = document.createElement("strong");
-    heading.textContent = section.label;
+    heading.textContent = section.label === "Surface" ? "Terrain footprint" : section.label;
     const map = document.createElement("div");
     map.className = "shape-map";
     const width = Math.max(1, ...section.rows.map(row => [...row].length));
@@ -738,10 +742,10 @@ function renderShapeKey(sections) {
 function renderArtwork() {
   if (!state.detail) return;
   renderShapeKey(state.detail.shape_key);
-  $("candidateArt").textContent = normalizeDisplay(state.detail.candidate);
+  $("candidateArt").textContent = normalizeDisplay(state.detail.display_output);
   $("referenceArt").textContent = normalizeDisplay(state.detail.reference || "No reference available.\n");
-  $("diffArt").textContent = normalizeDisplay(buildDiff(state.detail.candidate, state.detail.reference));
-  $("candidateSource").textContent = state.detail.candidate_source || "";
+  $("diffArt").textContent = normalizeDisplay(buildDiff(state.detail.display_output, state.detail.reference));
+  $("candidateSource").textContent = state.detail.display_source || "";
   $("referenceSource").textContent = state.detail.reference_source || "";
 }
 
@@ -895,11 +899,12 @@ function runGridCommand(command) {
 
 function resetGridDocument() {
   if (!state.detail) return;
-  const text = state.detail.correction || state.detail.editable_output;
+  const hasCorrection = state.detail.correction !== null;
+  const text = hasCorrection ? state.detail.correction : state.detail.editable_output;
   state.gridDocument = createDocument(text);
   state.gridHistory = new History(state.gridDocument);
   state.gridSelection = {row:0, column:0};
-  $("editorSource").textContent = state.detail.correction
+  $("editorSource").textContent = hasCorrection
     ? "saved correction"
     : `copy of ${state.detail.editable_source || "candidate"}`;
   renderGlyphPalette();
@@ -941,6 +946,15 @@ async function loadSamples({preserveCurrent = true} = {}) {
   }
 }
 
+function renderSampleMetadata() {
+  if (!state.detail) return;
+  const detail = state.detail;
+  $("sampleMeta").textContent =
+    `${detail.sample.category || "uncategorized"} · ${detail.sample.status || "unknown"} · `
+    + `${detail.display_sha256.slice(0,12)} · row lengths ${detail.display_row_lengths.join(", ")} · `
+    + `leading spaces ${detail.display_leading_spaces.join(", ")}`;
+}
+
 async function loadSample(sampleId) {
   const detail = await api(`/api/sample/${encodeURIComponent(sampleId)}`);
   state.currentId = sampleId;
@@ -948,10 +962,7 @@ async function loadSample(sampleId) {
   state.loadedHash = detail.candidate_sha256;
   $("staleBanner").style.display = "none";
   $("sampleTitle").textContent = detail.sample.title || sampleId;
-  $("sampleMeta").textContent =
-    `${detail.sample.category || "uncategorized"} · ${detail.sample.status || "unknown"} · `
-    + `${detail.candidate_sha256.slice(0,12)} · row lengths ${detail.candidate_row_lengths.join(", ")} · `
-    + `leading spaces ${detail.candidate_leading_spaces.join(", ")}`;
+  renderSampleMetadata();
   $("notes").value = detail.decision?.notes || "";
   $("gridEditorPanel").style.display = "none";
   state.gridDocument = null;
@@ -971,7 +982,9 @@ async function saveCorrectionText(text) {
       text,
     }),
   });
-  state.detail.correction = text;
+  applySavedCorrection(state.detail, text, result);
+  renderSampleMetadata();
+  renderArtwork();
   $("editorSource").textContent = "saved correction";
   toast(`Correction saved: ${result.correction}`);
 }

@@ -49,6 +49,25 @@ export function shapeCellClass(label, value) {
   return "mask-neutral";
 }
 
+export function isRedundantTerrainFootprint(label, rows) {
+  const normalized = String(label).trim().toLowerCase();
+  if (normalized !== "surface" && normalized !== "terrain footprint") return false;
+  if (!Array.isArray(rows) || rows.length === 0) return false;
+  const widths = rows.map(row => [...row].length);
+  if (!widths[0] || widths.some(width => width !== widths[0])) return false;
+  return rows.every(row => [...row].every(value => value === "#" || value === "1"));
+}
+
+export function applySavedCorrection(detail, text, result) {
+  detail.correction = text;
+  detail.display_output = text;
+  detail.display_source = result.correction_source;
+  detail.display_sha256 = result.correction_sha256;
+  detail.display_row_lengths = [...result.correction_row_lengths];
+  detail.display_leading_spaces = [...result.correction_leading_spaces];
+  return detail;
+}
+
 export function paintCell(document, row, column, glyph) {
   assertRow(document, row);
   assertColumn(column);

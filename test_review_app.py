@@ -104,7 +104,7 @@ def test_extract_artwork_from_wrapped_review() -> None:
     assert extract_artwork(wrapped) == "abc  \ndef\n"
 
 
-def test_candidate_panel_contains_attempted_shape_key() -> None:
+def test_current_output_panel_labels_geometry_as_reference() -> None:
     html = Path("review_app.html").read_text(encoding="utf-8")
     candidate_start = html.index('id="candidatePanel"')
     reference_start = html.index('id="referencePanel"')
@@ -112,7 +112,7 @@ def test_candidate_panel_contains_attempted_shape_key() -> None:
 
     assert 'id="candidateShape"' in candidate_markup
     assert 'id="candidateShapeGrid"' in candidate_markup
-    assert "Attempted shape" in candidate_markup
+    assert "Geometry reference — not an output preview" in candidate_markup
     assert "renderShapeKey(state.detail.shape_key)" in html
 
 
@@ -121,6 +121,12 @@ def test_review_html_exposes_cell_grid_editor_controls() -> None:
 
     assert 'type="module"' in html
     assert 'from "./review_grid_editor.js"' in html
+    assert "Current output" in html
+    assert "Style reference — shape may differ" in html
+    assert "Text difference vs style reference" in html
+    assert "state.detail.display_output" in html
+    assert "state.detail.display_source" in html
+    assert "state.detail.correction !== null" in html
     assert 'className = `shape-map-cell ${shapeCellClass(section.label, value)}`' in html
     assert 'class="shape-map-legend"' in html
     for element_id in (
@@ -168,6 +174,9 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
     assert detail["candidate_sha256"] == sha256_text(CANDIDATE_ART)
     assert detail["candidate_row_lengths"] == [7, 8]
     assert detail["candidate_leading_spaces"] == [2, 2]
+    assert detail["correction"] is None
+    assert detail["display_output"] == CANDIDATE_ART
+    assert detail["display_source"] == "review/sample-v2.txt"
     assert detail["sample"]["elevation_map"] == ["101"]
     assert detail["shape_key"] == [
         {
@@ -186,6 +195,22 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
             "legend": "# = walkable lower plane · . = not walkable",
         },
     ]
+
+
+def test_existing_empty_correction_remains_the_current_output(project: Path) -> None:
+    correction = project / "style_samples/corrections/sample-v2.txt"
+    correction.parent.mkdir(parents=True)
+    correction.write_text("", encoding="utf-8")
+
+    detail = ReviewState(project).sample_detail("sample-v2")
+
+    assert detail["correction"] == ""
+    assert detail["display_output"] == ""
+    assert detail["display_source"] == "corrections/sample-v2.txt"
+    assert detail["display_sha256"] == sha256_text("")
+    assert detail["correction_sha256"] == sha256_text("")
+    assert detail["display_row_lengths"] == []
+    assert detail["display_leading_spaces"] == []
 
 
 def test_completed_references_are_inferred_from_golden_targets(project: Path) -> None:
@@ -218,6 +243,12 @@ def test_correction_preserves_exact_spaces_and_newline(project: Path) -> None:
     )
     assert (project / result["correction"]).read_text(encoding="utf-8") == correction
     assert result["correction_sha256"] == sha256_text(correction)
+    assert result["correction_source"] == "corrections/sample-v2.txt"
+    assert result["correction_row_lengths"] == [3, 2]
+    assert result["correction_leading_spaces"] == [0, 1]
+    detail = state.sample_detail("sample-v2")
+    assert detail["display_output"] == correction
+    assert detail["display_source"] == "corrections/sample-v2.txt"
 
 
 def test_decision_records_hash_and_correction(project: Path) -> None:

@@ -339,11 +339,11 @@ class ReviewState:
             return {"decision": "invalid", "error": "Decision file is not valid JSON."}
         return value if isinstance(value, dict) else {"decision": "invalid"}
 
-    def read_correction(self, sample_id: str) -> str:
+    def read_correction(self, sample_id: str) -> str | None:
         try:
             return self.correction_path(sample_id).read_text(encoding="utf-8")
         except FileNotFoundError:
-            return ""
+            return None
 
     def list_samples(self) -> list[dict[str, Any]]:
         samples = self.sample_map()
@@ -384,6 +384,12 @@ class ReviewState:
         else:
             editable_output = candidate.text
             editable_source = candidate.source
+        if correction is not None:
+            display_output = correction
+            display_source = f"corrections/{sample_id}.txt"
+        else:
+            display_output = editable_output
+            display_source = editable_source
         return {
             "sample": sample,
             "shape_key": shape_key(sample),
@@ -397,10 +403,15 @@ class ReviewState:
             "editable_output": editable_output,
             "editable_source": editable_source,
             "editable_sha256": sha256_text(editable_output),
+            "display_output": display_output,
+            "display_source": display_source,
+            "display_sha256": sha256_text(display_output),
+            "display_row_lengths": row_lengths(display_output),
+            "display_leading_spaces": leading_space_counts(display_output),
             "previous": previous_text,
             "previous_source": previous_source,
             "correction": correction,
-            "correction_sha256": sha256_text(correction) if correction else None,
+            "correction_sha256": sha256_text(correction) if correction is not None else None,
             "decision": decision,
         }
 
@@ -430,7 +441,10 @@ class ReviewState:
                 "sample_id": sample_id,
                 "candidate_sha256": candidate.sha256,
                 "correction": path.relative_to(self.root).as_posix(),
+                "correction_source": path.relative_to(self.root / "style_samples").as_posix(),
                 "correction_sha256": sha256_text(text),
+                "correction_row_lengths": row_lengths(text),
+                "correction_leading_spaces": leading_space_counts(text),
                 "saved_at": utc_now(),
             }
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  applySavedCorrection,
   createDocument,
   deleteCell,
   deleteRow,
@@ -9,6 +10,7 @@ import {
   History,
   insertCell,
   insertRow,
+  isRedundantTerrainFootprint,
   paintCell,
   resizeRow,
   serializeDocument,
@@ -71,4 +73,39 @@ test("topology cells distinguish elevated, lower, active, and blocked areas", ()
   assert.equal(shapeCellClass("Walkable", "0"), "mask-inactive");
   assert.equal(shapeCellClass("Walkable", "."), "mask-inactive");
   assert.equal(shapeCellClass("Other", "x"), "mask-neutral");
+});
+
+test("a completely filled terrain footprint is redundant", () => {
+  assert.equal(isRedundantTerrainFootprint("Surface", ["###", "###"]), true);
+  assert.equal(isRedundantTerrainFootprint("Terrain footprint", ["111", "111"]), true);
+  assert.equal(isRedundantTerrainFootprint("Surface", ["###", "#.#"]), false);
+  assert.equal(isRedundantTerrainFootprint("Surface", ["###", "##"]), false);
+  assert.equal(isRedundantTerrainFootprint("Elevation", ["111", "111"]), false);
+});
+
+test("saved correction immediately becomes the displayed output with matching metadata", () => {
+  const detail = {
+    correction: null,
+    display_output: "draft\n",
+    display_source: "review/sample.txt",
+    display_sha256: "old",
+    display_row_lengths: [5],
+    display_leading_spaces: [0],
+  };
+  const text = "  fixed  \n x\n";
+  applySavedCorrection(detail, text, {
+    correction: "style_samples/corrections/sample.txt",
+    correction_source: "corrections/sample.txt",
+    correction_sha256: "new-hash",
+    correction_row_lengths: [9, 2],
+    correction_leading_spaces: [2, 1],
+  });
+  assert.deepEqual(detail, {
+    correction: text,
+    display_output: text,
+    display_source: "corrections/sample.txt",
+    display_sha256: "new-hash",
+    display_row_lengths: [9, 2],
+    display_leading_spaces: [2, 1],
+  });
 });
