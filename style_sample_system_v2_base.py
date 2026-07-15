@@ -69,6 +69,7 @@ class ShapeSample:
     title: str
     category: str
     mask: tuple[str, ...]
+    elevation_map: tuple[str, ...] = ()
     tags: tuple[str, ...] = ()
     notes: str = ""
     status: str = "generated"
@@ -80,6 +81,13 @@ class ShapeSample:
         if self.status not in VALID_STATUS:
             raise ValueError(f"invalid status for {self.sample_id}: {self.status!r}")
         cells_from_mask(self.mask)
+        if self.elevation_map:
+            if len(self.elevation_map) != len(self.mask):
+                raise ValueError(f"elevation map height does not match mask for {self.sample_id}")
+            if any(len(elevation_row) != len(mask_row) for elevation_row, mask_row in zip(self.elevation_map, self.mask, strict=True)):
+                raise ValueError(f"elevation map width does not match mask for {self.sample_id}")
+            if any(not glyph.isdigit() for row in self.elevation_map for glyph in row):
+                raise ValueError(f"elevation map must contain digits for {self.sample_id}")
 
 
 @dataclass(frozen=True)
@@ -517,6 +525,7 @@ def load_catalog(path: Path) -> tuple[ShapeSample, ...]:
             title=str(item["title"]),
             category=str(item["category"]),
             mask=tuple(str(row) for row in item["mask"]),
+            elevation_map=tuple(str(row) for row in item.get("elevation_map", [])),
             tags=tuple(str(tag) for tag in item.get("tags", [])),
             notes=str(item.get("notes", "")),
             status=str(item.get("status", "generated")),
@@ -535,6 +544,16 @@ def load_target(target_dir: Path, sample_id: str) -> tuple[str, ...] | None:
 
 
 def render_sample_draft(sample: ShapeSample, cells: frozenset[Point]) -> tuple[str, ...]:
+    if sample.elevation_map:
+        from raised_platform_renderer_v2 import render_room_with_platforms
+
+        elevations = {
+            Point(x, y): int(glyph)
+            for y, row in enumerate(sample.elevation_map)
+            for x, glyph in enumerate(row)
+            if glyph != "0"
+        }
+        return render_room_with_platforms(cells, elevations)
     if sample.category in {"room", "irregular-room", "corridor"}:
         if is_solid_rectangle(cells):
             width, height = cell_bounds(cells)

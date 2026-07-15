@@ -4,6 +4,7 @@
 # Review-grid fixtures preserve explicit canvas width with trailing spaces.
 style_samples/review/*.txt whitespace=-blank-at-eol,-blank-at-eof
 style_samples/corrections/*.txt whitespace=-blank-at-eol,-blank-at-eof
+style_samples/targets/*.txt whitespace=-blank-at-eol,-blank-at-eof
 
 # Binary assets
 *.png binary

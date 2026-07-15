@@ -36,6 +36,7 @@ def approved_corrected_samples() -> list[tuple[ShapeSample, tuple[str, ...]]]:
             title=item["title"],
             category=item["category"],
             mask=tuple(item["mask"]),
+            elevation_map=tuple(item.get("elevation_map", [])),
             tags=tuple(item.get("tags", [])),
             notes=item.get("notes", ""),
             status=item.get("status", "generated"),

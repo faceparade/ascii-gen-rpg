@@ -1,8 +1,10 @@
 {
   "schema_version": 1,
   "sample_id": "room-raised-platform-v2",
-  "candidate_sha256": "c59d126002b02d787d205048e95ebcf52d6feea6a8aa0ee7abbe7c6c60dc811c",
-  "decision": "skipped",
+  "candidate_sha256": "58ef589ec6c2be34517f288396acbe48d7abdbed66ec641268d4eb6f8fe24a9b",
+  "decision": "approved",
   "notes": "Migrated from catalog status: deferred.",
-  "reviewed_at": "2026-07-13T20:34:38Z"
+  "reviewed_at": "2026-07-15T17:25:57Z",
+  "correction": "corrections/room-raised-platform-v2.txt",
+  "correction_sha256": "58ef589ec6c2be34517f288396acbe48d7abdbed66ec641268d4eb6f8fe24a9b"
 }

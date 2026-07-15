@@ -78,11 +78,13 @@ def test_centered_platform_uses_rebuilt_raised_floor_projection() -> None:
     assert render_room_with_platforms(cells_from_mask(ROOM_MASK), ELEVATIONS) == REBUILT_PLATFORM
 
 
-def test_rebuilt_platform_is_the_current_review_candidate() -> None:
+def test_approved_platform_is_the_current_target() -> None:
     detail = ReviewState(Path.cwd()).sample_detail("room-raised-platform-v2")
 
-    assert detail["sample"]["status"] == "reviewing"
+    assert detail["sample"]["status"] == "approved"
+    assert detail["sample"]["target"] == "targets/room-raised-platform-v2.txt"
     assert tuple(detail["candidate"].splitlines()) == REBUILT_PLATFORM
+    assert tuple(detail["reference"].splitlines()) == REBUILT_PLATFORM
 
 
 def test_rectangular_platform_projection_remains_parametric() -> None:
