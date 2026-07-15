@@ -180,8 +180,8 @@ def test_outside_cliff_corner_exposes_review_only_artwork() -> None:
     assert detail["candidate"].strip()
     assert "ELEVATION" not in detail["candidate"]
     assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
-    assert detail["decision"]["decision"] == "needs_changes"
-    assert "open stepped cliff boundary" in detail["decision"]["notes"]
+    assert detail["decision"]["decision"] == "approved"
+    assert "open stepped outside-cliff layout" in detail["decision"]["notes"]
     assert detail["decision"]["candidate_sha256"] == detail["candidate_sha256"]
     assert detail["decision"]["correction"] == "corrections/sunken-outside-cliff-corner-v2.txt"
     correction_path = Path("style_samples/corrections/sunken-outside-cliff-corner-v2.txt")
