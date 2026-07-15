@@ -9,7 +9,7 @@ higher terrain plane. Surface occupancy, elevation, and walkability are separate
 * a cliff exists only between two defined adjacent surfaces of different heights;
 * the edge of a crop never creates an implicit closing wall.
 
-Freestanding raised platforms remain a later, separate elevation treatment.
+Freestanding raised platforms use a separate, approved open-floor treatment.
 """
 from __future__ import annotations
 

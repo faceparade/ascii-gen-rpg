@@ -97,6 +97,20 @@ def _classify_inside_cliff_corner(
         raise NotImplementedError("inside-corner artwork is approved only for the 5×5 east-to-south L-turn")
 
 
+def _classify_outside_cliff_corner(
+    surface_cells: frozenset[Point],
+    lower_cells: frozenset[Point],
+) -> None:
+    """Recognize the approved 5×5 upper shelf projecting south."""
+
+    expected_surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    expected_upper = frozenset(Point(x, y) for y in range(3) for x in range(2)) | frozenset(
+        Point(x, 0) for x in range(2, 5)
+    )
+    if surface_cells != expected_surface or lower_cells != expected_surface - expected_upper:
+        raise NotImplementedError("outside-corner artwork is approved only for the 5×5 south-projecting shelf")
+
+
 USER_AUTHORED_FIRST_CLIFF_ART = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -112,6 +126,21 @@ USER_AUTHORED_FIRST_CLIFF_ART = (
     "    ",
 )
 USER_AUTHORED_INSIDE_CLIFF_CORNER_ART = USER_AUTHORED_FIRST_CLIFF_ART
+USER_AUTHORED_OUTSIDE_CLIFF_CORNER_ART = (
+    "         ,— —,- -,— —,",
+    "         |__/___/__ /",
+    "         |",
+    "         |",
+    " ,— —,- -,",
+    "/___/___/",
+)
+
+
+def mirror_cliff_art_horizontally(rows: tuple[str, ...]) -> tuple[str, ...]:
+    """Mirror an approved canvas for manual review without inventing new glyphs."""
+
+    width = max(map(len, rows), default=0)
+    return tuple(row.ljust(width)[::-1] for row in rows)
 
 
 def render_sunken_terrain(
@@ -137,6 +166,13 @@ def render_sunken_terrain(
         _classify_chamber_corridor(surface_cells, walkable_cells)
         return USER_AUTHORED_FIRST_CLIFF_ART
     if bounds == (5, 5):
-        _classify_inside_cliff_corner(surface_cells, walkable_cells)
-        return USER_AUTHORED_INSIDE_CLIFF_CORNER_ART
+        inside_lower = frozenset(
+            {Point(x, 1) for x in range(1, 5)}
+            | {Point(1, y) for y in range(2, 5)}
+        )
+        if walkable_cells == inside_lower:
+            _classify_inside_cliff_corner(surface_cells, walkable_cells)
+            return USER_AUTHORED_INSIDE_CLIFF_CORNER_ART
+        _classify_outside_cliff_corner(surface_cells, walkable_cells)
+        return USER_AUTHORED_OUTSIDE_CLIFF_CORNER_ART
     raise NotImplementedError("terrain-cut artwork has not been approved for this topology")

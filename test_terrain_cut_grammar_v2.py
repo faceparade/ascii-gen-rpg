@@ -138,7 +138,8 @@ def test_outside_cliff_corner_review_fixture_has_one_projecting_upper_tip() -> N
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     sample = next(item for item in catalog["samples"] if item["id"] == "sunken-outside-cliff-corner-v2")
 
-    assert sample["status"] == "reviewing"
+    assert sample["status"] == "approved"
+    assert sample["target"] == "targets/sunken-outside-cliff-corner-v2.txt"
     assert sample["surface_mask"] == ["#####"] * 5
     assert sample["elevation_map"] == ["11111", "11000", "11000", "00000", "00000"]
     assert sample["walkable_mask"] == [".....", "..###", "..###", "#####", "#####"]
@@ -170,21 +171,51 @@ def test_outside_cliff_corner_review_fixture_has_one_projecting_upper_tip() -> N
     assert not any(edge.lower == Point(4, 4) for edge in edges)
 
 
-def test_outside_cliff_corner_exposes_review_only_artwork() -> None:
+def test_outside_cliff_corner_exposes_approved_artwork() -> None:
     state = ReviewState(Path.cwd())
     detail = state.sample_detail("sunken-outside-cliff-corner-v2")
 
-    assert detail["sample"]["status"] == "reviewing"
+    assert detail["sample"]["status"] == "approved"
     assert detail["sample"]["review"] == "review/sunken-outside-cliff-corner-v2.txt"
-    assert "target" not in detail["sample"]
-    assert detail["candidate_source"] == "review/sunken-outside-cliff-corner-v2.txt"
+    assert detail["sample"]["target"] == "targets/sunken-outside-cliff-corner-v2.txt"
+    assert detail["candidate_source"] == "targets/sunken-outside-cliff-corner-v2.txt"
     assert detail["candidate"].strip()
     assert "ELEVATION" not in detail["candidate"]
-    assert detail["reference_source"] == "corrections/sunken-outside-cliff-corner-v2.txt"
-    assert detail["reference"] == detail["display_output"]
+    assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
+    assert detail["display_source"] == "corrections/sunken-outside-cliff-corner-v2.txt"
+    assert detail["candidate"] == detail["display_output"]
     assert detail["decision"]["decision"] == "approved"
     assert "open stepped outside-cliff layout" in detail["decision"]["notes"]
-    assert detail["decision"]["candidate_sha256"] == detail["candidate_sha256"]
+    assert detail["decision"]["correction_sha256"] == detail["candidate_sha256"]
     assert detail["decision"]["correction"] == "corrections/sunken-outside-cliff-corner-v2.txt"
     correction_path = Path("style_samples/corrections/sunken-outside-cliff-corner-v2.txt")
     assert detail["correction"] == correction_path.read_text(encoding="utf-8")
+
+
+def test_mirrored_inside_cliff_corner_is_a_west_to_south_review_topology() -> None:
+    import json
+
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    sample = next(item for item in catalog["samples"] if item["id"] == "sunken-mirrored-inside-cliff-corner-v2")
+
+    assert sample["status"] == "reviewing"
+    assert sample["surface_mask"] == ["#####"] * 5
+    assert sample["elevation_map"] == ["11111", "00001", "11101", "11101", "11101"]
+    assert sample["walkable_mask"] == [".....", "####.", "...#.", "...#.", "...#."]
+    assert sample["review"] == "review/sunken-mirrored-inside-cliff-corner-v2.txt"
+    assert "target" not in sample
+
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    lower = frozenset({Point(x, 1) for x in range(4)} | {Point(3, y) for y in range(2, 5)})
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+    edges = cliff_edges(surface, elevations, lower)
+
+    assert len(lower) == 7
+    assert len(edges) == 14
+    assert CliffEdge(Point(2, 2), Point(3, 2), "east", 1) in edges
+    assert CliffEdge(Point(4, 2), Point(3, 2), "west", 1) in edges
+
+    detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
+    assert detail["candidate_source"] == sample["review"]
+    assert detail["reference_source"] == "targets/sunken-inside-cliff-corner-v2.txt"
+    assert detail["decision"] is None

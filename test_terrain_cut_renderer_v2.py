@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from style_sample_system import Point
-from terrain_cut_renderer_v2 import render_sunken_terrain
+from terrain_cut_renderer_v2 import mirror_cliff_art_horizontally, render_sunken_terrain
 
 
 SURFACE_CELLS = frozenset(Point(x, y) for y in range(5) for x in range(7))
@@ -14,6 +14,9 @@ REJECTED = Path("style_samples/review/sunken-corridor-chamber-cliff-art-v2.txt")
 TARGET = Path("style_samples/targets/sunken-corridor-chamber-cliff-art-v2.txt")
 LATEST_APPROVED_CORRECTION = Path("style_samples/corrections/sunken-corridor-chamber-cliff-art-v2.txt")
 INSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-inside-cliff-corner-v2.txt")
+OUTSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-outside-cliff-corner-v2.txt")
+OUTSIDE_CORNER_CORRECTION = Path("style_samples/corrections/sunken-outside-cliff-corner-v2.txt")
+MIRRORED_INSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-inside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -29,6 +32,28 @@ EXPECTED_DRAFT = (
     "    ",
 )
 EXPECTED_INSIDE_CORNER = EXPECTED_DRAFT
+EXPECTED_OUTSIDE_CORNER = (
+    "         ,— —,- -,— —,",
+    "         |__/___/__ /",
+    "         |",
+    "         |",
+    " ,— —,- -,",
+    "/___/___/",
+)
+EXPECTED_MIRRORED_INSIDE_REVIEW = (
+    ",— —,— —,— —,— —,      ",
+    "|/ __/___/___/__|      ",
+    "'—'— — — — —,   |      ",
+    "            |/  |      ",
+    "            | ‘ |      ",
+    "            |/| |      ",
+    "            | | |      ",
+    "            |/| |      ",
+    "            | | |      ",
+    "            |/| |      ",
+    "            '—'—'      ",
+    "                       ",
+)
 
 
 def _draft() -> tuple[str, ...]:
@@ -72,3 +97,23 @@ def test_user_approved_inside_corner_matches_golden_target() -> None:
 
     assert render_sunken_terrain(surface, elevations, lower) == EXPECTED_INSIDE_CORNER
     assert tuple(INSIDE_CORNER_TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_INSIDE_CORNER
+
+
+def test_user_approved_outside_corner_matches_renderer_and_golden_target() -> None:
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    upper = frozenset(Point(x, y) for y in range(3) for x in range(2)) | frozenset(
+        Point(x, 0) for x in range(2, 5)
+    )
+    lower = surface - upper
+    elevations = {point: (1 if point in upper else 0) for point in surface}
+
+    assert render_sunken_terrain(surface, elevations, lower) == EXPECTED_OUTSIDE_CORNER
+    assert tuple(OUTSIDE_CORNER_TARGET.read_text(encoding="utf-8").splitlines()) == EXPECTED_OUTSIDE_CORNER
+    assert OUTSIDE_CORNER_TARGET.read_bytes() == OUTSIDE_CORNER_CORRECTION.read_bytes()
+
+
+def test_mirrored_inside_corner_review_preserves_the_approved_canvas() -> None:
+    assert mirror_cliff_art_horizontally(EXPECTED_INSIDE_CORNER) == EXPECTED_MIRRORED_INSIDE_REVIEW
+    assert tuple(MIRRORED_INSIDE_REVIEW.read_text(encoding="utf-8").splitlines()) == EXPECTED_MIRRORED_INSIDE_REVIEW
+    assert len(EXPECTED_MIRRORED_INSIDE_REVIEW) == len(EXPECTED_INSIDE_CORNER)
+    assert max(map(len, EXPECTED_MIRRORED_INSIDE_REVIEW)) == max(map(len, EXPECTED_INSIDE_CORNER))

@@ -69,7 +69,7 @@ Authoritative rules:
 - the cliff descends from the higher surface toward the lower surface;
 - absent neighbors do not create implicit walls;
 - crop continuation is topology, not post-render character deletion;
-- freestanding raised platforms remain a later treatment.
+- freestanding raised platforms use their own open-floor elevation renderer and approved target.
 
 The user-authored conceptual reference remains at:
 
@@ -140,27 +140,23 @@ Its golden target is:
 
 The rejected room-shell-based attempt remains archived under `style_samples/review/` and must not be reused.
 
-## Active elevation checkpoint: cliff corners
+## Active elevation checkpoint: mirrored cliff corners
 
-**Approved inside corner:** `sunken-inside-cliff-corner-v2` defines a 5 × 5 explicit terrain surface with a one-section level-0 cut that turns from east to south around level-1 terrain. It has seven lower walkable cells, fourteen directed cliff edges, and open east/south crop ends with no implicit caps.
+Completed and locked byte-for-byte:
 
-The user-submitted artwork is locked byte-for-byte as the first inside-corner golden projection. The renderer recognizes only this exact topology; mirrored and outside-corner rules remain unapproved.
+1. **Inside corner:** `sunken-inside-cliff-corner-v2` defines a 5 × 5 level-0 east-to-south L-turn around level-1 terrain.
+2. **Outside corner:** `sunken-outside-cliff-corner-v2` defines a 5 × 5 level-1 shelf projecting south into the lower plane.
+3. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
 
-Next, derive and manually review a compact corner vocabulary from the approved treatment:
+The active manual-review sequence is now:
 
-1. Inside corner where the lower cut turns around elevated terrain.
-2. Outside corner where the elevated shelf projects into the lower plane.
-3. Mirrored north/east and south/west layer variants.
-4. Corner joins adjoining an open corridor shoulder.
-
-Only after those corners are approved:
-
-1. Add a sunken T- or cross-junction.
-2. Apply the treatment to a region of the organic dungeon.
-3. Review actors on lower and upper planes and behind foreground cliffs.
-4. Review opaque, x-ray, and walls-removed modes.
-5. Review irregular footprints and multiple levels.
-6. Return to freestanding platforms.
+1. Mirrored cliff-corner variants derived from the approved inside/outside treatments.
+2. Corner joins adjoining an open corridor shoulder.
+3. A sunken T- or cross-junction.
+4. Elevation applied to a region of the organic dungeon.
+5. Actors on lower and upper planes and behind foreground cliffs.
+6. Opaque, x-ray, and walls-removed modes.
+7. Irregular footprints and multiple elevation levels.
 
 Only one new elevation concept is introduced at each checkpoint.
 
