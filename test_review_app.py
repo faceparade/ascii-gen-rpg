@@ -116,6 +116,16 @@ def test_current_output_panel_labels_geometry_as_reference() -> None:
     assert "renderShapeKey(state.detail.shape_key)" in html
 
 
+def test_review_actions_stay_visible_while_workspace_scrolls() -> None:
+    html = Path("review_app.html").read_text(encoding="utf-8")
+    review_bar_css = html[html.index("#reviewBar {"):html.index("#notes {")]
+
+    assert "position:sticky" in review_bar_css
+    assert "bottom:0" in review_bar_css
+    assert "z-index:" in review_bar_css
+    assert "main { min-height:700px; overflow:visible; }" in html
+
+
 def test_review_html_exposes_cell_grid_editor_controls() -> None:
     html = Path("review_app.html").read_text(encoding="utf-8")
 

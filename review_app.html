@@ -359,6 +359,9 @@ pre.art {
   grid-template-columns:minmax(240px,1fr) auto;
   gap:10px;
   align-items:end;
+  position:sticky;
+  bottom:0;
+  z-index:5;
 }
 #notes { width:100%; min-height:58px; padding:8px; resize:vertical; }
 .actions { display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-end; }
@@ -382,7 +385,7 @@ pre.art {
   body { overflow:auto; }
   #app { grid-template-columns:1fr; height:auto; }
   aside { max-height:360px; border-right:0; border-bottom:1px solid var(--line); }
-  main { min-height:700px; }
+  main { min-height:700px; overflow:visible; }
   .view-grid { grid-template-columns:1fr; }
   #reviewBar { grid-template-columns:1fr; }
 }
