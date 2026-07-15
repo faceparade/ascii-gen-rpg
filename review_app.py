@@ -378,11 +378,64 @@ class ReviewState:
         output.sort(key=lambda item: (item["status"] != "reviewing", item["category"], item["title"].lower()))
         return output
 
+    def _elevation_vocabulary(
+        self,
+        samples: dict[str, dict[str, Any]],
+        composition_source_ids: list[str],
+    ) -> list[dict[str, Any]]:
+        source_order = {
+            source_id: index for index, source_id in enumerate(composition_source_ids)
+        }
+        vocabulary: list[dict[str, Any]] = []
+        for sample in samples.values():
+            if sample.get("category") != "elevation":
+                continue
+            status = str(sample.get("status", ""))
+            if status not in {"approved", "authoritative"}:
+                continue
+            candidate = self.candidate_for(sample)
+            if not candidate.text:
+                continue
+            vocabulary.append(
+                {
+                    "id": sample["id"],
+                    "title": sample.get("title", sample["id"]),
+                    "status": status,
+                    "artwork": candidate.text,
+                    "source": candidate.source,
+                    "row_lengths": row_lengths(candidate.text),
+                    "leading_spaces": leading_space_counts(candidate.text),
+                    "shape_key": shape_key(sample),
+                    "composition_source": sample["id"] in composition_source_ids,
+                }
+            )
+        vocabulary.sort(
+            key=lambda item: (
+                not item["composition_source"],
+                source_order.get(item["id"], len(source_order)),
+                item["status"] != "authoritative",
+                item["title"].lower(),
+            )
+        )
+        return vocabulary
+
     def sample_detail(self, sample_id: str) -> dict[str, Any]:
         samples = self.sample_map()
         sample = samples.get(validate_sample_id(sample_id))
         if sample is None:
             raise NotFoundError(f"Unknown sample: {sample_id}")
+        raw_composition_source_ids = sample.get("composition_source_ids", [])
+        composition_source_ids = (
+            list(
+                dict.fromkeys(
+                    source_id
+                    for source_id in raw_composition_source_ids
+                    if isinstance(source_id, str)
+                )
+            )
+            if isinstance(raw_composition_source_ids, list)
+            else []
+        )
         candidate = self.candidate_for(sample)
         reference_text, reference_source = self._reference_for(sample, samples)
         previous_text, previous_source = self._previous_for(sample)
@@ -413,6 +466,12 @@ class ReviewState:
         return {
             "sample": sample,
             "shape_key": shape_key(sample),
+            "composition_source_ids": composition_source_ids,
+            "elevation_vocabulary": (
+                self._elevation_vocabulary(samples, composition_source_ids)
+                if sample.get("category") == "elevation"
+                else []
+            ),
             "candidate": candidate.text,
             "candidate_source": candidate.source,
             "candidate_sha256": candidate.sha256,

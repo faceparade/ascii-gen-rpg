@@ -194,8 +194,11 @@ def test_user_approved_open_corridor_shoulder_matches_renderer_and_golden_target
     assert OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes() == OPEN_CORRIDOR_SHOULDER_CORRECTION.read_bytes()
 
 
-def test_sunken_t_junction_review_starts_from_approved_shoulder_vocabulary() -> None:
-    draft = SUNKEN_T_JUNCTION_REVIEW.read_bytes()
+def test_sunken_t_junction_review_is_composed_from_opposed_approved_corners() -> None:
+    from terrain_art_composer_v2 import render_sunken_t_junction
 
-    assert draft == OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes()
-    assert draft.endswith(b"\n")
+    draft = SUNKEN_T_JUNCTION_REVIEW.read_text(encoding="utf-8")
+
+    assert draft == render_sunken_t_junction(Path(__file__).parent)
+    assert draft.encode("utf-8") != OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes()
+    assert draft.endswith("\n")

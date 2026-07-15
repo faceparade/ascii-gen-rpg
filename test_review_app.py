@@ -60,6 +60,7 @@ def build_project(root: Path) -> None:
                 "status": "reviewing",
                 "review": "review/sample-v2.txt",
                 "reference_id": "reference-v2",
+                "composition_source_ids": ["reference-v2", "future-source-v2"],
                 "surface_mask": ["###"],
                 "elevation_map": ["101"],
                 "walkable_mask": [".#."],
@@ -170,6 +171,19 @@ def test_review_html_exposes_cell_grid_editor_controls() -> None:
         assert f'id="{element_id}"' in html
 
 
+def test_elevation_workspace_exposes_complete_vocabulary_shelf() -> None:
+    html = Path("review_app.html").read_text(encoding="utf-8")
+
+    assert 'id="vocabularyPanel"' in html
+    assert 'id="vocabularyGrid"' in html
+    assert "Approved elevation vocabulary" in html
+    assert "renderElevationVocabulary(state.detail.elevation_vocabulary)" in html
+    assert "item.row_lengths" in html
+    assert "item.shape_key" in html
+    assert "item.composition_source" in html
+    assert "composition source" in html
+
+
 def test_grid_editor_model_with_node() -> None:
     node = shutil.which("node")
     if node is None:
@@ -214,6 +228,25 @@ def test_candidate_reference_and_row_lengths(project: Path) -> None:
             "legend": "# = walkable lower plane · . = not walkable",
         },
     ]
+
+
+def test_elevation_detail_exposes_complete_approved_vocabulary(project: Path) -> None:
+    detail = ReviewState(project).sample_detail("sample-v2")
+
+    assert detail["elevation_vocabulary"] == [
+        {
+            "id": "reference-v2",
+            "title": "Reference",
+            "status": "authoritative",
+            "artwork": REFERENCE_ART,
+            "source": "review/reference-v2.txt",
+            "row_lengths": [7, 8],
+            "leading_spaces": [2, 2],
+            "shape_key": [],
+            "composition_source": True,
+        }
+    ]
+    assert detail["composition_source_ids"] == ["reference-v2", "future-source-v2"]
 
 
 def test_existing_empty_correction_remains_the_current_output(project: Path) -> None:

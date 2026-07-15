@@ -186,6 +186,48 @@ pre.art {
   color:#f3ecd5;
   font:16px/1.2 "Cascadia Mono","SFMono-Regular",Consolas,monospace;
 }
+.vocabulary-panel { margin-top:12px; }
+.vocabulary-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:10px;
+  padding:10px;
+}
+.vocabulary-card {
+  min-width:0;
+  border:1px solid var(--line);
+  background:#11110e;
+}
+.vocabulary-card.composition-source {
+  border-color:var(--accent);
+  box-shadow:inset 0 0 0 1px #6c5418;
+}
+.vocabulary-card h3 {
+  margin:0;
+  padding:8px 9px 3px;
+  color:var(--accent);
+  font-size:13px;
+}
+.vocabulary-card .vocabulary-meta {
+  padding:0 9px 7px;
+  color:var(--muted);
+  font-size:11px;
+}
+.vocabulary-card .shape-key-grid { padding:0 8px 8px; }
+.vocabulary-card .shape-key-card { min-width:120px; }
+.vocabulary-card .shape-map-cell { width:16px; height:16px; font-size:9px; }
+.vocabulary-card pre {
+  margin:0;
+  max-height:300px;
+  padding:9px;
+  overflow:auto;
+  white-space:pre;
+  tab-size:4;
+  border-top:1px solid var(--line);
+  background:#080806;
+  color:#f3ecd5;
+  font:13px/1.15 "Cascadia Mono","SFMono-Regular",Consolas,monospace;
+}
 .shape-context {
   padding:10px;
   border-bottom:1px solid var(--line);
@@ -465,6 +507,11 @@ pre.art {
           <h2><span>Completed reference</span><span class="source" id="referenceSource"></span></h2>
           <pre class="art" id="referenceArt"></pre>
         </div>
+      </div>
+
+      <div class="panel vocabulary-panel" id="vocabularyPanel">
+        <h2><span>Approved elevation vocabulary</span><span class="source">all reusable terrain artwork</span></h2>
+        <div class="vocabulary-grid" id="vocabularyGrid"></div>
       </div>
 
       <div class="panel" id="diffPanel">
@@ -749,9 +796,45 @@ function renderShapeKey(sections) {
   renderShapeKeyInto($("gridEditorShape"), $("gridEditorShapeGrid"), sections);
 }
 
+function renderElevationVocabulary(items) {
+  const panel = $("vocabularyPanel");
+  const grid = $("vocabularyGrid");
+  grid.replaceChildren();
+  const vocabulary = Array.isArray(items) ? items : [];
+  panel.classList.toggle("hidden", !vocabulary.length);
+  for (const item of vocabulary) {
+    const card = document.createElement("article");
+    card.className = "vocabulary-card";
+    if (item.composition_source) card.classList.add("composition-source");
+
+    const heading = document.createElement("h3");
+    heading.textContent = item.title || item.id;
+    const widths = Array.isArray(item.row_lengths) ? item.row_lengths : [];
+    const widthText = widths.length
+      ? `${Math.min(...widths)}–${Math.max(...widths)} columns`
+      : "0 columns";
+    const meta = document.createElement("div");
+    meta.className = "vocabulary-meta";
+    const role = item.composition_source ? "composition source · " : "";
+    meta.textContent = `${role}${item.status} · ${widths.length} rows · ${widthText} · ${item.source}`;
+
+    const shapeContainer = document.createElement("div");
+    const shapeGrid = document.createElement("div");
+    shapeGrid.className = "shape-key-grid";
+    shapeContainer.append(shapeGrid);
+    renderShapeKeyInto(shapeContainer, shapeGrid, item.shape_key);
+
+    const artwork = document.createElement("pre");
+    artwork.textContent = normalizeDisplay(item.artwork || "");
+    card.append(heading, meta, shapeContainer, artwork);
+    grid.append(card);
+  }
+}
+
 function renderArtwork() {
   if (!state.detail) return;
   renderShapeKey(state.detail.shape_key);
+  renderElevationVocabulary(state.detail.elevation_vocabulary);
   $("candidateArt").textContent = normalizeDisplay(state.detail.display_output);
   $("referenceArt").textContent = normalizeDisplay(state.detail.reference || "No reference available.\n");
   $("diffArt").textContent = normalizeDisplay(buildDiff(state.detail.display_output, state.detail.reference));
