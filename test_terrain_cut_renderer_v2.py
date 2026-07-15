@@ -20,6 +20,8 @@ MIRRORED_INSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-inside-cliff
 MIRRORED_INSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-inside-cliff-corner-v2.txt")
 MIRRORED_INSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-inside-cliff-corner-v2.txt")
 MIRRORED_OUTSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-outside-cliff-corner-v2.txt")
+MIRRORED_OUTSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-outside-cliff-corner-v2.txt")
+MIRRORED_OUTSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-outside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -149,3 +151,18 @@ def test_mirrored_outside_corner_review_preserves_latest_approved_canvas() -> No
     assert tuple(MIRRORED_OUTSIDE_REVIEW.read_text(encoding="utf-8").splitlines()) == EXPECTED_MIRRORED_OUTSIDE_REVIEW
     assert len(EXPECTED_MIRRORED_OUTSIDE_REVIEW) == len(EXPECTED_OUTSIDE_CORNER)
     assert max(map(len, EXPECTED_MIRRORED_OUTSIDE_REVIEW)) == max(map(len, EXPECTED_OUTSIDE_CORNER))
+
+
+def test_user_approved_mirrored_outside_corner_matches_renderer_and_golden_target() -> None:
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    upper = frozenset(Point(x, y) for y in range(3) for x in range(3, 5)) | frozenset(
+        Point(x, 0) for x in range(3)
+    )
+    lower = surface - upper
+    elevations = {point: (1 if point in upper else 0) for point in surface}
+    approved_rows = tuple(MIRRORED_OUTSIDE_CORRECTION.read_text(encoding="utf-8").splitlines())
+
+    assert len(approved_rows) == 12
+    assert {len(row) for row in approved_rows} == {22}
+    assert render_sunken_terrain(surface, elevations, lower) == approved_rows
+    assert MIRRORED_OUTSIDE_TARGET.read_bytes() == MIRRORED_OUTSIDE_CORRECTION.read_bytes()

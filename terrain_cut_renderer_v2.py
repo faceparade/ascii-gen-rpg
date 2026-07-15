@@ -126,6 +126,22 @@ def _classify_outside_cliff_corner(
         raise NotImplementedError("outside-corner artwork is approved only for the 5×5 south-projecting shelf")
 
 
+def _classify_mirrored_outside_cliff_corner(
+    surface_cells: frozenset[Point],
+    lower_cells: frozenset[Point],
+) -> None:
+    """Recognize the approved mirrored 5×5 upper shelf projecting south."""
+
+    expected_surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    expected_upper = frozenset(Point(x, y) for y in range(3) for x in range(3, 5)) | frozenset(
+        Point(x, 0) for x in range(3)
+    )
+    if surface_cells != expected_surface or lower_cells != expected_surface - expected_upper:
+        raise NotImplementedError(
+            "mirrored outside-corner artwork is approved only for the 5×5 west-projecting shelf"
+        )
+
+
 USER_AUTHORED_FIRST_CLIFF_ART = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -148,6 +164,20 @@ USER_AUTHORED_OUTSIDE_CLIFF_CORNER_ART = (
     "         |",
     "—,— —,- -,",
     "/___/___/",
+)
+USER_AUTHORED_MIRRORED_OUTSIDE_CLIFF_CORNER_ART = (
+    "                      ",
+    "—,— —,- -,— —,        ",
+    "/___/___/__ /|        ",
+    "           | |        ",
+    "           |/|        ",
+    "           | ‘- -,— —,",
+    "           ‘/___/___/_",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
+    "                      ",
 )
 USER_AUTHORED_MIRRORED_INSIDE_CLIFF_CORNER_ART = (
     "\t\t\t\t\t    ",
@@ -210,6 +240,13 @@ def render_sunken_terrain(
         if walkable_cells == mirrored_inside_lower:
             _classify_mirrored_inside_cliff_corner(surface_cells, walkable_cells)
             return USER_AUTHORED_MIRRORED_INSIDE_CLIFF_CORNER_ART
+        mirrored_outside_upper = frozenset(
+            Point(x, y) for y in range(3) for x in range(3, 5)
+        ) | frozenset(Point(x, 0) for x in range(3))
+        mirrored_outside_lower = surface_cells - mirrored_outside_upper
+        if walkable_cells == mirrored_outside_lower:
+            _classify_mirrored_outside_cliff_corner(surface_cells, walkable_cells)
+            return USER_AUTHORED_MIRRORED_OUTSIDE_CLIFF_CORNER_ART
         _classify_outside_cliff_corner(surface_cells, walkable_cells)
         return USER_AUTHORED_OUTSIDE_CLIFF_CORNER_ART
     raise NotImplementedError("terrain-cut artwork has not been approved for this topology")

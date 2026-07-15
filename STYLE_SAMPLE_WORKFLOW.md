@@ -147,17 +147,17 @@ Completed and locked byte-for-byte:
 1. **Inside corner:** `sunken-inside-cliff-corner-v2` defines a 5 × 5 level-0 east-to-south L-turn around level-1 terrain.
 2. **Outside corner:** `sunken-outside-cliff-corner-v2` defines a 5 × 5 level-1 shelf projecting south into the lower plane.
 3. **Mirrored inside corner:** `sunken-mirrored-inside-cliff-corner-v2` defines the approved 5 × 5 level-0 west-to-south L-turn and preserves its user-authored correction byte-for-byte.
-4. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
+4. **Mirrored outside corner:** `sunken-mirrored-outside-cliff-corner-v2` defines the approved 5 × 5 west-projecting shelf counterpart and preserves its 22 × 12 user-authored correction byte-for-byte.
+5. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
 
 The active manual-review sequence is now:
 
-1. The mirrored outside-cliff-corner variant derived from the approved outside treatment.
-2. Corner joins adjoining an open corridor shoulder.
-3. A sunken T- or cross-junction.
-4. Elevation applied to a region of the organic dungeon.
-5. Actors on lower and upper planes and behind foreground cliffs.
-6. Opaque, x-ray, and walls-removed modes.
-7. Irregular footprints and multiple elevation levels.
+1. Corner joins adjoining an open corridor shoulder.
+2. A sunken T- or cross-junction.
+3. Elevation applied to a region of the organic dungeon.
+4. Actors on lower and upper planes and behind foreground cliffs.
+5. Opaque, x-ray, and walls-removed modes.
+6. Irregular footprints and multiple elevation levels.
 
 Only one new elevation concept is introduced at each checkpoint.
 

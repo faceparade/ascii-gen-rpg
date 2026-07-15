@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-mirrored-outside-cliff-corner-v2",
+  "candidate_sha256": "cf9532f56af6dbabaf98007b0cefffd918819af703a9df020cf6764f3dfe577e",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-15T18:31:30Z",
+  "correction": "corrections/sunken-mirrored-outside-cliff-corner-v2.txt",
+  "correction_sha256": "1e8974c7befc9f7c8c40d2f5ba623315d484efca480839ea12f57bc91e53e4c3"
+}
