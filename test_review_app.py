@@ -123,7 +123,15 @@ def test_review_actions_stay_visible_while_workspace_scrolls() -> None:
     assert "position:sticky" in review_bar_css
     assert "bottom:0" in review_bar_css
     assert "z-index:" in review_bar_css
-    assert "main { min-height:700px; overflow:visible; }" in html
+    narrow_css = html[html.index("@media(max-width:900px)"):html.index("</style>")]
+    narrow_review_start = narrow_css.index("#reviewBar {")
+    narrow_review_end = narrow_css.index("}", narrow_review_start)
+    narrow_review_css = narrow_css[narrow_review_start:narrow_review_end]
+    assert "position:fixed" in narrow_review_css
+    assert "left:0" in narrow_review_css
+    assert "right:0" in narrow_review_css
+    assert "bottom:0" in narrow_review_css
+    assert "padding-bottom:" in narrow_css
 
 
 def test_review_html_exposes_cell_grid_editor_controls() -> None:

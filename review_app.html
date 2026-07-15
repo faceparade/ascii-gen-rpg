@@ -382,12 +382,19 @@ pre.art {
 .small { font-size:12px; color:var(--muted); }
 .hidden { display:none !important; }
 @media(max-width:900px) {
-  body { overflow:auto; }
+  body { overflow:auto; padding-bottom:150px; }
   #app { grid-template-columns:1fr; height:auto; }
   aside { max-height:360px; border-right:0; border-bottom:1px solid var(--line); }
   main { min-height:700px; overflow:visible; }
   .view-grid { grid-template-columns:1fr; }
-  #reviewBar { grid-template-columns:1fr; }
+  #reviewBar {
+    grid-template-columns:1fr;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+  }
+  #notes { min-height:42px; }
 }
 </style>
 </head>
