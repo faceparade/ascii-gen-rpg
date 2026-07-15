@@ -1,7 +1,10 @@
+from pathlib import Path
+
 import pytest
 
 from raised_platform_grammar_v2 import PlatformEdge, raised_platforms
 from raised_platform_renderer_v2 import platform_edge_layer, render_room_with_platforms
+from review_app import ReviewState
 from style_sample_system import Point, actor_anchor, cells_from_mask
 
 
@@ -18,19 +21,19 @@ PLATFORM_CELLS = frozenset(
     for x in range(1, 4)
 )
 ELEVATIONS = {point: 1 for point in PLATFORM_CELLS}
-REVIEW_DRAFT = (
-    "  ,— —,— —,— —,— —,— —,",
-    " /|__/___/___/___/__ /|",
-    "‘ |   ,— —,— —,— —, | |",
-    "|/|  /|__/___/__ /| |/|",
-    "| | ‘ |         | | | |",
-    "|/| |/| `   `   |/| |/|",
-    "| | | |         | | | |",
-    "|/| |/| `   `   |/| |/|",
-    "| | | ,— —,— —,—'—, | |",
-    "|/| ‘/___/___/___/  |/|",
-    "| ,— —,— —,— —,— —,—'—,",
-    "‘/___/___/___/___/___/",
+REBUILT_PLATFORM = (
+    "                       ",
+    "                       ",
+    "      ,— — — — — —.    ",
+    "     /|           |    ",
+    "    , |           |    ",
+    "    |/|           |    ",
+    "    | |           |    ",
+    "    |/|           |    ",
+    "    | ‘— —,— —,— -,    ",
+    "    ‘/___/___/___/     ",
+    "                       ",
+    "                       ",
 )
 
 
@@ -61,16 +64,35 @@ def test_elevation_does_not_move_actor_anchor() -> None:
     assert actor_anchor(Point(2, 2)) == Point(10, 6)
 
 
-def test_platform_faces_clear_lower_floor_lattice() -> None:
+def test_platform_projection_has_open_lower_floor_and_plain_foreground_face() -> None:
     rows = render_room_with_platforms(cells_from_mask(ROOM_MASK), ELEVATIONS)
-    assert rows[3][4] == " "
-    assert rows[3][8] == "_"
-    assert rows[9][4] == "‘"
+
+    assert all(len(row) == 23 for row in rows)
+    assert rows[0].isspace() and rows[-1].isspace()
+    assert rows[2].startswith("      ,—")
+    assert "‘/___/___/___/" in rows[9]
+    assert ";.;" not in "\n".join(rows)
 
 
-def test_centered_platform_literal_projection_is_stable_for_review() -> None:
-    """Keep the executable draft stable without treating it as approved art."""
-    assert render_room_with_platforms(cells_from_mask(ROOM_MASK), ELEVATIONS) == REVIEW_DRAFT
+def test_centered_platform_uses_rebuilt_raised_floor_projection() -> None:
+    assert render_room_with_platforms(cells_from_mask(ROOM_MASK), ELEVATIONS) == REBUILT_PLATFORM
+
+
+def test_rebuilt_platform_is_the_current_review_candidate() -> None:
+    detail = ReviewState(Path.cwd()).sample_detail("room-raised-platform-v2")
+
+    assert detail["sample"]["status"] == "reviewing"
+    assert tuple(detail["candidate"].splitlines()) == REBUILT_PLATFORM
+
+
+def test_rectangular_platform_projection_remains_parametric() -> None:
+    floor = cells_from_mask(("####",) * 4)
+    elevations = {Point(x, y): 1 for y in range(1, 3) for x in range(1, 3)}
+
+    rows = render_room_with_platforms(floor, elevations)
+
+    assert len(rows) == 10
+    assert any("‘/___/___/" in row for row in rows)
 
 
 def test_platform_must_be_supported_by_walkable_floor() -> None:

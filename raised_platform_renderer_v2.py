@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Mapping
 
-from corridor_grammar import render_irregular_room
 from raised_platform_grammar_v2 import PlatformEdge, RaisedPlatform, raised_platforms
 from style_sample_system_v2_base import (
     SECTION_STRIDE_X,
@@ -30,35 +29,62 @@ def _ensure_canvas(rows: tuple[str, ...], width: int, height: int) -> list[list[
     return canvas
 
 
+def _render_rectangular_platform_stamp(
+    width_cells: int,
+    height_cells: int,
+) -> tuple[str, ...]:
+    """Render a rectangular raised-floor stamp from locked rim/face macros."""
+    if width_cells < 1 or height_cells < 1:
+        raise ValueError("platform dimensions must be positive")
+
+    visual_width = width_cells * SECTION_STRIDE_X + 3
+    rows = ["  ," + "— " * (2 * width_cells - 1) + "—."]
+
+    if height_cells == 1:
+        side_prefixes = [" /|"]
+    else:
+        side_prefixes = [" /|", ", |"]
+        for _ in range(height_cells - 2):
+            side_prefixes.extend(("|/|", "| |"))
+        side_prefixes.append("|/|")
+    rows.extend(prefix + " " * (visual_width - 4) + "|" for prefix in side_prefixes)
+
+    rows.append("| ‘" + "— —," * (width_cells - 1) + "— -,")
+    underside = ["___"] * width_cells
+    rows.append("‘" + "".join("/" + segment for segment in underside) + "/ ")
+
+    if any(len(row) != visual_width for row in rows):
+        raise AssertionError("raised-platform stamp rows must share one visual width")
+    return tuple(rows)
+
+
 def _overlay_rectangular_platform(
     canvas: list[list[str]],
     platform: RaisedPlatform,
 ) -> None:
-    """Overlay one rectangular platform as a nested Grammar v2 shell.
+    """Overlay a rebuilt rectangular raised-floor projection at its topology origin.
 
-    The platform shell is shifted by the platform's logical origin. Its north
-    underside and south hanging face explicitly clear lower-floor lattice marks
-    before their own glyphs are applied. This models the elevation face as an
-    opaque layer rather than accidental punctuation over the base floor.
+    The stamp uses the dedicated raised-floor rim and foreground-face vocabulary,
+    rather than nesting a second room shell. Its bounding box is opaque so lower-
+    floor lattice marks cannot show through the elevated footprint.
     """
-    if not is_solid_rectangle(normalize_cells(platform.cells)):
+    local_cells = normalize_cells(platform.cells)
+    if not is_solid_rectangle(local_cells):
         raise NotImplementedError("projection currently supports rectangular platforms only")
+    width_cells, height_cells = cell_bounds(local_cells)
 
     min_x = min(point.x for point in platform.cells)
     min_y = min(point.y for point in platform.cells)
-    local_cells = normalize_cells(platform.cells)
-    shell = render_irregular_room(local_cells)
+    stamp = _render_rectangular_platform_stamp(width_cells, height_cells)
     offset_x = min_x * SECTION_STRIDE_X
     offset_y = min_y * SECTION_STRIDE_Y
 
-    clear_rows = {1, len(shell) - 1}
-    for local_y, row in enumerate(shell):
+    for local_y, row in enumerate(stamp):
         target_y = offset_y + local_y
-        if local_y in clear_rows:
-            for local_x in range(len(row)):
-                target_x = offset_x + local_x
-                if 0 <= target_x < len(canvas[target_y]):
-                    canvas[target_y][target_x] = " "
+        for local_x in range(len(row)):
+            target_x = offset_x + local_x
+            if 0 <= target_x < len(canvas[target_y]):
+                canvas[target_y][target_x] = " "
         for local_x, glyph in enumerate(row):
             if glyph == " ":
                 continue
@@ -71,18 +97,14 @@ def render_room_with_platforms(
     floor_cells: frozenset[Point],
     elevations: Mapping[Point, int],
 ) -> tuple[str, ...]:
-    """Render a room plus all supported positive-elevation platform components."""
-    base = render_irregular_room(floor_cells)
+    """Render positive-elevation platforms on an open lower-floor canvas."""
     platforms = raised_platforms(floor_cells, elevations)
     floor_width, floor_height = cell_bounds(floor_cells)
     width = floor_width * SECTION_STRIDE_X + 3
     height = floor_height * SECTION_STRIDE_Y + 2
-    canvas = _ensure_canvas(base, width, height)
+    canvas = _ensure_canvas((), width, height)
 
     for platform in platforms:
         _overlay_rectangular_platform(canvas, platform)
 
-    rows = tuple("".join(row).rstrip() for row in canvas)
-    while rows and not rows[-1]:
-        rows = rows[:-1]
-    return rows
+    return tuple("".join(row) for row in canvas)
