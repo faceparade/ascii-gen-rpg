@@ -258,3 +258,39 @@ def test_mirrored_outside_cliff_corner_is_a_west_projecting_review_topology() ->
     assert detail["candidate"] == detail["correction"]
     assert detail["decision"]["decision"] == "approved"
     assert detail["decision"]["correction_sha256"] == detail["candidate_sha256"]
+
+
+def test_open_corridor_shoulder_is_a_two_wide_east_to_south_review_topology() -> None:
+    import json
+
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    sample = next(item for item in catalog["samples"] if item["id"] == "sunken-open-corridor-shoulder-v2")
+
+    assert sample["status"] == "reviewing"
+    assert sample["surface_mask"] == ["#######"] * 5
+    assert sample["elevation_map"] == ["1111111", "1000000", "1000000", "1001111", "1001111"]
+    assert sample["walkable_mask"] == [".......", ".######", ".######", ".##....", ".##...."]
+    assert sample["review"] == "review/sunken-open-corridor-shoulder-v2.txt"
+    assert "target" not in sample
+
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(7))
+    lower = frozenset(
+        {Point(x, y) for y in (1, 2) for x in range(1, 7)}
+        | {Point(x, y) for y in (3, 4) for x in (1, 2)}
+    )
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+    edges = cliff_edges(surface, elevations)
+
+    assert len(surface - lower) == 19
+    assert len(lower) == 16
+    assert len(edges) == 16
+    assert CliffEdge(Point(3, 3), Point(3, 2), "north", 1) in edges
+    assert CliffEdge(Point(3, 3), Point(2, 3), "west", 1) in edges
+    assert all(edge.lower.x != 6 or edge.direction != "east" for edge in edges)
+    assert all(edge.lower.y != 4 or edge.direction != "south" for edge in edges)
+
+    detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
+    assert detail["candidate_source"] == sample["review"]
+    assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
+    assert detail["display_source"] == sample["review"]
+    assert detail["decision"] is None

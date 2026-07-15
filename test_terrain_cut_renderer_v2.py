@@ -22,6 +22,8 @@ MIRRORED_INSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-ins
 MIRRORED_OUTSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-outside-cliff-corner-v2.txt")
 MIRRORED_OUTSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-outside-cliff-corner-v2.txt")
 MIRRORED_OUTSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-outside-cliff-corner-v2.txt")
+OPEN_CORRIDOR_SHOULDER_REVIEW = Path("style_samples/review/sunken-open-corridor-shoulder-v2.txt")
+OPEN_CORRIDOR_SHOULDER_TARGET = Path("style_samples/targets/sunken-open-corridor-shoulder-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -166,3 +168,11 @@ def test_user_approved_mirrored_outside_corner_matches_renderer_and_golden_targe
     assert {len(row) for row in approved_rows} == {22}
     assert render_sunken_terrain(surface, elevations, lower) == approved_rows
     assert MIRRORED_OUTSIDE_TARGET.read_bytes() == MIRRORED_OUTSIDE_CORRECTION.read_bytes()
+
+
+def test_open_corridor_shoulder_review_starts_from_approved_cliff_vocabulary() -> None:
+    draft = OPEN_CORRIDOR_SHOULDER_REVIEW.read_bytes()
+
+    assert draft == TARGET.read_bytes()
+    assert draft.endswith(b"\n")
+    assert not OPEN_CORRIDOR_SHOULDER_TARGET.exists()
