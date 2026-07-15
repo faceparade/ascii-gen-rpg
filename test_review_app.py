@@ -121,6 +121,8 @@ def test_review_html_exposes_cell_grid_editor_controls() -> None:
 
     assert 'type="module"' in html
     assert 'from "./review_grid_editor.js"' in html
+    assert 'className = `shape-map-cell ${shapeCellClass(section.label, value)}`' in html
+    assert 'class="shape-map-legend"' in html
     for element_id in (
         "gridEditorPanel",
         "gridEditorShape",

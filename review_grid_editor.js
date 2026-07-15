@@ -38,6 +38,17 @@ export function serializeDocument(document) {
   return body + (document.finalNewline ? "\n" : "");
 }
 
+export function shapeCellClass(label, value) {
+  const normalized = String(label).trim().toLowerCase();
+  if (normalized === "elevation") {
+    if (value === "1") return "elevation-high";
+    if (value === "0") return "elevation-low";
+  }
+  if (value === "1" || value === "#") return "mask-active";
+  if (value === "0" || value === ".") return "mask-inactive";
+  return "mask-neutral";
+}
+
 export function paintCell(document, row, column, glyph) {
   assertRow(document, row);
   assertColumn(column);

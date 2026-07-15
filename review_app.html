@@ -208,13 +208,35 @@ pre.art {
   background:#0a0a08;
 }
 .shape-key-card strong { display:block; margin-bottom:5px; }
-.shape-key-card pre {
-  margin:0 0 6px;
-  overflow:auto;
-  color:#f3ecd5;
-  font:15px/1.15 "Cascadia Mono",Consolas,monospace;
-}
 .shape-key-card .legend { color:var(--muted); font-size:11px; }
+.shape-map { display:grid; gap:2px; width:max-content; margin:6px 0; }
+.shape-map-cell {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  border:1px solid #4a4537;
+  border-radius:3px;
+  font:700 11px/1 "Cascadia Mono",Consolas,monospace;
+}
+.shape-map-cell.elevation-high { background:#a97820; border-color:#e3ad46; color:#fff4cf; }
+.shape-map-cell.elevation-low { background:#183d53; border-color:#2f6b89; color:#bfe8ff; }
+.shape-map-cell.mask-active { background:#315a43; border-color:#5f9a73; color:#dbffe5; }
+.shape-map-cell.mask-inactive { background:#181815; border-color:#35342c; color:#777265; }
+.shape-map-cell.mask-neutral { background:#24231e; color:#c8c0aa; }
+.shape-map-legend { display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:11px; }
+.shape-map-legend span::before {
+  content:"";
+  display:inline-block;
+  width:10px;
+  height:10px;
+  margin-right:5px;
+  border-radius:2px;
+  vertical-align:-1px;
+}
+.shape-map-legend .raised::before { background:#a97820; border:1px solid #e3ad46; }
+.shape-map-legend .lower::before { background:#183d53; border:1px solid #2f6b89; }
 #diffPanel { display:none; }
 #gridEditorPanel { display:none; margin-top:12px; }
 #gridEditorShape { padding:9px 10px; border-bottom:1px solid var(--line); background:#15140f; }
@@ -449,6 +471,7 @@ pre.art {
         <h2><span>Cell grid editor</span><span class="source" id="editorSource">spaces are visible cells</span></h2>
         <div class="shape-context" id="gridEditorShape">
           <strong>Shape key — read only</strong>
+          <div class="shape-map-legend"><span class="raised">Elevated</span><span class="lower">Lower</span></div>
           <div class="shape-key-grid" id="gridEditorShapeGrid"></div>
         </div>
         <div id="gridToolbar">
@@ -514,6 +537,7 @@ import {
   paintCell,
   resizeRow,
   serializeDocument,
+  shapeCellClass,
 } from "./review_grid_editor.js";
 "use strict";
 
@@ -684,12 +708,24 @@ function renderShapeKeyInto(container, grid, sections) {
     card.className = "shape-key-card";
     const heading = document.createElement("strong");
     heading.textContent = section.label;
-    const pre = document.createElement("pre");
-    pre.textContent = section.rows.join("\n");
+    const map = document.createElement("div");
+    map.className = "shape-map";
+    const width = Math.max(1, ...section.rows.map(row => [...row].length));
+    map.style.gridTemplateColumns = `repeat(${width}, 22px)`;
+    map.setAttribute("aria-label", `${section.label} map: ${section.rows.join(" / ")}`);
+    for (const row of section.rows) {
+      for (const value of row) {
+        const cell = document.createElement("span");
+        cell.className = `shape-map-cell ${shapeCellClass(section.label, value)}`;
+        cell.textContent = value;
+        cell.title = `${section.label}: ${value}`;
+        map.append(cell);
+      }
+    }
     const legend = document.createElement("div");
     legend.className = "legend";
     legend.textContent = section.legend;
-    card.append(heading, pre, legend);
+    card.append(heading, map, legend);
     grid.append(card);
   }
 }

@@ -12,6 +12,7 @@ import {
   paintCell,
   resizeRow,
   serializeDocument,
+  shapeCellClass,
 } from "./review_grid_editor.js";
 
 test("text round-trips exact ragged rows, trailing spaces, and final newline", () => {
@@ -60,4 +61,14 @@ test("history records one snapshot per committed gesture", () => {
   history.commit(document);
   assert.equal(serializeDocument(history.undo()), "ab\n");
   assert.equal(serializeDocument(history.redo()), "||\n");
+});
+
+test("topology cells distinguish elevated, lower, active, and blocked areas", () => {
+  assert.equal(shapeCellClass("Elevation", "1"), "elevation-high");
+  assert.equal(shapeCellClass("Elevation", "0"), "elevation-low");
+  assert.equal(shapeCellClass("Surface", "1"), "mask-active");
+  assert.equal(shapeCellClass("Surface", "#"), "mask-active");
+  assert.equal(shapeCellClass("Walkable", "0"), "mask-inactive");
+  assert.equal(shapeCellClass("Walkable", "."), "mask-inactive");
+  assert.equal(shapeCellClass("Other", "x"), "mask-neutral");
 });
