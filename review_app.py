@@ -33,6 +33,7 @@ CATALOG_PATH = Path("style_samples/catalog_v2.json")
 DECISIONS_DIR = Path("style_samples/decisions")
 CORRECTIONS_DIR = Path("style_samples/corrections")
 HTML_PATH = Path("review_app.html")
+GRID_EDITOR_PATH = Path("review_grid_editor.js")
 MAX_BODY_BYTES = 2 * 1024 * 1024
 VALID_DECISIONS = frozenset({"approved", "rejected", "needs_changes", "skipped"})
 SAFE_SAMPLE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
@@ -623,6 +624,14 @@ class ReviewRequestHandler(BaseHTTPRequestHandler):
                 html_path = safe_project_path(self.app.state.root, HTML_PATH)
                 data = html_path.read_bytes()
                 self._send_bytes(HTTPStatus.OK, data, "text/html; charset=utf-8")
+                return
+            if path == "/review_grid_editor.js":
+                module_path = safe_project_path(self.app.state.root, GRID_EDITOR_PATH)
+                self._send_bytes(
+                    HTTPStatus.OK,
+                    module_path.read_bytes(),
+                    "text/javascript; charset=utf-8",
+                )
                 return
             if path == "/api/config":
                 self._send_json(

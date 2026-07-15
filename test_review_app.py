@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import threading
 import urllib.error
@@ -29,6 +30,7 @@ def build_project(root: Path) -> None:
     (root / "style_samples/review").mkdir(parents=True)
     (root / "style_samples/targets").mkdir(parents=True)
     (root / "review_app.html").write_text("<!doctype html><title>test</title>", encoding="utf-8")
+    (root / "review_grid_editor.js").write_text("export const editor = true;\n", encoding="utf-8")
     (root / "style_samples/review/sample-v2.txt").write_text(
         "SAMPLE — REVIEW\n\nAUTOMATIC DRAFT\n---------------\n"
         + CANDIDATE_ART
@@ -112,6 +114,48 @@ def test_candidate_panel_contains_attempted_shape_key() -> None:
     assert 'id="candidateShapeGrid"' in candidate_markup
     assert "Attempted shape" in candidate_markup
     assert "renderShapeKey(state.detail.shape_key)" in html
+
+
+def test_review_html_exposes_cell_grid_editor_controls() -> None:
+    html = Path("review_app.html").read_text(encoding="utf-8")
+
+    assert 'type="module"' in html
+    assert 'from "./review_grid_editor.js"' in html
+    for element_id in (
+        "gridEditorPanel",
+        "gridEditorShape",
+        "gridEditorShapeGrid",
+        "gridCanvas",
+        "glyphPalette",
+        "gridPencil",
+        "gridEraser",
+        "gridUndo",
+        "gridRedo",
+        "gridInsertCell",
+        "gridDeleteCell",
+        "gridInsertRowAbove",
+        "gridInsertRowBelow",
+        "gridDeleteRow",
+        "gridShortenRow",
+        "gridLengthenRow",
+        "saveGridCorrectionButton",
+    ):
+        assert f'id="{element_id}"' in html
+
+
+def test_grid_editor_model_with_node() -> None:
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node is not installed")
+    result = subprocess.run(
+        [node, "--test", "test_review_grid_editor.mjs"],
+        cwd=Path(__file__).parent,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_candidate_reference_and_row_lengths(project: Path) -> None:
@@ -299,6 +343,11 @@ def test_http_api_smoke(project: Path) -> None:
         with urllib.request.urlopen(f"{base}/api/config") as response:
             config = json.loads(response.read().decode("utf-8"))
         assert config["token"] == server.token
+
+        with urllib.request.urlopen(f"{base}/review_grid_editor.js") as response:
+            editor_module = response.read().decode("utf-8")
+            assert response.headers.get_content_type() == "text/javascript"
+        assert editor_module.splitlines() == ["export const editor = true;"]
 
         rebinding_request = urllib.request.Request(
             f"{base}/api/config",

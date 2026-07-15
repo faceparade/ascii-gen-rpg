@@ -216,7 +216,83 @@ pre.art {
 }
 .shape-key-card .legend { color:var(--muted); font-size:11px; }
 #diffPanel { display:none; }
-#editorPanel { display:none; margin-top:12px; }
+#gridEditorPanel { display:none; margin-top:12px; }
+#gridEditorShape { padding:9px 10px; border-bottom:1px solid var(--line); background:#15140f; }
+#gridEditorShape .shape-key-grid { margin-top:6px; }
+#gridEditorShape .shape-key-card { min-width:130px; }
+#gridEditorShape .shape-key-card pre { margin:4px 0 0; font-size:11px; line-height:1.05; }
+#gridEditorShape .shape-key-card .legend { display:none; }
+#gridToolbar {
+  display:flex;
+  flex-wrap:nowrap;
+  gap:6px;
+  padding:9px 10px;
+  border-bottom:1px solid var(--line);
+  background:#11110e;
+  overflow-x:auto;
+}
+#gridToolbar button { flex:0 0 auto; }
+#gridToolbar button.active { border-color:var(--accent); color:#ffe3a0; background:#37301f; }
+#glyphPalette {
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  padding:9px 10px;
+  border-bottom:1px solid var(--line);
+}
+.glyph-button {
+  min-width:38px;
+  height:36px;
+  padding:4px 8px;
+  font:18px/1 "Cascadia Mono",Consolas,monospace;
+}
+.glyph-button.space-glyph { font:11px/1 system-ui,sans-serif; color:var(--muted); }
+#gridViewport {
+  overflow:auto;
+  max-height:520px;
+  padding:12px;
+  background:#090907;
+}
+#gridCanvas {
+  display:grid;
+  width:max-content;
+  gap:1px;
+  outline:none;
+  user-select:none;
+  touch-action:none;
+}
+.grid-row-label,.grid-row-length {
+  display:flex;
+  align-items:center;
+  color:var(--muted);
+  font:11px/1 "Cascadia Mono",Consolas,monospace;
+}
+.grid-row-label { justify-content:flex-end; padding-right:6px; }
+.grid-row-length { padding-left:6px; }
+.grid-cell {
+  width:27px;
+  height:29px;
+  padding:0;
+  border:1px solid #3d392d;
+  background:#14130f;
+  color:#f3ecd5;
+  font:18px/1 "Cascadia Mono",Consolas,monospace;
+  text-align:center;
+}
+.grid-cell.blank { color:#6e6755; }
+.grid-cell.implicit { color:#363329; background:#0d0d0a; border-color:#26241d; }
+.grid-cell.selected { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+#gridStatus {
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  padding:8px 10px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+}
+#gridStatus .spacer { flex:1; }
+#rawEditorDetails { border-top:1px solid var(--line); }
+#rawEditorDetails summary { cursor:pointer; padding:8px 10px; color:var(--muted); }
 #editor {
   width:100%;
   min-height:360px;
@@ -336,7 +412,7 @@ pre.art {
       <button id="referenceButton">Completed reference</button>
       <button id="diffButton">Difference</button>
       <button id="topologyButton">Topology</button>
-      <button id="editButton">Edit output</button>
+      <button id="editButton">Grid editor</button>
       <label><input id="spacesToggle" type="checkbox"> Show spaces</label>
       <label><input id="rulerToggle" type="checkbox"> Rulers</label>
       <span class="spacer"></span>
@@ -369,17 +445,44 @@ pre.art {
         <div class="topology-grid" id="topologyGrid"></div>
       </div>
 
-      <div class="panel" id="editorPanel">
-        <h2><span>Edit output copy</span><span class="source" id="editorSource">UTF-8, no wrapping</span></h2>
-        <textarea id="editor" wrap="off" spellcheck="false"></textarea>
-        <div class="editor-meta">
+      <div class="panel" id="gridEditorPanel">
+        <h2><span>Cell grid editor</span><span class="source" id="editorSource">spaces are visible cells</span></h2>
+        <div class="shape-context" id="gridEditorShape">
+          <strong>Shape key — read only</strong>
+          <div class="shape-key-grid" id="gridEditorShapeGrid"></div>
+        </div>
+        <div id="gridToolbar">
+          <button id="gridPencil" class="active">Pencil</button>
+          <button id="gridEraser">Eraser</button>
+          <button id="gridUndo">Undo</button>
+          <button id="gridRedo">Redo</button>
+          <button id="saveGridCorrectionButton" class="primary">Save exact correction</button>
+          <button id="gridInsertCell">Insert blank cell</button>
+          <button id="gridDeleteCell">Delete cell</button>
+          <button id="gridInsertRowAbove">Row above</button>
+          <button id="gridInsertRowBelow">Row below</button>
+          <button id="gridDeleteRow">Delete row</button>
+          <button id="gridShortenRow">Shorten row</button>
+          <button id="gridLengthenRow">Lengthen row</button>
+          <button id="resetEditorButton">Reset</button>
+        </div>
+        <div id="glyphPalette" aria-label="Glyph palette"></div>
+        <div id="gridViewport"><div id="gridCanvas" tabindex="0" aria-label="Character cell canvas"></div></div>
+        <div id="gridStatus">
           <span id="cursorInfo">row 1, column 1</span>
           <span id="editorDimensions"></span>
           <span id="raggedWarning"></span>
           <span class="spacer"></span>
-          <button id="resetEditorButton">Reset to output</button>
-          <button id="saveCorrectionButton" class="primary">Save corrected output</button>
         </div>
+        <details id="rawEditorDetails">
+          <summary>Raw text fallback</summary>
+          <textarea id="editor" wrap="off" spellcheck="false"></textarea>
+          <div class="editor-meta">
+            <span>Use only when direct text editing is easier.</span>
+            <span class="spacer"></span>
+            <button id="saveCorrectionButton">Save raw correction</button>
+          </div>
+        </details>
       </div>
     </section>
 
@@ -399,7 +502,19 @@ pre.art {
 </div>
 <div id="toast"></div>
 
-<script>
+<script type="module">
+import {
+  createDocument,
+  deleteCell,
+  deleteRow,
+  eraseCell,
+  History,
+  insertCell,
+  insertRow,
+  paintCell,
+  resizeRow,
+  serializeDocument,
+} from "./review_grid_editor.js";
 "use strict";
 
 const state = {
@@ -413,9 +528,17 @@ const state = {
   view: "side",
   showSpaces: false,
   showRulers: false,
+  gridDocument: null,
+  gridHistory: null,
+  gridTool: "pencil",
+  gridGlyph: "—",
+  gridSelection: {row:0, column:0},
+  gridPainting: false,
+  gridGestureDirty: false,
 };
 
 const $ = id => document.getElementById(id);
+const GRID_GLYPHS = [" ", "—", "_", "/", "\\", "|", ",", ".", "`", "'", "‘", "’", "j", "t"];
 
 async function api(path, options = {}) {
   const headers = Object.assign({}, options.headers || {});
@@ -552,9 +675,7 @@ function buildDiff(candidate, reference) {
   return output.join("\n");
 }
 
-function renderShapeKey(sections) {
-  const container = $("candidateShape");
-  const grid = $("candidateShapeGrid");
+function renderShapeKeyInto(container, grid, sections) {
   grid.replaceChildren();
   const available = Array.isArray(sections) ? sections : [];
   container.classList.toggle("hidden", !available.length);
@@ -571,6 +692,11 @@ function renderShapeKey(sections) {
     card.append(heading, pre, legend);
     grid.append(card);
   }
+}
+
+function renderShapeKey(sections) {
+  renderShapeKeyInto($("candidateShape"), $("candidateShapeGrid"), sections);
+  renderShapeKeyInto($("gridEditorShape"), $("gridEditorShapeGrid"), sections);
 }
 
 function renderArtwork() {
@@ -623,32 +749,134 @@ function setView(view) {
   $("topologyPanel").style.display = view === "topology" ? "block" : "none";
 }
 
-function updateEditorMeta() {
-  const editor = $("editor");
-  const before = editor.value.slice(0, editor.selectionStart);
-  const row = before.split("\n").length;
-  const column = before.length - before.lastIndexOf("\n");
-  const char = editor.value[editor.selectionStart] || "";
-  $("cursorInfo").textContent = `row ${row}, column ${column}${char ? ` · ${JSON.stringify(char)}` : ""}`;
+function renderGlyphPalette() {
+  const palette = $("glyphPalette");
+  palette.replaceChildren();
+  for (const glyph of GRID_GLYPHS) {
+    const button = document.createElement("button");
+    button.className = "glyph-button" + (glyph === " " ? " space-glyph" : "");
+    button.textContent = glyph === " " ? "SPACE" : glyph;
+    button.title = glyph === " " ? "Paint an explicit space" : `Paint ${JSON.stringify(glyph)}`;
+    button.classList.toggle("active", state.gridTool === "pencil" && state.gridGlyph === glyph);
+    button.addEventListener("click", () => {
+      state.gridTool = "pencil";
+      state.gridGlyph = glyph;
+      renderGlyphPalette();
+      updateGridButtons();
+    });
+    palette.append(button);
+  }
+}
 
-  const lines = editor.value.split("\n");
-  const lengths = lines.map(line => line.length);
-  const nonempty = lengths.filter(length => length > 0);
-  const min = nonempty.length ? Math.min(...nonempty) : 0;
-  const max = lengths.length ? Math.max(...lengths) : 0;
-  $("editorDimensions").textContent = `${lines.length} rows · max width ${max}`;
-  $("raggedWarning").textContent = nonempty.length && min !== max ? `ragged widths ${min}–${max}` : "";
+function updateGridButtons() {
+  $("gridPencil").classList.toggle("active", state.gridTool === "pencil");
+  $("gridEraser").classList.toggle("active", state.gridTool === "eraser");
+  $("gridUndo").disabled = !state.gridHistory?.canUndo();
+  $("gridRedo").disabled = !state.gridHistory?.canRedo();
+}
+
+function renderGridEditor() {
+  if (!state.gridDocument) return;
+  const canvas = $("gridCanvas");
+  const rows = state.gridDocument.rows;
+  const maximum = Math.max(0, ...rows.map(row => row.length));
+  const width = Math.max(16, maximum + 4, state.gridSelection.column + 2);
+  canvas.style.gridTemplateColumns = `42px repeat(${width}, 27px) 76px`;
+  canvas.replaceChildren();
+
+  rows.forEach((row, rowIndex) => {
+    const label = document.createElement("div");
+    label.className = "grid-row-label";
+    label.textContent = String(rowIndex + 1);
+    canvas.append(label);
+
+    for (let column = 0; column < width; column += 1) {
+      const explicit = column < row.length;
+      const glyph = explicit ? row[column] : " ";
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "grid-cell";
+      if (glyph === " ") cell.classList.add("blank");
+      if (!explicit) cell.classList.add("implicit");
+      if (state.gridSelection.row === rowIndex && state.gridSelection.column === column) {
+        cell.classList.add("selected");
+      }
+      cell.dataset.row = String(rowIndex);
+      cell.dataset.column = String(column);
+      cell.textContent = glyph === " " ? "·" : glyph;
+      cell.title = `row ${rowIndex + 1}, column ${column + 1} · ${explicit ? "explicit" : "implicit"} ${JSON.stringify(glyph)}`;
+      canvas.append(cell);
+    }
+
+    const length = document.createElement("div");
+    length.className = "grid-row-length";
+    length.textContent = `len ${row.length}`;
+    canvas.append(length);
+  });
+
+  const selectedRow = rows[state.gridSelection.row] || [];
+  const selectedGlyph = selectedRow[state.gridSelection.column] ?? " ";
+  const lengths = rows.map(row => row.length);
+  const nonempty = lengths.filter(Boolean);
+  $("cursorInfo").textContent = `row ${state.gridSelection.row + 1}, column ${state.gridSelection.column + 1} · ${JSON.stringify(selectedGlyph)}`;
+  $("editorDimensions").textContent = `${rows.length} rows · max width ${maximum}`;
+  $("raggedWarning").textContent = nonempty.length && Math.min(...nonempty) !== Math.max(...nonempty)
+    ? `exact ragged widths ${Math.min(...nonempty)}–${Math.max(...nonempty)}`
+    : "";
+  $("editor").value = serializeDocument(state.gridDocument);
+  updateGridButtons();
+}
+
+function selectGridCell(row, column) {
+  state.gridSelection = {row, column};
+}
+
+function paintSelectedCell(row, column) {
+  if (!state.gridDocument) return;
+  selectGridCell(row, column);
+  const before = serializeDocument(state.gridDocument);
+  if (state.gridTool === "eraser") eraseCell(state.gridDocument, row, column);
+  else paintCell(state.gridDocument, row, column, state.gridGlyph);
+  if (serializeDocument(state.gridDocument) !== before) state.gridGestureDirty = true;
+  renderGridEditor();
+}
+
+function commitGridGesture() {
+  if (state.gridGestureDirty && state.gridHistory && state.gridDocument) {
+    state.gridHistory.commit(state.gridDocument);
+  }
+  state.gridGestureDirty = false;
+  updateGridButtons();
+}
+
+function runGridCommand(command) {
+  if (!state.gridDocument || !state.gridHistory) return;
+  const before = serializeDocument(state.gridDocument);
+  command();
+  if (serializeDocument(state.gridDocument) !== before) state.gridHistory.commit(state.gridDocument);
+  renderGridEditor();
+}
+
+function resetGridDocument() {
+  if (!state.detail) return;
+  const text = state.detail.correction || state.detail.editable_output;
+  state.gridDocument = createDocument(text);
+  state.gridHistory = new History(state.gridDocument);
+  state.gridSelection = {row:0, column:0};
+  $("editorSource").textContent = state.detail.correction
+    ? "saved correction"
+    : `copy of ${state.detail.editable_source || "candidate"}`;
+  renderGlyphPalette();
+  renderGridEditor();
 }
 
 function enterEditMode() {
   if (!state.detail) return;
-  $("editorPanel").style.display = "block";
-  $("editor").value = state.detail.correction || state.detail.editable_output;
-  $("editorSource").textContent = state.detail.correction
-    ? "saved correction"
-    : `copy of ${state.detail.editable_source || "candidate"}`;
-  updateEditorMeta();
-  $("editor").focus();
+  const panel = $("gridEditorPanel");
+  panel.style.display = "block";
+  resetGridDocument();
+  panel.scrollIntoView({block:"start", behavior:"instant"});
+  $("gridCanvas").focus({preventScroll:true});
 }
 
 function nextIndex(delta) {
@@ -689,24 +917,41 @@ async function loadSample(sampleId) {
     + `${detail.candidate_sha256.slice(0,12)} · row lengths ${detail.candidate_row_lengths.join(", ")} · `
     + `leading spaces ${detail.candidate_leading_spaces.join(", ")}`;
   $("notes").value = detail.decision?.notes || "";
-  $("editorPanel").style.display = "none";
+  $("gridEditorPanel").style.display = "none";
+  state.gridDocument = null;
+  state.gridHistory = null;
   renderArtwork();
   renderTopology();
   renderQueue();
   setView(state.view);
 }
 
-async function saveCorrection() {
+async function saveCorrectionText(text) {
   if (!state.detail) return;
   const result = await api(`/api/correction/${encodeURIComponent(state.currentId)}`, {
     method:"POST",
     body:JSON.stringify({
       candidate_sha256: state.loadedHash,
-      text: $("editor").value,
+      text,
     }),
   });
-  state.detail.correction = $("editor").value;
+  state.detail.correction = text;
+  $("editorSource").textContent = "saved correction";
   toast(`Correction saved: ${result.correction}`);
+}
+
+async function saveGridCorrection() {
+  if (!state.gridDocument) return;
+  await saveCorrectionText(serializeDocument(state.gridDocument));
+}
+
+async function saveRawCorrection() {
+  const text = $("editor").value;
+  await saveCorrectionText(text);
+  state.gridDocument = createDocument(text);
+  state.gridHistory = new History(state.gridDocument);
+  state.gridSelection = {row:0, column:0};
+  renderGridEditor();
 }
 
 async function decide(decision) {
@@ -770,24 +1015,136 @@ function bindEvents() {
   $("rulerToggle").addEventListener("change", event => {
     state.showRulers = event.target.checked; renderArtwork();
   });
-  $("editor").addEventListener("input", updateEditorMeta);
-  $("editor").addEventListener("click", updateEditorMeta);
-  $("editor").addEventListener("keyup", updateEditorMeta);
-  $("resetEditorButton").addEventListener("click", () => {
-    if (!state.detail) return;
-    $("editor").value = state.detail.editable_output;
-    $("editorSource").textContent = `copy of ${state.detail.editable_source || "candidate"}`;
-    updateEditorMeta();
+
+  $("gridPencil").addEventListener("click", () => {
+    state.gridTool = "pencil";
+    renderGlyphPalette();
+    updateGridButtons();
   });
-  $("saveCorrectionButton").addEventListener("click", () => saveCorrection().catch(showError));
+  $("gridEraser").addEventListener("click", () => {
+    state.gridTool = "eraser";
+    renderGlyphPalette();
+    updateGridButtons();
+  });
+  $("gridUndo").addEventListener("click", () => {
+    if (!state.gridHistory) return;
+    state.gridDocument = state.gridHistory.undo();
+    renderGridEditor();
+  });
+  $("gridRedo").addEventListener("click", () => {
+    if (!state.gridHistory) return;
+    state.gridDocument = state.gridHistory.redo();
+    renderGridEditor();
+  });
+  $("gridInsertCell").addEventListener("click", () => runGridCommand(() => {
+    insertCell(state.gridDocument, state.gridSelection.row, state.gridSelection.column);
+  }));
+  $("gridDeleteCell").addEventListener("click", () => runGridCommand(() => {
+    deleteCell(state.gridDocument, state.gridSelection.row, state.gridSelection.column);
+  }));
+  $("gridInsertRowAbove").addEventListener("click", () => runGridCommand(() => {
+    const {row} = state.gridSelection;
+    insertRow(state.gridDocument, row, state.gridDocument.rows[row].length);
+  }));
+  $("gridInsertRowBelow").addEventListener("click", () => runGridCommand(() => {
+    const {row} = state.gridSelection;
+    insertRow(state.gridDocument, row + 1, state.gridDocument.rows[row].length);
+    state.gridSelection.row += 1;
+  }));
+  $("gridDeleteRow").addEventListener("click", () => runGridCommand(() => {
+    deleteRow(state.gridDocument, state.gridSelection.row);
+    state.gridSelection.row = Math.min(state.gridSelection.row, state.gridDocument.rows.length - 1);
+  }));
+  $("gridShortenRow").addEventListener("click", () => runGridCommand(() => {
+    const {row} = state.gridSelection;
+    resizeRow(state.gridDocument, row, Math.max(0, state.gridDocument.rows[row].length - 1));
+  }));
+  $("gridLengthenRow").addEventListener("click", () => runGridCommand(() => {
+    const {row} = state.gridSelection;
+    resizeRow(state.gridDocument, row, state.gridDocument.rows[row].length + 1);
+  }));
+  $("resetEditorButton").addEventListener("click", resetGridDocument);
+  $("saveGridCorrectionButton").addEventListener("click", () => saveGridCorrection().catch(showError));
+  $("saveCorrectionButton").addEventListener("click", () => saveRawCorrection().catch(showError));
+
+  const gridCanvas = $("gridCanvas");
+  gridCanvas.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    const cell = event.target.closest(".grid-cell");
+    if (!cell) return;
+    event.preventDefault();
+    state.gridPainting = true;
+    state.gridGestureDirty = false;
+    paintSelectedCell(Number(cell.dataset.row), Number(cell.dataset.column));
+  });
+  gridCanvas.addEventListener("pointerover", event => {
+    if (!state.gridPainting || !(event.buttons & 1)) return;
+    const cell = event.target.closest(".grid-cell");
+    if (cell) paintSelectedCell(Number(cell.dataset.row), Number(cell.dataset.column));
+  });
+  document.addEventListener("pointerup", () => {
+    if (!state.gridPainting) return;
+    state.gridPainting = false;
+    commitGridGesture();
+  });
+  gridCanvas.addEventListener("keydown", event => {
+    if (!state.gridDocument || !state.gridHistory) return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+      event.preventDefault();
+      state.gridDocument = event.shiftKey ? state.gridHistory.redo() : state.gridHistory.undo();
+      renderGridEditor();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") {
+      event.preventDefault();
+      state.gridDocument = state.gridHistory.redo();
+      renderGridEditor();
+      return;
+    }
+    const movement = {
+      ArrowUp:[-1,0], ArrowDown:[1,0], ArrowLeft:[0,-1], ArrowRight:[0,1],
+    }[event.key];
+    if (movement) {
+      event.preventDefault();
+      state.gridSelection.row = Math.max(0, Math.min(
+        state.gridDocument.rows.length - 1,
+        state.gridSelection.row + movement[0],
+      ));
+      state.gridSelection.column = Math.max(0, state.gridSelection.column + movement[1]);
+      renderGridEditor();
+      return;
+    }
+    if (event.key === "Backspace" || event.key === "Delete") {
+      event.preventDefault();
+      runGridCommand(() => eraseCell(
+        state.gridDocument,
+        state.gridSelection.row,
+        state.gridSelection.column,
+      ));
+      return;
+    }
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && [...event.key].length === 1) {
+      event.preventDefault();
+      state.gridTool = "pencil";
+      state.gridGlyph = event.key;
+      runGridCommand(() => paintCell(
+        state.gridDocument,
+        state.gridSelection.row,
+        state.gridSelection.column,
+        event.key,
+      ));
+      renderGlyphPalette();
+    }
+  });
+
   $("publishButton").addEventListener("click", () => publishBatch().catch(showError));
   document.querySelectorAll("[data-decision]").forEach(button => {
     button.addEventListener("click", () => decide(button.dataset.decision).catch(showError));
   });
   document.addEventListener("keydown", event => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && $("editorPanel").style.display === "block") {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter" && $("gridEditorPanel").style.display === "block") {
       event.preventDefault();
-      saveCorrection().catch(showError);
+      saveGridCorrection().catch(showError);
     }
   });
 }
