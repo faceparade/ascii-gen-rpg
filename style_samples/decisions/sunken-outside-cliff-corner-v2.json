@@ -4,7 +4,7 @@
   "candidate_sha256": "1aa8077a2c74db651c8a60bd9b211eb1b562f3b3ddaa2b27a9c2fa996e890641",
   "decision": "approved",
   "notes": "Approved open stepped outside-cliff layout.",
-  "reviewed_at": "2026-07-15T03:22:34Z",
+  "reviewed_at": "2026-07-15T03:25:25Z",
   "correction": "corrections/sunken-outside-cliff-corner-v2.txt",
-  "correction_sha256": "a5abf190f908a21a0769d62efa59e70cb87e79e7bfd1b1f729ad3ee6bafc3220"
+  "correction_sha256": "a0d4c9cc30c4cfe94560a4e5f6916f71e6a7a4baa9603fc48abdfefddef654ce"
 }
