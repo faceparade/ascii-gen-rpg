@@ -25,6 +25,7 @@ MIRRORED_OUTSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-ou
 OPEN_CORRIDOR_SHOULDER_REVIEW = Path("style_samples/review/sunken-open-corridor-shoulder-v2.txt")
 OPEN_CORRIDOR_SHOULDER_TARGET = Path("style_samples/targets/sunken-open-corridor-shoulder-v2.txt")
 OPEN_CORRIDOR_SHOULDER_CORRECTION = Path("style_samples/corrections/sunken-open-corridor-shoulder-v2.txt")
+SUNKEN_T_JUNCTION_REVIEW = Path("style_samples/review/sunken-two-wide-t-junction-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -191,3 +192,10 @@ def test_user_approved_open_corridor_shoulder_matches_renderer_and_golden_target
     assert {len(row) for row in approved_rows} == {18, 27, 30}
     assert render_sunken_terrain(surface, elevations, lower) == approved_rows
     assert OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes() == OPEN_CORRIDOR_SHOULDER_CORRECTION.read_bytes()
+
+
+def test_sunken_t_junction_review_starts_from_approved_shoulder_vocabulary() -> None:
+    draft = SUNKEN_T_JUNCTION_REVIEW.read_bytes()
+
+    assert draft == OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes()
+    assert draft.endswith(b"\n")

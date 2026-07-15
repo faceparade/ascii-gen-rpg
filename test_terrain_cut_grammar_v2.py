@@ -296,3 +296,54 @@ def test_open_corridor_shoulder_is_a_two_wide_east_to_south_review_topology() ->
     assert detail["candidate"] == detail["correction"]
     assert detail["decision"]["decision"] == "approved"
     assert detail["decision"]["correction_sha256"] == detail["candidate_sha256"]
+
+
+def test_sunken_t_junction_is_a_two_wide_three_way_review_topology() -> None:
+    import json
+
+    catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    sample = next(item for item in catalog["samples"] if item["id"] == "sunken-two-wide-t-junction-v2")
+
+    assert sample["status"] == "reviewing"
+    assert sample["surface_mask"] == ["#########"] * 7
+    assert sample["elevation_map"] == [
+        "111111111",
+        "111111111",
+        "000000000",
+        "000000000",
+        "111100111",
+        "111100111",
+        "111100111",
+    ]
+    assert sample["walkable_mask"] == [
+        ".........",
+        ".........",
+        "#########",
+        "#########",
+        "....##...",
+        "....##...",
+        "....##...",
+    ]
+    assert sample["review"] == "review/sunken-two-wide-t-junction-v2.txt"
+    assert "target" not in sample
+
+    surface = frozenset(Point(x, y) for y in range(7) for x in range(9))
+    lower = frozenset(
+        {Point(x, y) for y in (2, 3) for x in range(9)}
+        | {Point(x, y) for y in range(4, 7) for x in (4, 5)}
+    )
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+    edges = cliff_edges(surface, elevations)
+
+    assert len(surface - lower) == 39
+    assert len(lower) == 24
+    assert len(edges) == 22
+    assert all(edge.lower.x != 0 or edge.direction != "west" for edge in edges)
+    assert all(edge.lower.x != 8 or edge.direction != "east" for edge in edges)
+    assert all(edge.lower.y != 6 or edge.direction != "south" for edge in edges)
+
+    detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
+    assert detail["candidate_source"] == sample["review"]
+    assert detail["reference_source"] == "targets/sunken-open-corridor-shoulder-v2.txt"
+    assert detail["display_source"] == sample["review"]
+    assert detail["decision"] is None
