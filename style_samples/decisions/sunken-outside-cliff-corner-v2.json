@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "sample_id": "sunken-outside-cliff-corner-v2",
-  "candidate_sha256": "1aa8077a2c74db651c8a60bd9b211eb1b562f3b3ddaa2b27a9c2fa996e890641",
+  "candidate_sha256": "a0d4c9cc30c4cfe94560a4e5f6916f71e6a7a4baa9603fc48abdfefddef654ce",
   "decision": "approved",
   "notes": "Approved open stepped outside-cliff layout.",
-  "reviewed_at": "2026-07-15T03:25:25Z",
+  "reviewed_at": "2026-07-15T18:06:15Z",
   "correction": "corrections/sunken-outside-cliff-corner-v2.txt",
-  "correction_sha256": "a0d4c9cc30c4cfe94560a4e5f6916f71e6a7a4baa9603fc48abdfefddef654ce"
+  "correction_sha256": "0c2253d9cef1e870371eed9a238622a28405efef21361fa1ae54f81a59a4fa71"
 }

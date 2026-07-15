@@ -146,11 +146,12 @@ Completed and locked byte-for-byte:
 
 1. **Inside corner:** `sunken-inside-cliff-corner-v2` defines a 5 × 5 level-0 east-to-south L-turn around level-1 terrain.
 2. **Outside corner:** `sunken-outside-cliff-corner-v2` defines a 5 × 5 level-1 shelf projecting south into the lower plane.
-3. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
+3. **Mirrored inside corner:** `sunken-mirrored-inside-cliff-corner-v2` defines the approved 5 × 5 level-0 west-to-south L-turn and preserves its user-authored correction byte-for-byte.
+4. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
 
 The active manual-review sequence is now:
 
-1. Mirrored cliff-corner variants derived from the approved inside/outside treatments.
+1. The mirrored outside-cliff-corner variant derived from the approved outside treatment.
 2. Corner joins adjoining an open corridor shoulder.
 3. A sunken T- or cross-junction.
 4. Elevation applied to a region of the organic dungeon.

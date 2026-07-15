@@ -17,6 +17,8 @@ INSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-inside-cliff-corner-v2
 OUTSIDE_CORNER_TARGET = Path("style_samples/targets/sunken-outside-cliff-corner-v2.txt")
 OUTSIDE_CORNER_CORRECTION = Path("style_samples/corrections/sunken-outside-cliff-corner-v2.txt")
 MIRRORED_INSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-inside-cliff-corner-v2.txt")
+MIRRORED_INSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-inside-cliff-corner-v2.txt")
+MIRRORED_INSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-inside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -34,10 +36,10 @@ EXPECTED_DRAFT = (
 EXPECTED_INSIDE_CORNER = EXPECTED_DRAFT
 EXPECTED_OUTSIDE_CORNER = (
     "         ,— —,- -,— —,",
-    "         |__/___/__ /",
+    "         |__/___/___/_",
     "         |",
     "         |",
-    " ,— —,- -,",
+    "—,— —,- -,",
     "/___/___/",
 )
 EXPECTED_MIRRORED_INSIDE_REVIEW = (
@@ -117,3 +119,17 @@ def test_mirrored_inside_corner_review_preserves_the_approved_canvas() -> None:
     assert tuple(MIRRORED_INSIDE_REVIEW.read_text(encoding="utf-8").splitlines()) == EXPECTED_MIRRORED_INSIDE_REVIEW
     assert len(EXPECTED_MIRRORED_INSIDE_REVIEW) == len(EXPECTED_INSIDE_CORNER)
     assert max(map(len, EXPECTED_MIRRORED_INSIDE_REVIEW)) == max(map(len, EXPECTED_INSIDE_CORNER))
+
+
+def test_user_approved_mirrored_inside_corner_matches_renderer_and_golden_target() -> None:
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(5))
+    lower = frozenset(
+        {Point(x, 1) for x in range(4)}
+        | {Point(3, y) for y in range(2, 5)}
+    )
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+    approved_text = MIRRORED_INSIDE_CORRECTION.read_text(encoding="utf-8")
+    approved_rows = tuple(approved_text.split("\n"))
+
+    assert render_sunken_terrain(surface, elevations, lower) == approved_rows
+    assert MIRRORED_INSIDE_TARGET.read_bytes() == MIRRORED_INSIDE_CORRECTION.read_bytes()
