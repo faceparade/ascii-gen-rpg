@@ -217,5 +217,8 @@ def test_mirrored_inside_cliff_corner_is_a_west_to_south_review_topology() -> No
 
     detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
     assert detail["candidate_source"] == sample["review"]
-    assert detail["reference_source"] == "targets/sunken-inside-cliff-corner-v2.txt"
-    assert detail["decision"] is None
+    assert detail["reference_source"] == "corrections/sunken-mirrored-inside-cliff-corner-v2.txt"
+    assert detail["display_source"] == "corrections/sunken-mirrored-inside-cliff-corner-v2.txt"
+    assert detail["decision"]["decision"] == "approved"
+    assert detail["decision"]["candidate_sha256"] == detail["candidate_sha256"]
+    assert detail["decision"]["correction_sha256"] == detail["correction_sha256"]
