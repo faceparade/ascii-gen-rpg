@@ -19,6 +19,7 @@ OUTSIDE_CORNER_CORRECTION = Path("style_samples/corrections/sunken-outside-cliff
 MIRRORED_INSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-inside-cliff-corner-v2.txt")
 MIRRORED_INSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-inside-cliff-corner-v2.txt")
 MIRRORED_INSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-inside-cliff-corner-v2.txt")
+MIRRORED_OUTSIDE_REVIEW = Path("style_samples/review/sunken-mirrored-outside-cliff-corner-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -55,6 +56,14 @@ EXPECTED_MIRRORED_INSIDE_REVIEW = (
     "            |/| |      ",
     "            '—'—'      ",
     "                       ",
+)
+EXPECTED_MIRRORED_OUTSIDE_REVIEW = (
+    ",— —,- -,— —,         ",
+    "_/___/___/__|         ",
+    "            |         ",
+    "            |         ",
+    "            ,- -,— —,—",
+    "             /___/___/",
 )
 
 
@@ -133,3 +142,10 @@ def test_user_approved_mirrored_inside_corner_matches_renderer_and_golden_target
 
     assert render_sunken_terrain(surface, elevations, lower) == approved_rows
     assert MIRRORED_INSIDE_TARGET.read_bytes() == MIRRORED_INSIDE_CORRECTION.read_bytes()
+
+
+def test_mirrored_outside_corner_review_preserves_latest_approved_canvas() -> None:
+    assert mirror_cliff_art_horizontally(EXPECTED_OUTSIDE_CORNER) == EXPECTED_MIRRORED_OUTSIDE_REVIEW
+    assert tuple(MIRRORED_OUTSIDE_REVIEW.read_text(encoding="utf-8").splitlines()) == EXPECTED_MIRRORED_OUTSIDE_REVIEW
+    assert len(EXPECTED_MIRRORED_OUTSIDE_REVIEW) == len(EXPECTED_OUTSIDE_CORNER)
+    assert max(map(len, EXPECTED_MIRRORED_OUTSIDE_REVIEW)) == max(map(len, EXPECTED_OUTSIDE_CORNER))
