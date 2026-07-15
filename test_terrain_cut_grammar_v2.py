@@ -266,12 +266,12 @@ def test_open_corridor_shoulder_is_a_two_wide_east_to_south_review_topology() ->
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     sample = next(item for item in catalog["samples"] if item["id"] == "sunken-open-corridor-shoulder-v2")
 
-    assert sample["status"] == "reviewing"
+    assert sample["status"] == "approved"
     assert sample["surface_mask"] == ["#######"] * 5
     assert sample["elevation_map"] == ["1111111", "1000000", "1000000", "1001111", "1001111"]
     assert sample["walkable_mask"] == [".......", ".######", ".######", ".##....", ".##...."]
     assert sample["review"] == "review/sunken-open-corridor-shoulder-v2.txt"
-    assert "target" not in sample
+    assert sample["target"] == "targets/sunken-open-corridor-shoulder-v2.txt"
 
     surface = frozenset(Point(x, y) for y in range(5) for x in range(7))
     lower = frozenset(
@@ -290,7 +290,9 @@ def test_open_corridor_shoulder_is_a_two_wide_east_to_south_review_topology() ->
     assert all(edge.lower.y != 4 or edge.direction != "south" for edge in edges)
 
     detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
-    assert detail["candidate_source"] == sample["review"]
+    assert detail["candidate_source"] == sample["target"]
     assert detail["reference_source"] == "targets/sunken-corridor-chamber-cliff-art-v2.txt"
-    assert detail["display_source"] == sample["review"]
-    assert detail["decision"] is None
+    assert detail["display_source"] == "corrections/sunken-open-corridor-shoulder-v2.txt"
+    assert detail["candidate"] == detail["correction"]
+    assert detail["decision"]["decision"] == "approved"
+    assert detail["decision"]["correction_sha256"] == detail["candidate_sha256"]

@@ -140,7 +140,7 @@ Its golden target is:
 
 The rejected room-shell-based attempt remains archived under `style_samples/review/` and must not be reused.
 
-## Active elevation checkpoint: mirrored cliff corners
+## Active elevation checkpoint: larger terrain compositions
 
 Completed and locked byte-for-byte:
 
@@ -148,16 +148,16 @@ Completed and locked byte-for-byte:
 2. **Outside corner:** `sunken-outside-cliff-corner-v2` defines a 5 × 5 level-1 shelf projecting south into the lower plane.
 3. **Mirrored inside corner:** `sunken-mirrored-inside-cliff-corner-v2` defines the approved 5 × 5 level-0 west-to-south L-turn and preserves its user-authored correction byte-for-byte.
 4. **Mirrored outside corner:** `sunken-mirrored-outside-cliff-corner-v2` defines the approved 5 × 5 west-projecting shelf counterpart and preserves its 22 × 12 user-authored correction byte-for-byte.
-5. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
+5. **Open corridor shoulder:** `sunken-open-corridor-shoulder-v2` defines the approved 7 × 5 two-section-wide lower passage entering from the east and turning south, preserving its 14-row ragged user correction byte-for-byte.
+6. **Freestanding platform:** `room-raised-platform-v2` defines a centered 3 × 3 level-1 platform on an open 5 × 5 lower-floor canvas, without perimeter room walls or a decorative doorway.
 
 The active manual-review sequence is now:
 
-1. Corner joins adjoining an open corridor shoulder.
-2. A sunken T- or cross-junction.
-3. Elevation applied to a region of the organic dungeon.
-4. Actors on lower and upper planes and behind foreground cliffs.
-5. Opaque, x-ray, and walls-removed modes.
-6. Irregular footprints and multiple elevation levels.
+1. A sunken T- or cross-junction.
+2. Elevation applied to a region of the organic dungeon.
+3. Actors on lower and upper planes and behind foreground cliffs.
+4. Opaque, x-ray, and walls-removed modes.
+5. Irregular footprints and multiple elevation levels.
 
 Only one new elevation concept is introduced at each checkpoint.
 

@@ -24,6 +24,7 @@ MIRRORED_OUTSIDE_TARGET = Path("style_samples/targets/sunken-mirrored-outside-cl
 MIRRORED_OUTSIDE_CORRECTION = Path("style_samples/corrections/sunken-mirrored-outside-cliff-corner-v2.txt")
 OPEN_CORRIDOR_SHOULDER_REVIEW = Path("style_samples/review/sunken-open-corridor-shoulder-v2.txt")
 OPEN_CORRIDOR_SHOULDER_TARGET = Path("style_samples/targets/sunken-open-corridor-shoulder-v2.txt")
+OPEN_CORRIDOR_SHOULDER_CORRECTION = Path("style_samples/corrections/sunken-open-corridor-shoulder-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -175,4 +176,18 @@ def test_open_corridor_shoulder_review_starts_from_approved_cliff_vocabulary() -
 
     assert draft == TARGET.read_bytes()
     assert draft.endswith(b"\n")
-    assert not OPEN_CORRIDOR_SHOULDER_TARGET.exists()
+
+
+def test_user_approved_open_corridor_shoulder_matches_renderer_and_golden_target() -> None:
+    surface = frozenset(Point(x, y) for y in range(5) for x in range(7))
+    lower = frozenset(
+        {Point(x, y) for y in (1, 2) for x in range(1, 7)}
+        | {Point(x, y) for y in (3, 4) for x in (1, 2)}
+    )
+    elevations = {point: (0 if point in lower else 1) for point in surface}
+    approved_rows = tuple(OPEN_CORRIDOR_SHOULDER_CORRECTION.read_text(encoding="utf-8").splitlines())
+
+    assert len(approved_rows) == 14
+    assert {len(row) for row in approved_rows} == {18, 27, 30}
+    assert render_sunken_terrain(surface, elevations, lower) == approved_rows
+    assert OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes() == OPEN_CORRIDOR_SHOULDER_CORRECTION.read_bytes()

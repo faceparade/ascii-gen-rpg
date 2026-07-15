@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-open-corridor-shoulder-v2",
+  "candidate_sha256": "442d4c3a0fe09e85d72ba067725e2e02682435c2df0e21b84fdb5f9914733394",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-15T19:01:51Z",
+  "correction": "corrections/sunken-open-corridor-shoulder-v2.txt",
+  "correction_sha256": "b3bb337b13af08922ea0f862df127f3b8bf2ea45502e5514cc888f90e9dc55bd"
+}

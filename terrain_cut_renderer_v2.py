@@ -82,6 +82,23 @@ def _classify_chamber_corridor(
     return ChamberCorridorCut(min_x, max_x, min_y, max_y, corridor_y, corridor_end_x)
 
 
+def _classify_open_corridor_shoulder(
+    surface_cells: frozenset[Point],
+    lower_cells: frozenset[Point],
+) -> None:
+    """Recognize the approved 7×5 two-wide east-to-south lower L-turn."""
+
+    expected_surface = frozenset(Point(x, y) for y in range(5) for x in range(7))
+    expected_lower = frozenset(
+        {Point(x, y) for y in (1, 2) for x in range(1, 7)}
+        | {Point(x, y) for y in (3, 4) for x in (1, 2)}
+    )
+    if surface_cells != expected_surface or lower_cells != expected_lower:
+        raise NotImplementedError(
+            "open-corridor-shoulder artwork is approved only for the 7×5 two-wide east-to-south L-turn"
+        )
+
+
 def _classify_inside_cliff_corner(
     surface_cells: frozenset[Point],
     lower_cells: frozenset[Point],
@@ -194,6 +211,22 @@ USER_AUTHORED_MIRRORED_INSIDE_CLIFF_CORNER_ART = (
     "                 | | |  ",
     "                 | |/|  ",
 )
+USER_AUTHORED_OPEN_CORRIDOR_SHOULDER_ART = (
+    "\t\t\t\t              ",
+    "     ,— —,— —,— —,— —,— —,— —,",
+    "     |__/___/___/___/___/___/_",
+    "\t |                        ",
+    "\t |                        ",
+    "     |       ,— — — — — — — — ",
+    "     |      /|                ",
+    "     |     ‘ |                ",
+    "     |     |/|                ",
+    "     |     | |                ",
+    "     |     |/|                ",
+    "     |     | |                ",
+    "     |     |/|                ",
+    "     |     | |                ",
+)
 
 
 def mirror_cliff_art_horizontally(rows: tuple[str, ...]) -> tuple[str, ...]:
@@ -223,6 +256,13 @@ def render_sunken_terrain(
 
     bounds = cell_bounds(surface_cells)
     if bounds == (7, 5):
+        open_shoulder_lower = frozenset(
+            {Point(x, y) for y in (1, 2) for x in range(1, 7)}
+            | {Point(x, y) for y in (3, 4) for x in (1, 2)}
+        )
+        if walkable_cells == open_shoulder_lower:
+            _classify_open_corridor_shoulder(surface_cells, walkable_cells)
+            return USER_AUTHORED_OPEN_CORRIDOR_SHOULDER_ART
         _classify_chamber_corridor(surface_cells, walkable_cells)
         return USER_AUTHORED_FIRST_CLIFF_ART
     if bounds == (5, 5):
