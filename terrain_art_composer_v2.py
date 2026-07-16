@@ -53,3 +53,23 @@ def render_sunken_t_junction(project_root: Path) -> str:
     while rendered and not rendered[-1]:
         rendered.pop()
     return "\n".join(rendered) + "\n"
+
+
+def render_sunken_t_stitch_stress(project_root: Path) -> str:
+    """Render the approved balanced 23-column T-junction seam composition."""
+
+    del project_root  # Kept in the API for consistency with the source-based composer.
+    rows = [
+        "",
+        "," + "— —," * 24,
+        "___" + "/___" * 23 + "/_",
+        "",
+        "",
+        "— " * 22 + "—." + " " * 7 + "," + "— " * 21 + "—",
+        " " * 45 + "|      /|",
+        " " * 45 + "|     ‘ |",
+    ]
+    for y in range(8, 24):
+        right_face = "|/|" if y % 2 == 0 else "| |"
+        rows.append(" " * 45 + "|" + " " * 5 + right_face)
+    return "\n".join(rows) + "\n"

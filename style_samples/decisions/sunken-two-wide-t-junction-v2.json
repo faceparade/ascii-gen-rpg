@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-two-wide-t-junction-v2",
+  "candidate_sha256": "5e53ff5b3170c6902daa15e927cdc6e300225eaf4d0c33b0844c398823516c8f",
+  "decision": "approved",
+  "notes": "",
+  "reviewed_at": "2026-07-15T20:40:23Z",
+  "correction": "corrections/sunken-two-wide-t-junction-v2.txt",
+  "correction_sha256": "77e265990197c398fc5f7be0fba2bae1f9597e567edd2000e7076a1a30fa90b4"
+}

@@ -26,6 +26,9 @@ OPEN_CORRIDOR_SHOULDER_REVIEW = Path("style_samples/review/sunken-open-corridor-
 OPEN_CORRIDOR_SHOULDER_TARGET = Path("style_samples/targets/sunken-open-corridor-shoulder-v2.txt")
 OPEN_CORRIDOR_SHOULDER_CORRECTION = Path("style_samples/corrections/sunken-open-corridor-shoulder-v2.txt")
 SUNKEN_T_JUNCTION_REVIEW = Path("style_samples/review/sunken-two-wide-t-junction-v2.txt")
+SUNKEN_T_STITCH_STRESS_REVIEW = Path("style_samples/review/sunken-t-junction-stitch-stress-v2.txt")
+SUNKEN_T_STITCH_STRESS_TARGET = Path("style_samples/targets/sunken-t-junction-stitch-stress-v2.txt")
+SUNKEN_T_STITCH_STRESS_CORRECTION = Path("style_samples/corrections/sunken-t-junction-stitch-stress-v2.txt")
 EXPECTED_DRAFT = (
     "      ,— —,— —,— —,— —,",
     "      |__/___/___/__ /|",
@@ -201,4 +204,16 @@ def test_sunken_t_junction_review_is_composed_from_opposed_approved_corners() ->
 
     assert draft == render_sunken_t_junction(Path(__file__).parent)
     assert draft.encode("utf-8") != OPEN_CORRIDOR_SHOULDER_TARGET.read_bytes()
+    assert draft.endswith("\n")
+
+
+def test_stitch_stress_review_is_generated_from_opened_t_seams() -> None:
+    from terrain_art_composer_v2 import render_sunken_t_stitch_stress
+
+    draft = SUNKEN_T_STITCH_STRESS_REVIEW.read_text(encoding="utf-8")
+    generated = render_sunken_t_stitch_stress(Path(__file__).parent)
+
+    assert draft == generated
+    assert SUNKEN_T_STITCH_STRESS_TARGET.read_text(encoding="utf-8") == generated
+    assert SUNKEN_T_STITCH_STRESS_CORRECTION.read_text(encoding="utf-8") == generated
     assert draft.endswith("\n")

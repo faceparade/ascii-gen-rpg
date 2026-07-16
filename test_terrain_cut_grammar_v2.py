@@ -344,6 +344,6 @@ def test_sunken_t_junction_is_a_two_wide_three_way_review_topology() -> None:
 
     detail = ReviewState(Path.cwd()).sample_detail(sample["id"])
     assert detail["candidate_source"] == sample["review"]
-    assert detail["reference_source"] == "targets/sunken-open-corridor-shoulder-v2.txt"
-    assert detail["display_source"] == sample["review"]
-    assert detail["decision"] is None
+    assert detail["reference_source"] == "corrections/sunken-two-wide-t-junction-v2.txt"
+    assert detail["display_source"] == "corrections/sunken-two-wide-t-junction-v2.txt"
+    assert detail["decision"]["decision"] == "approved"

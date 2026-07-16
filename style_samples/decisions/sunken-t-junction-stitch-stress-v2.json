@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sample_id": "sunken-t-junction-stitch-stress-v2",
+  "candidate_sha256": "69e35808bdf5e6f62711cbe2a9e791cf51599544318975e72d739339c4e6f073",
+  "decision": "approved",
+  "notes": "Approved balanced 97-column stitched T with aligned horizontal endpoints and open west, east, and south exits.",
+  "reviewed_at": "2026-07-16T15:15:51Z",
+  "correction": "corrections/sunken-t-junction-stitch-stress-v2.txt",
+  "correction_sha256": "69e35808bdf5e6f62711cbe2a9e791cf51599544318975e72d739339c4e6f073"
+}
